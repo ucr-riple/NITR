@@ -1,4 +1,4 @@
-# Needle in the Repo: Diagnosing Maintainability Failures in AI-Generated Repository Edits
+# Needle in the Repo: A Benchmark for Maintainability in AI-Generated Repository Edits
 Haichao Zhu*, Qian Zhang*, Jiyuan Wang, Zhaorui Yang, and Yuxin Qiu (* indicates equal contribution)
 <br>
 | [arXiv](https://arxiv.org/abs/2603.27745) | [Project Page](https://www.cs.ucr.edu/~qzhang/nitr.html) |
@@ -152,7 +152,7 @@ on before running the evaluator.
 
 ```bibtex
 @misc{zhu2026nitr,
-  title        = {Needle in the Repo: Diagnosing Maintainability Failures in AI-Generated Repository Edits},
+  title        = {Needle in the Repo: A Benchmark for Maintainability in AI-Generated Repository Edits},
   author       = {Haichao Zhu and Qian Zhang and Jiyuan Wang and Zhaorui Yang and Yuxin Qiu},
   year         = {2026},
   eprint       = {arXiv:2603.27745},
