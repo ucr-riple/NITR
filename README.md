@@ -54,6 +54,14 @@ use `TASK.md`. The `docs/` directory contains case specifications and
 supporting benchmark design materials. The `evaluator/` directory contains the
 public checks, tests, and fixtures used by this repository.
 
+## How to Create a New Case
+
+If you want to add a new NITR case to this repository, see
+[`HOW_TO_CREATE_CASE.md`](HOW_TO_CREATE_CASE.md). It describes how to choose a
+design dimension, write `SPEC.md` and `TASK.md`, add starter code under
+`cases/`, add evaluator tests and structural checks under `evaluator/`, and
+prepare the pull request to merge the new case into `main`.
+
 ## Build
 
 Configure all cases:
