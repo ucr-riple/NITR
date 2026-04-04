@@ -2,7 +2,7 @@
 
 This directory contains local submission helpers for running NITR cases against different model backends and evaluating the generated outputs.
 
-The scripts are organized into two groups:
+The submit tooling is organized into these components:
 
 - `submit_case.py`: unified entrypoint that dispatches to a selected backend
 - `backends.py` and `submit_common.py`: backend adapters and shared submission logic
@@ -76,7 +76,7 @@ Run one case through the unified submit entrypoint:
 python3 submit/submit_case.py \
   --backend chatgpt-codex \
   -i . \
-  -o .submit-output/chatgpt-5.3-codex \
+  -o .submit-output/chatgpt-codex \
   -c 021
 ```
 
@@ -90,7 +90,7 @@ python3 submit/submit_case.py \
   --backend chatgpt-api \
   --model_name gpt-5-mini \
   -i . \
-  -o .submit-output/chatgpt-5-mini \
+  -o .submit-output/chatgpt-api \
   -c 021
 ```
 
@@ -104,7 +104,7 @@ This applies to backends such as `chatgpt-codex`, `chatgpt-api`,
 Evaluate one generated case:
 
 ```bash
-python3 submit/run_case_evaluator.py -g .submit-output/chatgpt-5.3-codex -c 021 -r . --refresh_evaluator
+python3 submit/run_case_evaluator.py -g .submit-output/chatgpt-codex -c 021 -r . --refresh_evaluator
 ```
 
 Run the evaluator over all generated cases in one output root:
