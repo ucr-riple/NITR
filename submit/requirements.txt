@@ -1,0 +1,6 @@
+# Python dependencies for submit tooling.
+# Standard-library-only scripts do not need these packages, but some backends do.
+
+anthropic
+google-genai
+google-cloud-aiplatform
