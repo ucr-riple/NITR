@@ -31,7 +31,8 @@ This repository contains the public benchmark release:
 - agent-facing task statements (`TASK.md`, `TASK1.md`, ...)
 - vendored dependencies required to build cases and evaluators
 
-This repository excludes submission tooling.
+This repository includes local submission helpers under `submit/` for
+benchmark automation, but it does not include a hosted submission service.
 
 ## Repository Layout
 
@@ -62,6 +63,16 @@ design dimension, write `SPEC.md` and `TASK.md`, add starter code under
 `cases/`, add evaluator tests and structural checks under `evaluator/`, and
 prepare the pull request to merge the new case into `main`.
 
+## Submit Tooling
+
+Local submission helpers now live under [`submit/README.md`](submit/README.md).
+They can run cases against supported model backends, materialize generated case
+directories, and evaluate them locally with the public NITR evaluator.
+
+For an end-to-end usage guide, including single-case submit, batch submit, and
+local evaluation, see [`HOW_TO_SUBMIT.md`](HOW_TO_SUBMIT.md).
+Python package setup for the submit tooling is documented there as well.
+
 ## Build
 
 Configure all cases:
@@ -87,23 +98,30 @@ cmake -S . -B build -DNITR_BUILD_ALL_CASES=OFF -DNITR_CASE=001.add-no-callsite-s
 
 Some starter cases are intentionally incomplete and may not compile before the task is solved. The public corpus is meant to expose the starter state, not a fully solved build.
 
-For a lightweight public runner, you can configure and build a single case with:
+For local development, manual debugging, or quick validation of one case, you can
+configure and build a single case with:
 
 ```bash
 python3 tools/run_case.py 002.refactor-and-resue
 ```
 
-To build a single case and run its public evaluator checks:
+To build a single case and run its public evaluator checks locally:
 
 ```bash
 python3 tools/run_case.py 002.refactor-and-resue --with-evaluator
 ```
 
+Use `tools/run_case.py` when you want to work on one case directly inside the
+repository. Use the tooling under [`submit/`](submit/README.md) when you want to
+materialize generated submission outputs under `.submit-output/` and evaluate
+those results separately.
+
 ## Running NITR with Different Interfaces
 
 This public repository does not include a hosted submission service. In the
 open release, a "submission" means producing repository edits for a selected
-case and then evaluating the result locally with the provided public evaluator.
+case and then evaluating the result locally with the provided public evaluator
+or the helper scripts under `submit/`.
 
 Typical workflow:
 
