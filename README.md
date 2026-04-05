@@ -176,14 +176,22 @@ on before running the evaluator.
 
 ## Citation
 
+If you use NITR in your research, please cite the following paper:
+
 ```bibtex
 @misc{zhu2026nitr,
-  title        = {Needle in the Repo: A Benchmark for Maintainability in AI-Generated Repository Edits},
-  author       = {Haichao Zhu and Qian Zhang and Jiyuan Wang and Zhaorui Yang and Yuxin Qiu},
-  year         = {2026},
-  eprint       = {arXiv:2603.27745},
+  title         = {Needle in the Repo: A Benchmark for Maintainability in AI-Generated Repository Edits},
+  author        = {Haichao Zhu and Qian Zhang and Jiyuan Wang and Zhaorui Yang and Yuxin Qiu},
+  year          = {2026},
+  eprint        = {2603.27745},
   archivePrefix = {arXiv},
-  primaryClass = {cs.SE},
-  url          = {https://arxiv.org/abs/2603.27745}
+  primaryClass  = {cs.SE},
+  url           = {https://arxiv.org/abs/2603.27745}
 }
 ```
+
+For GitHub citation metadata, see [CITATION.cff](CITATION.cff).
+
+## Contributing
+
+If you want to contribute cases, evaluator updates, or tooling changes, see [CONTRIBUTING.md](CONTRIBUTING.md).
