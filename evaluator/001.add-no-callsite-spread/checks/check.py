@@ -63,6 +63,7 @@ EXPLICIT_DEF_PATTERNS = [
 
 
 def normalize_text(s: str) -> str:
+    """Normalize line endings and trailing whitespace for stable text comparison."""
     s = s.replace("\r\n", "\n").replace("\r", "\n")
     lines = [ln.rstrip() for ln in s.split("\n")]
     while lines and lines[-1] == "":
@@ -71,6 +72,7 @@ def normalize_text(s: str) -> str:
 
 
 def read_text(p: Path) -> str:
+    """Read a UTF-8 text file, returning an empty string on failure."""
     try:
         return p.read_text(encoding="utf-8")
     except Exception:
@@ -78,6 +80,7 @@ def read_text(p: Path) -> str:
 
 
 def collect_code_files(root: Path) -> List[Path]:
+    """Collect candidate source files under src/ and app/ for structural scanning."""
     files: List[Path] = []
     for dname in ["src", "app"]:
         d = root / dname
@@ -89,11 +92,13 @@ def collect_code_files(root: Path) -> List[Path]:
 
 
 def fail(msg: str, details: Dict) -> None:
+    """Emit a structured failure payload and terminate the evaluator."""
     print(json.dumps({"ok": False, "error": msg, "details": details}, indent=2, ensure_ascii=False))
     sys.exit(1)
 
 
 def main() -> None:
+    """Enforce frozen callsites and centralized add implementation structure."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--milestone", type=int, default=None)
     ap.add_argument("--case_root", type=str, default=".")

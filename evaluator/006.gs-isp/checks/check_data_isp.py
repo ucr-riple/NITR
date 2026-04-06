@@ -24,6 +24,7 @@ VIEW_TOKEN_FAMILIES = {
 
 
 def fail(message: str) -> None:
+    """Print a structural failure message and terminate immediately."""
     print(message)
     sys.exit(1)
 

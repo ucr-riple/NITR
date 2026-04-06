@@ -17,6 +17,7 @@ DATA_DIR = EVALUATOR_ROOT / "data"
 
 
 def compile_harness(binary_path: Path) -> None:
+    """Compile the functional harness against the case sources under test."""
     cmd = [
         "c++",
         "-std=c++17",
@@ -34,6 +35,7 @@ def compile_harness(binary_path: Path) -> None:
 
 
 def run_case(binary_path: Path, scenario: str, *output_paths: Path) -> dict:
+    """Run one harness scenario and parse its JSON result payload."""
     cmd = [str(binary_path), scenario, *[str(path) for path in output_paths]]
     completed = subprocess.run(
         cmd,
@@ -46,16 +48,19 @@ def run_case(binary_path: Path, scenario: str, *output_paths: Path) -> dict:
 
 
 def expect_equal(name: str, actual: str, expected: str, failures: list[str]) -> None:
+    """Record a named failure when two expected values differ."""
     if actual != expected:
         failures.append(f"{name} mismatch")
 
 
 def expect_true(name: str, condition: bool, failures: list[str]) -> None:
+    """Record a named failure when a required condition is false."""
     if not condition:
         failures.append(name)
 
 
 def main() -> int:
+    """Compile the harness, run scenarios, and emit a JSON functional summary."""
     failures: list[str] = []
     details: list[dict] = []
 

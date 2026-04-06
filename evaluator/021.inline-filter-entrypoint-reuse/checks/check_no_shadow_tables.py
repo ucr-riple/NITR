@@ -15,6 +15,7 @@ ERROR_LITERALS = [
 
 
 def main() -> int:
+    """Reject duplicated field/error lookup tables outside the shared validation layer."""
     workspace_root = Path.cwd()
     src_dir = workspace_root / CASE_REL
     for source_file in sorted(src_dir.glob("*.[ch]c*")):

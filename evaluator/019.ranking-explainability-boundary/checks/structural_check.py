@@ -10,26 +10,31 @@ SRC = ROOT / "src"
 
 
 def read_text(path: pathlib.Path) -> str:
+    """Read a text file if present, otherwise treat it as empty."""
     if not path.exists():
         return ""
     return path.read_text(encoding="utf-8")
 
 
 def strip_comments(text: str) -> str:
+    """Remove C/C++ comments so token scans focus on semantic source content."""
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
     text = re.sub(r"//.*", "", text)
     return text
 
 
 def remove_include_lines(text: str) -> str:
+    """Drop include directives before scanning for display-oriented tokens."""
     return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#include"))
 
 
 def string_literals(text: str) -> List[str]:
+    """Extract string literals that may indicate leaked presentation concerns."""
     return re.findall(r'"(?:\\.|[^"\\])*"', text)
 
 
 def struct_body(text: str, struct_name: str) -> str:
+    """Return the body of a named struct for lightweight field counting."""
     match = re.search(rf"struct\s+{struct_name}\s*\{{(.*?)\}};", text, flags=re.S)
     if not match:
         return ""
@@ -37,6 +42,7 @@ def struct_body(text: str, struct_name: str) -> str:
 
 
 def count_field_lines(body: str) -> int:
+    """Count likely field declarations in a struct body."""
     count = 0
     for raw_line in body.splitlines():
         line = raw_line.strip()

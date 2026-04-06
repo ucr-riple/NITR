@@ -40,10 +40,12 @@ CONCRETE_TOKENS = [
 
 
 def sha256(path: pathlib.Path) -> str:
+    """Compute the SHA-256 digest for a file used as a protected baseline."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def main() -> int:
+    """Validate protected files, required artifacts, and generic pipeline boundaries."""
     ok = True
     for rel in REQUIRED_FILES:
         if not (ROOT / rel).exists():

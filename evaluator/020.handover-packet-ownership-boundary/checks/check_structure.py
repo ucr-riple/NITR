@@ -55,22 +55,27 @@ class Finding:
 
 
 def read_text(path: Path) -> str:
+    """Read a text file used by the structural ownership checks."""
     return path.read_text()
 
 
 def count_matches(patterns: list[re.Pattern], text: str) -> int:
+    """Count how many structural signal patterns appear in the text."""
     return sum(1 for pattern in patterns if pattern.search(text))
 
 
 def has_tracker_param(text: str) -> bool:
+    """Detect APIs that directly accept a ShiftTracker dependency."""
     return bool(TRACKER_PARAM_PATTERN.search(text))
 
 
 def has_packet_mentions(text: str) -> bool:
+    """Detect whether a file mentions the HandoverPacket domain type."""
     return bool(PACKET_RETURN_PATTERN.search(text))
 
 
 def is_consumer_side(path: Path) -> bool:
+    """Classify files that should remain on the preview/writer/app consumer side."""
     if path in CONSUMER_FILES:
         return True
     name = path.name.lower()
@@ -78,6 +83,7 @@ def is_consumer_side(path: Path) -> bool:
 
 
 def find_domain_assembly_candidates(files: list[Path]) -> list[str]:
+    """Find likely domain-side files that own packet assembly responsibilities."""
     candidates: list[str] = []
     for path in files:
         text = read_text(path)
@@ -101,6 +107,7 @@ def find_domain_assembly_candidates(files: list[Path]) -> list[str]:
 
 
 def main() -> int:
+    """Report whether packet assembly logic leaked into consumer-side files."""
     findings: list[Finding] = []
     source_files = sorted(list(SRC_DIR.glob("*.h")) + list(SRC_DIR.glob("*.cc"))) + [APP_FILE]
 

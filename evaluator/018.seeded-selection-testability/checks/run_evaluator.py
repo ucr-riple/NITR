@@ -9,6 +9,7 @@ CASE_REL = Path("cases/018.seeded-selection-testability")
 
 
 def grep(pattern: str, *paths: Path):
+    """Yield files whose contents match the given regex under the provided paths."""
     compiled = re.compile(pattern, re.MULTILINE)
     for path in paths:
         if path.is_dir():
@@ -25,11 +26,13 @@ def grep(pattern: str, *paths: Path):
 
 
 def fail(msg: str) -> int:
+    """Print a failure message and return the evaluator's failing exit code."""
     print(msg)
     return 1
 
 
 def main() -> int:
+    """Reject test-only hooks and nondeterministic selection mechanisms in src/."""
     case_root = Path.cwd() / CASE_REL
     src_dir = case_root / "src"
 

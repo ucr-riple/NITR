@@ -16,6 +16,7 @@ CREATION_PATTERNS = [
 
 
 def main() -> int:
+    """Ensure the allowed boundary actually owns provider creation or selection."""
     repo_root = Path(__file__).resolve().parents[3]
     case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
     boundary_files = [case_root / "src/build_pipeline.cc", case_root / "app/main.cc"]

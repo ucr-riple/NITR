@@ -9,6 +9,7 @@ CASE_REL = Path("cases/017.active-snapshot-lifecycle")
 
 
 def search(pattern: str, *paths: Path):
+    """Yield files whose contents match the given regex under the provided paths."""
     compiled = re.compile(pattern, re.MULTILINE)
     for path in paths:
         if path.is_dir():
@@ -25,6 +26,7 @@ def search(pattern: str, *paths: Path):
 
 
 def main() -> int:
+    """Enforce that active snapshot lifecycle state stays centralized in core ownership."""
     root_dir = Path.cwd() / CASE_REL
     failures: list[str] = []
 

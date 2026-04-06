@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 def read_text(path: Path) -> str:
+    """Read a source file and surface a descriptive error on failure."""
     try:
         return path.read_text(encoding="utf-8", errors="replace")
     except Exception as e:
@@ -66,6 +67,7 @@ def find_violations(code: str) -> list[tuple[str, str]]:
     return violations
 
 def main() -> int:
+    """Reject coupon-dispatch branching in the configured core files."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--case_dir", required=True, help="e.g. cases/pricing-ocp")
     ap.add_argument(

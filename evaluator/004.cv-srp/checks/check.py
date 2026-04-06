@@ -16,24 +16,29 @@ from typing import Iterable, List, Tuple, Optional
 # ----------------------------
 
 def die(msg: str, code: int = 1) -> None:
+    """Print a fatal error message and exit the evaluator immediately."""
     print(msg, file=sys.stderr)
     sys.exit(code)
 
 def case_root() -> Path:
+    """Resolve the case directory that this evaluator should inspect."""
     repo_root = Path(__file__).resolve().parents[3]
     case_name = Path(__file__).resolve().parents[1].name
     return repo_root / "cases" / case_name
 
 def repo_root() -> Path:
+    """Return the repository root inferred from this evaluator's location."""
     return Path(__file__).resolve().parents[3]
 
 def read_text(path: Path) -> str:
+    """Read a text file or abort with a descriptive error."""
     try:
         return path.read_text(encoding="utf-8", errors="replace")
     except Exception as e:
         die(f"Failed to read {path}: {e}")
 
 def list_files(base: Path, exts: Tuple[str, ...]) -> List[Path]:
+    """Recursively collect files under a base directory that match the given suffixes."""
     out: List[Path] = []
     for p in base.rglob("*"):
         if p.is_file() and p.suffix in exts:
@@ -41,6 +46,7 @@ def list_files(base: Path, exts: Tuple[str, ...]) -> List[Path]:
     return out
 
 def run(cmd: List[str]) -> Tuple[int, str, str]:
+    """Run a subprocess and return exit code, stdout, and stderr without raising."""
     try:
         proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
         return proc.returncode, proc.stdout, proc.stderr
@@ -50,9 +56,11 @@ def run(cmd: List[str]) -> Tuple[int, str, str]:
         return 1, "", f"Failed to run {cmd}: {e}"
 
 def grep(pattern: re.Pattern, text: str) -> bool:
+    """Return whether a compiled regex matches the provided text."""
     return bool(pattern.search(text))
 
 def rel(p: Path, root: Path) -> str:
+    """Render a path relative to the case root when possible."""
     try:
         return str(p.relative_to(root))
     except Exception:
@@ -203,18 +211,21 @@ def find_binary(root: Path, name: str) -> Path:
     die(f"Cannot find binary '{name}' in common locations. Build it first.")
 
 def maybe_find_binary(root: Path, name: str) -> Optional[Path]:
+    """Find a build artifact if available, but tolerate it being absent."""
     try:
         return find_binary(root, name)
     except SystemExit:
         return None
 
 def symbols_via_nm(bin_path: Path) -> Optional[str]:
+    """Try extracting symbols with nm."""
     rc, out, err = run(["nm", "-a", str(bin_path)])
     if rc == 0 and out.strip():
         return out
     return None
 
 def symbols_via_objdump(bin_path: Path) -> Optional[str]:
+    """Try extracting symbols with objdump."""
     # Linux: objdump -t; mac: gobjdump may exist but not guaranteed
     rc, out, err = run(["objdump", "-t", str(bin_path)])
     if rc == 0 and out.strip():
@@ -222,6 +233,7 @@ def symbols_via_objdump(bin_path: Path) -> Optional[str]:
     return None
 
 def symbols_via_dumpbin(bin_path: Path) -> Optional[str]:
+    """Try extracting symbols with dumpbin on Windows toolchains."""
     # Windows Visual Studio toolchain
     rc, out, err = run(["dumpbin", "/SYMBOLS", str(bin_path)])
     if rc == 0 and out.strip():
@@ -258,10 +270,12 @@ def check_binary_symbol_isolation(root: Path) -> None:
             die(f"Binary isolation failed: '{pat}' found in {cv_bin}")
 
 def run_named_check(name: str, fn, *args) -> None:
+    """Run one check function and print a PASS banner if it succeeds."""
     fn(*args)
     print(f"PASS {name}")
 
 def main() -> None:
+    """Run source and binary isolation checks for the SRP case."""
     root = case_root()
 
     # Basic sanity

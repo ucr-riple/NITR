@@ -34,10 +34,12 @@ SUSPICIOUS_API_PATTERNS = [
 
 
 def scan_files(directory: pathlib.Path):
+    """Collect source-like files under a directory for pattern scanning."""
     return [path for path in directory.rglob("*") if path.suffix in {".h", ".cc", ".cpp"}]
 
 
 def contains_any(patterns, text):
+    """Return the subset of regex patterns that match the given text."""
     matches = []
     for pattern in patterns:
         if re.search(pattern, text):

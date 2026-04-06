@@ -9,6 +9,7 @@ ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h"}
 
 
 def main() -> int:
+    """Reject duplicate numeric value validation outside the shared validation module."""
     workspace_root = Path.cwd()
     src_dir = workspace_root / CASE_REL
     for source_file in sorted(src_dir.glob("*.[ch]c*")):

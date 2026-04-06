@@ -21,6 +21,7 @@ FORBIDDEN_PATTERNS = [
 
 
 def main() -> int:
+    """Reject provider selection or construction logic inside core pipeline files."""
     repo_root = Path(__file__).resolve().parents[3]
     case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
     core_files = [case_root / "src/pipeline_runner.h", case_root / "src/pipeline_runner.cc"]

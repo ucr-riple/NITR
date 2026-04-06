@@ -3,6 +3,7 @@ import pathlib
 
 
 def main() -> int:
+    """Ensure pipeline_runner.cc routes execution planning through BuildExecutionPlan."""
     script_path = pathlib.Path(__file__).resolve()
     repo_root = script_path.parents[3]
     case_name = script_path.parents[1].name
