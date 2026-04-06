@@ -19,6 +19,7 @@ ALLOWLIST = {
 
 
 def main() -> int:
+    """Detect suspicious hardcoded step-index branching in production source files."""
     violations = []
     for path in pathlib.Path("src").glob("*.cc"):
         if path in ALLOWLIST:

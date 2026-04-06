@@ -15,6 +15,7 @@ STRUCTURAL = EVALUATOR_ROOT / "checks" / "check_structure.py"
 
 
 def run_script(path: Path) -> tuple[int, dict]:
+    """Run one child evaluator script and capture raw plus parsed output."""
     completed = subprocess.run(
         [sys.executable, str(path)],
         cwd=ROOT,
@@ -37,6 +38,7 @@ def run_script(path: Path) -> tuple[int, dict]:
 
 
 def main() -> int:
+    """Run functional and structural sub-suites and emit a combined JSON summary."""
     functional_code, functional_payload = run_script(FUNCTIONAL)
     structural_code, structural_payload = run_script(STRUCTURAL)
 

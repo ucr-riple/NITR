@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 def main() -> int:
+    """Run the CLI and compare its stdout line-for-line against the expected fixture."""
     if len(sys.argv) < 4:
         print(
             "Usage: check_cli_output.py <binary> <repo_root> <expected_file> [args...]",

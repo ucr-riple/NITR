@@ -10,6 +10,7 @@ SRC = ROOT / "src" / "geometry.cc"
 
 
 def strip_comments_and_strings(text: str) -> str:
+    """Remove comments and literals so regex checks focus on structural code tokens."""
     text = re.sub(r'"([^"\\]|\\.)*"', '""', text)
     text = re.sub(r"'([^'\\]|\\.)*'", "''", text)
     text = re.sub(r"//.*", "", text)
@@ -18,6 +19,7 @@ def strip_comments_and_strings(text: str) -> str:
 
 
 def extract_function_body(text: str, function_name: str) -> str:
+    """Return the body text for a named function using brace matching."""
     match = re.search(rf"\b{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text)
     if not match:
         return ""
@@ -37,6 +39,7 @@ def extract_function_body(text: str, function_name: str) -> str:
 
 
 def count_hits(patterns, text: str) -> int:
+    """Count how many structural evidence patterns appear in the source text."""
     hits = 0
     for pattern in patterns:
         if re.search(pattern, text):

@@ -104,12 +104,14 @@ DEFAULTS = {
 
 
 def transcript_output_path(response_output_path):
+    """Derive the sidecar transcript filename for a saved backend response."""
     if response_output_path.endswith(".txt"):
         return response_output_path[:-4] + ".transcript.txt"
     return response_output_path + ".transcript.txt"
 
 
 def require_openai_api_key(env_var):
+    """Load the configured OpenAI API key or fail with a clear environment error."""
     api_key = os.environ.get(env_var)
     if not api_key:
         raise EnvironmentError(f"{env_var} is not set")
@@ -117,6 +119,7 @@ def require_openai_api_key(env_var):
 
 
 def require_config_value(config, key, cli_flag=None, env_var=None):
+    """Require a backend config value and explain how the caller can provide it."""
     value = config.get(key)
     if value:
         return value
@@ -130,6 +133,7 @@ def require_config_value(config, key, cli_flag=None, env_var=None):
 
 
 def extract_openai_response_text(payload):
+    """Normalize the Responses API payload into plain assistant text."""
     output_text = payload.get("output_text")
     if isinstance(output_text, str) and output_text.strip():
         return output_text
@@ -157,11 +161,13 @@ def extract_openai_response_text(payload):
 
 
 def run_chatgpt_api(args):
+    """Run submissions through the OpenAI Responses API backend."""
     config = DEFAULTS["chatgpt-api"].copy()
     if args.model_name:
         config["model_name"] = args.model_name
 
     def call_openai(prompt):
+        """Issue one prompt to the Responses API with retry and usage capture."""
         last_error = None
         api_key = require_openai_api_key(config["openai_api_key_env_var"])
         endpoint = f"{config['openai_api_base'].rstrip('/')}/responses"
@@ -219,7 +225,9 @@ def run_chatgpt_api(args):
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
     def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+        """Execute one case task and persist both raw text and API metadata."""
         def fetch_response(_project_dir, prompt, _response_output_path):
+            """Wrap the API call so run_json_task can stay backend-agnostic."""
             response_text, response_payload = call_openai(prompt)
             save_json_payload(
                 response_payload,
@@ -254,11 +262,13 @@ def run_chatgpt_api(args):
 
 
 def run_chatgpt_codex(args):
+    """Run submissions through the local Codex CLI in read-only mode."""
     config = DEFAULTS["chatgpt-codex"].copy()
     if args.model_name:
         config["model_name"] = args.model_name
 
     def call_codex(project_dir, prompt, temp_output_path):
+        """Invoke codex exec and read the final assistant message from disk."""
         last_error = None
         for attempt in range(1, config["request_retry_attempts"] + 1):
             started = time.time()
@@ -320,7 +330,9 @@ def run_chatgpt_codex(args):
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
     def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+        """Execute one task through Codex and apply the returned JSON patch."""
         def fetch_response(project_dir, prompt, _response_output_path):
+            """Provide run_json_task with a backend-specific response fetcher."""
             return call_codex(
                 project_dir,
                 prompt,
@@ -351,6 +363,7 @@ def run_chatgpt_codex(args):
 
 
 def run_claude_vertex(args):
+    """Run submissions through Anthropic's Vertex-hosted Claude API."""
     from anthropic import AnthropicVertex
 
     config = DEFAULTS["claude-vertex"].copy()
@@ -370,6 +383,7 @@ def run_claude_vertex(args):
     client = AnthropicVertex(region=config["region"], project_id=config["project_id"])
 
     def extract_message_text(message):
+        """Flatten Claude content blocks into one plain-text response string."""
         parts = []
         for block in getattr(message, "content", []):
             text = getattr(block, "text", None)
@@ -380,6 +394,7 @@ def run_claude_vertex(args):
         return "".join(parts)
 
     def call_claude(prompt):
+        """Issue one Claude request with retry handling around Vertex failures."""
         last_error = None
         for attempt in range(1, config["request_retry_attempts"] + 1):
             started = time.time()
@@ -412,6 +427,7 @@ def run_claude_vertex(args):
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
     def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+        """Execute one task through Claude Vertex using the shared JSON workflow."""
         return run_json_task(
             input_project_dir,
             output_project_dir,
@@ -435,11 +451,13 @@ def run_claude_vertex(args):
 
 
 def run_claude_cli(args):
+    """Run submissions through the local Claude Code CLI."""
     config = DEFAULTS["claude-cli"].copy()
     if args.model_name:
         config["model_name"] = args.model_name
 
     def build_cli_prompt(task_file):
+        """Build the stricter JSON-only prompt used for the Claude CLI agent."""
         return f"""Please complete the task described in {task_file}.
 Read whatever files you need to understand the codebase first.
 Then return only one JSON object with this exact shape:
@@ -458,6 +476,7 @@ Do not return partial patches or diffs.
 Focus only on the implementation requested in {task_file}."""
 
     def call_cli(prompt, working_dir, response_output_path):
+        """Invoke the Claude CLI, saving both stdout and a combined transcript."""
         cmd = [
             "claude",
             "-p",
@@ -527,6 +546,7 @@ Focus only on the implementation requested in {task_file}."""
         raise RuntimeError(f"All CLI attempts failed. Last error: {last_error}")
 
     def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+        """Execute one task via Claude CLI and materialize the returned file set."""
         prepare_output_dir(input_project_dir, output_project_dir)
         prompt = build_cli_prompt(task_file)
         print(
@@ -563,6 +583,7 @@ Focus only on the implementation requested in {task_file}."""
 
 
 def run_gemini_vertex(args):
+    """Run submissions through the Gemini Vertex SDK backend."""
     from google import genai
 
     config = DEFAULTS["gemini-vertex"].copy()
@@ -584,6 +605,7 @@ def run_gemini_vertex(args):
     )
 
     def call_gemini(prompt):
+        """Generate one Gemini response with retries around transient API failures."""
         generate_config = genai.types.GenerateContentConfig(
             temperature=0.7,
             http_options={"timeout": config["request_timeout_ms"]},
@@ -612,6 +634,7 @@ def run_gemini_vertex(args):
         return response.text
 
     def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+        """Execute one task through Gemini Vertex using the shared JSON workflow."""
         return run_json_task(
             input_project_dir,
             output_project_dir,
@@ -635,11 +658,13 @@ def run_gemini_vertex(args):
 
 
 def run_gemini_cli(args):
+    """Run submissions through the local Gemini CLI."""
     config = DEFAULTS["gemini-cli"].copy()
     if args.model_name:
         config["model_name"] = args.model_name
 
     def build_cli_prompt(project_dir, task_file):
+        """Assemble the inline project context prompt required by the Gemini CLI."""
         project_context = collect_project_data(project_dir, task_file)
         if not project_context:
             raise ValueError("No valid source files found in the copied project.")
@@ -668,6 +693,7 @@ def run_gemini_cli(args):
     """
 
     def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+        """Execute one task via Gemini CLI and apply the emitted JSON patch."""
         prepare_output_dir(input_project_dir, output_project_dir)
         try:
             prompt = build_cli_prompt(output_project_dir, task_file)
@@ -708,6 +734,7 @@ def run_gemini_cli(args):
 
 
 def run_qwen_vertex(args):
+    """Run submissions against a user-managed Vertex endpoint that serves Qwen."""
     from google.cloud import aiplatform
 
     config = DEFAULTS["qwen-vertex"].copy()
@@ -737,6 +764,7 @@ def run_qwen_vertex(args):
     )
 
     def build_prompt_payload(prompt):
+        """Translate the prompt into the endpoint's configured request format."""
         if config["request_format"] == "chat":
             instances = [
                 {
@@ -760,6 +788,7 @@ def run_qwen_vertex(args):
         return instances, parameters
 
     def extract_response_text(prediction):
+        """Normalize a variety of Vertex prediction payload shapes into plain text."""
         if isinstance(prediction, str):
             return prediction
         if isinstance(prediction, dict):
@@ -810,6 +839,7 @@ def run_qwen_vertex(args):
     )
 
     def call_endpoint(prompt):
+        """Call the configured Vertex endpoint with retry and timeout handling."""
         instances, parameters = build_prompt_payload(prompt)
         last_error = None
         for attempt in range(1, config["request_retry_attempts"] + 1):
@@ -849,6 +879,7 @@ def run_qwen_vertex(args):
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
     def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+        """Execute one task through the Qwen Vertex endpoint."""
         return run_json_task(
             input_project_dir,
             output_project_dir,
@@ -872,6 +903,7 @@ def run_qwen_vertex(args):
 
 
 def run_qwen_openapi(args):
+    """Run submissions through Vertex's OpenAPI chat completions surface."""
     config = DEFAULTS["qwen-openapi"].copy()
     if args.project_id:
         config["project_id"] = args.project_id
@@ -887,6 +919,7 @@ def run_qwen_openapi(args):
     )
 
     def get_access_token():
+        """Fetch a short-lived bearer token from gcloud for the OpenAPI request."""
         completed = subprocess.run(
             ["gcloud", "auth", "print-access-token"],
             check=True,
@@ -899,12 +932,14 @@ def run_qwen_openapi(args):
         return token
 
     def build_endpoint_url():
+        """Build the regional OpenAPI chat completions endpoint URL."""
         return (
             "https://aiplatform.googleapis.com/v1/projects/"
             f"{config['project_id']}/locations/{config['region']}/endpoints/openapi/chat/completions"
         )
 
     def extract_response_text(payload):
+        """Extract assistant text from the OpenAPI chat completions response."""
         choices = payload.get("choices")
         if isinstance(choices, list) and choices:
             first = choices[0]
@@ -920,6 +955,7 @@ def run_qwen_openapi(args):
         raise ValueError("OpenAPI response did not contain choices[0].message.content")
 
     def call_openapi_chat(prompt):
+        """Submit one OpenAPI chat request with retry handling around HTTP failures."""
         payload = {
             "model": config["model_name"],
             "stream": False,
@@ -973,6 +1009,7 @@ def run_qwen_openapi(args):
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
     def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+        """Execute one task through the Qwen OpenAPI backend."""
         return run_json_task(
             input_project_dir,
             output_project_dir,

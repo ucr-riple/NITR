@@ -21,6 +21,7 @@ FORBIDDEN = [
 
 
 def main() -> int:
+    """Ensure PipelineRunner does not expose provider-selection concerns in its contract."""
     repo_root = Path(__file__).resolve().parents[3]
     case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
     for path in [case_root / "src/pipeline_runner.h", case_root / "src/pipeline_runner.cc"]:

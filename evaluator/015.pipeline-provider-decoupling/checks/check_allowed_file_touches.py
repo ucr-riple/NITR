@@ -8,6 +8,7 @@ ALLOWED_TOP_LEVEL = {"app", "src", "CMakeLists.txt", "TASK.md", "SPEC.md"}
 
 
 def main() -> int:
+    """Limit touched paths to the expected top-level case files and directories."""
     repo_root = Path(__file__).resolve().parents[3]
     if len(sys.argv) == 1:
         print("No file list provided; starter skeleton check passes by default.")

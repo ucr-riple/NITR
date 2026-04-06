@@ -4,6 +4,7 @@ from backends import BACKEND_RUNNERS
 
 
 def build_parser():
+    """Build the shared CLI for dispatching one case to a backend implementation."""
     parser = argparse.ArgumentParser(
         description="Unified NITR submit entrypoint across supported backends."
     )
@@ -39,6 +40,7 @@ def build_parser():
 
 
 def main():
+    """Parse CLI arguments and hand execution to the selected backend runner."""
     parser = build_parser()
     args = parser.parse_args()
 

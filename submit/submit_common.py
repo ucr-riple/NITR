@@ -6,6 +6,7 @@ import time
 
 
 def resolve_cases_root(input_dir):
+    """Accept either the repo root or a direct cases directory and normalize to cases/."""
     repo_cases_dir = os.path.join(input_dir, "cases")
     if os.path.isdir(repo_cases_dir):
         return repo_cases_dir
@@ -15,6 +16,7 @@ def resolve_cases_root(input_dir):
 
 
 def find_case_dir(cases_root, case_id):
+    """Resolve a case id to the single matching case directory under the cases root."""
     prefix = f"{case_id}."
     matches = [
         entry for entry in os.listdir(cases_root)
@@ -28,10 +30,12 @@ def find_case_dir(cases_root, case_id):
 
 
 def ensure_parent_dir(path):
+    """Create the parent directory for an output file if it does not exist yet."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
 
 def load_case_granularity(repo_root, case_id):
+    """Read the case granularity from the design matrix so submission flow can branch."""
     matrix_path = os.path.join(repo_root, "docs", "design_matrix.md")
     if not os.path.isfile(matrix_path):
         raise FileNotFoundError(f"design_matrix.md not found: {matrix_path}")
@@ -50,6 +54,7 @@ def load_case_granularity(repo_root, case_id):
 
 
 def list_case_task_files(case_dir, granularity):
+    """List the task files for a case, handling micro and multi-step layouts."""
     if granularity == "micro":
         task_path = os.path.join(case_dir, "TASK.md")
         if not os.path.isfile(task_path):
@@ -74,6 +79,7 @@ def list_case_task_files(case_dir, granularity):
 
 
 def collect_project_data(project_dir, task_file):
+    """Collect the source context that should be shown to the model for one task."""
     context = []
     valid_exts = (".cpp", ".h", ".hpp", ".cmake", ".cu", ".txt")
     ignore_dirs = {"build", ".git", "bin", "obj"}
@@ -108,6 +114,7 @@ def collect_project_data(project_dir, task_file):
 
 
 def extract_json_payload(response_text):
+    """Parse the model response into a JSON object, tolerating light wrapper text."""
     fenced_match = re.search(r"```json\s*\n(.*?)\n```", response_text, re.DOTALL)
     candidate = fenced_match.group(1).strip() if fenced_match else response_text.strip()
     if not candidate:
@@ -130,6 +137,7 @@ def extract_json_payload(response_text):
 
 
 def apply_file_replacements(payload, output_dir, allow_empty=False):
+    """Validate the returned file list and write full-file replacements into the copy."""
     if not isinstance(payload, dict):
         raise ValueError("Response JSON must be an object")
 
@@ -173,6 +181,7 @@ def apply_file_replacements(payload, output_dir, allow_empty=False):
 
 
 def prepare_output_dir(input_dir, output_dir):
+    """Refresh the task workspace by copying the input project into a clean output dir."""
     if os.path.abspath(input_dir) == os.path.abspath(output_dir):
         raise ValueError("output_dir must be different from input_dir")
 
@@ -188,6 +197,7 @@ def prepare_output_dir(input_dir, output_dir):
 
 
 def save_response_text(response_text, output_path):
+    """Persist the raw model response for later inspection and debugging."""
     ensure_parent_dir(output_path)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(response_text)
@@ -195,6 +205,7 @@ def save_response_text(response_text, output_path):
 
 
 def save_json_payload(payload, output_path):
+    """Persist a JSON payload with stable formatting for downstream inspection."""
     ensure_parent_dir(output_path)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
@@ -203,6 +214,7 @@ def save_json_payload(payload, output_path):
 
 
 def build_json_patch_prompt(project_context, task_file):
+    """Build the strict JSON-only prompt contract used by most backends."""
     return f"""
     Context:
     {project_context}
@@ -227,6 +239,7 @@ def build_json_patch_prompt(project_context, task_file):
 
 
 def build_project_context_prompt(project_dir, task_file):
+    """Assemble the model prompt after scanning the copied project workspace."""
     project_context = collect_project_data(project_dir, task_file)
     if not project_context:
         raise ValueError("No valid source files found in the copied project.")
@@ -234,6 +247,7 @@ def build_project_context_prompt(project_dir, task_file):
 
 
 def mirror_case_evaluator(repo_root, output_root, case_slug):
+    """Copy the evaluator assets for the case into the output tree."""
     source_evaluator_dir = os.path.join(repo_root, "evaluator", case_slug)
     target_evaluator_dir = os.path.join(output_root, "evaluator", case_slug)
     if os.path.exists(target_evaluator_dir):
@@ -247,6 +261,7 @@ def mirror_case_evaluator(repo_root, output_root, case_slug):
 
 
 def copy_case_snapshot(source_dir, target_dir):
+    """Replace the mirrored case snapshot with the latest staged project copy."""
     if os.path.exists(target_dir):
         shutil.rmtree(target_dir)
     shutil.copytree(
@@ -272,6 +287,7 @@ def run_json_task(
     allow_empty_files=False,
     payload_error_message="No valid JSON payload found in the response.",
 ):
+    """Run one task end-to-end: copy, prompt, fetch response, parse, and apply files."""
     source_task_path = os.path.join(input_project_dir, task_file)
     if not os.path.isfile(source_task_path):
         print(f"[!] Task file not found: {source_task_path}")
@@ -333,6 +349,7 @@ def run_case_submission(
     end_step=None,
     run_label=None,
 ):
+    """Drive the full submission flow for one case across micro or multi-step layouts."""
     case_id = case_id.zfill(3)
     cases_root = resolve_cases_root(input_dir)
     repo_root = os.path.dirname(cases_root)

@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 def run_command(cmd, cwd, stream_output=False, timeout_seconds=None):
+    """Run a subprocess and return a normalized result payload for reports."""
     print(f"[*] Running: {' '.join(cmd)}")
     if not stream_output:
         try:
@@ -81,6 +82,7 @@ def run_command(cmd, cwd, stream_output=False, timeout_seconds=None):
 
 
 def resolve_cases_root(input_dir: Path) -> Path:
+    """Accept either the repo root or a direct cases directory and normalize to cases/."""
     repo_cases_dir = input_dir / "cases"
     if repo_cases_dir.is_dir():
         return repo_cases_dir
@@ -90,6 +92,7 @@ def resolve_cases_root(input_dir: Path) -> Path:
 
 
 def find_case_slug(cases_root: Path, case_id: str) -> str:
+    """Resolve a zero-padded case id to its single matching directory name."""
     prefix = f"{case_id}."
     matches = sorted(
         entry.name for entry in cases_root.iterdir()
@@ -101,6 +104,7 @@ def find_case_slug(cases_root: Path, case_id: str) -> str:
 
 
 def copy_repo_workspace(repo_root: Path, workspace_root: Path):
+    """Create a clean temporary repo copy that can be mutated for one evaluation run."""
     if workspace_root.exists():
         shutil.rmtree(workspace_root)
     shutil.copytree(
@@ -111,6 +115,7 @@ def copy_repo_workspace(repo_root: Path, workspace_root: Path):
 
 
 def replace_case_dir(workspace_root: Path, case_slug: str, generated_case_dir: Path):
+    """Swap the case under test into the temporary workspace copy."""
     target_case_dir = workspace_root / "cases" / case_slug
     if target_case_dir.exists():
         shutil.rmtree(target_case_dir)
@@ -118,6 +123,7 @@ def replace_case_dir(workspace_root: Path, case_slug: str, generated_case_dir: P
 
 
 def replace_evaluator_dir(workspace_root: Path, case_slug: str, generated_evaluator_dir: Path):
+    """Swap in a generated evaluator when the submission produced one."""
     target_evaluator_dir = workspace_root / "evaluator" / case_slug
     if target_evaluator_dir.exists():
         shutil.rmtree(target_evaluator_dir)
@@ -125,6 +131,7 @@ def replace_evaluator_dir(workspace_root: Path, case_slug: str, generated_evalua
 
 
 def ensure_generated_evaluator(repo_root: Path, generated_root: Path, case_slug: str) -> Path:
+    """Populate a missing generated evaluator from the repo baseline."""
     source_evaluator_dir = repo_root / "evaluator" / case_slug
     target_evaluator_dir = generated_root / "evaluator" / case_slug
     if target_evaluator_dir.is_dir():
@@ -135,6 +142,7 @@ def ensure_generated_evaluator(repo_root: Path, generated_root: Path, case_slug:
 
 
 def refresh_generated_evaluator(repo_root: Path, generated_root: Path, case_slug: str) -> Path:
+    """Overwrite the generated evaluator with a fresh copy from the repo baseline."""
     source_evaluator_dir = repo_root / "evaluator" / case_slug
     target_evaluator_dir = generated_root / "evaluator" / case_slug
     if target_evaluator_dir.exists():
@@ -145,6 +153,7 @@ def refresh_generated_evaluator(repo_root: Path, generated_root: Path, case_slug
 
 
 def discover_structural_checks(checks_dir: Path):
+    """Find structural-check entrypoints, preferring a dedicated run_evaluator.py wrapper."""
     if not checks_dir.is_dir():
         return []
 
@@ -157,6 +166,7 @@ def discover_structural_checks(checks_dir: Path):
 
 
 def structural_check_args(script_path: Path, case_root: Path):
+    """Infer the argument shape expected by a structural-check script."""
     text = script_path.read_text(encoding="utf-8", errors="replace")
     if "--case_root" in text:
         return ["--case_root", str(case_root)]
@@ -168,6 +178,7 @@ def structural_check_args(script_path: Path, case_root: Path):
 
 
 def run_structural_check(script_path: Path, workspace_root: Path, case_root: Path, timeout_seconds: int):
+    """Execute one structural-check script with the best-effort argument convention."""
     if script_path.suffix != ".py":
         raise ValueError(f"Unsupported check script: {script_path}")
     cmd = [sys.executable, str(script_path), *structural_check_args(script_path, case_root)]
@@ -175,6 +186,7 @@ def run_structural_check(script_path: Path, workspace_root: Path, case_root: Pat
 
 
 def save_summary(summary: dict, generated_root: Path, case_slug: str):
+    """Persist the evaluator summary next to the generated case outputs."""
     reports_dir = generated_root / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
     report_path = reports_dir / f"{case_slug}.json"
@@ -184,6 +196,7 @@ def save_summary(summary: dict, generated_root: Path, case_slug: str):
 
 
 def discover_ctest_names(build_dir: Path):
+    """Ask CTest for the concrete test names so failures can be reported per test."""
     result = run_command(
         ["ctest", "--test-dir", str(build_dir), "-N", "--show-only=json-v1"],
         build_dir,
@@ -198,6 +211,7 @@ def discover_ctest_names(build_dir: Path):
 
 
 def run_ctest_per_test(build_dir: Path, timeout_seconds: int):
+    """Run each discovered CTest test separately to keep logs and timeouts isolated."""
     discover_result, test_names = discover_ctest_names(build_dir)
     summary = {
         "discover": discover_result,
@@ -231,6 +245,7 @@ def run_ctest_per_test(build_dir: Path, timeout_seconds: int):
 
 
 def main():
+    """Build a temporary workspace, run tests, then emit a machine-readable report."""
     parser = argparse.ArgumentParser(
         description="Build one generated case, run functional tests via CTest, and then run structural checks."
     )

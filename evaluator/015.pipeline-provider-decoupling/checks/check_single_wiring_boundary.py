@@ -25,6 +25,7 @@ FORBIDDEN_CREATION_PATTERNS = [
 
 
 def main() -> int:
+    """Ensure concrete provider construction stays inside the allowed wiring boundary."""
     repo_root = Path(__file__).resolve().parents[3]
     case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
     offenders: list[str] = []

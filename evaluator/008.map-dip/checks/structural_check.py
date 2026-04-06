@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[3] / "cases" / Path(__file__).resolve().
 SRC = ROOT / "src" / "map_snapshot.cc"
 
 def main():
+  """Reject provider knowledge and hardcoded type dispatch inside map_snapshot.cc."""
   txt = SRC.read_text()
   forbidden = [
     r'\bGeometryProvider\b',
