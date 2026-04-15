@@ -334,6 +334,27 @@ function(nitr_register_case_021)
   add_test(NAME case021_functional_tests COMMAND case021_evaluator_tests)
 endfunction()
 
+function(nitr_register_case_022)
+  nitr_case_source_dir(CASE_DIR 022.thermostat-sensor-decoupling)
+  nitr_case_evaluator_dir(EVAL_DIR 022.thermostat-sensor-decoupling)
+
+  nitr_add_gtest(
+    case022_thermostat_tests
+    case022_lib
+    ${EVAL_DIR}/tests/test_thermostat.cc
+  )
+  
+  add_test(
+    NAME case022_functional_tests
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/tests/test_functional.py $<TARGET_FILE:case022_app>
+  )
+  
+  add_test(
+    NAME case022_dependency_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_dependency.py ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -377,6 +398,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_020()
   elseif(case_dir STREQUAL "021.inline-filter-entrypoint-reuse")
     nitr_register_case_021()
+  elseif(case_dir STREQUAL "022.thermostat-sensor-decoupling")
+    nitr_register_case_022()
   endif()
 endfunction()
 
@@ -402,6 +425,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(019.ranking-explainability-boundary)
   nitr_add_evaluator(020.handover-packet-ownership-boundary)
   nitr_add_evaluator(021.inline-filter-entrypoint-reuse)
+  nitr_add_evaluator(022.thermostat-sensor-decoupling)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

@@ -132,8 +132,9 @@ Typical failures:
 Current cases:
 - `008 map-dip`
 - `015 pipeline-provider-decoupling`
+- `022 thermostat-sensor-decoupling`
 
-Current count: **2**
+Current count: **3**
 
 ---
 
@@ -222,6 +223,7 @@ Notes:
 | 019 ranking-explainability-boundary | D9 Side-Effect Isolation | multi-step |
 | 020 handover-packet-ownership-boundary | D3 Responsibility Decomposition | micro |
 | 021 inline-filter-entrypoint-reuse | D2 Reuse and Repo Awareness | micro |
+| 022 thermostat-sensor-decoupling | D6 Dependency Control | micro |
 
 ---
 
@@ -234,13 +236,13 @@ Notes:
 | D3 Responsibility Decomposition | 2 |
 | D4 Extension Structure | 2 |
 | D5 Interface and Substitutability Discipline | 2 |
-| D6 Dependency Control | 2 |
+| D6 Dependency Control | 3 |
 | D7 Testability and Determinism | 3 |
 | D8 State Ownership and Lifecycle | 2 |
 | D9 Side-Effect Isolation | 2 |
 
-Total cases recorded: **21**
+Total cases recorded: **22**
 
 Notes:
-- Current matrix contents cover cases `001`-`021`.
+- Current matrix contents cover cases `001`-`022`.
 - With `021` and `016` included, D1, D2, and D7 each have three cases; D3-D6 and D8-D9 each have two.
