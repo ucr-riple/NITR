@@ -39,8 +39,8 @@ def main() -> int:
         case_root = repo_root / "cases" / "022.thermostat-sensor-decoupling"
 
     src_root = case_root / "src"
-    sensor_header_path = src_root / "tmp26_sensor.h"
     sensor_source_path = src_root / "tmp26_sensor.cc"
+    app_main_path = case_root / "app" / "main.cc"
 
     core_files = sorted(
         path
@@ -51,11 +51,18 @@ def main() -> int:
 
     core_text_by_file: dict[Path, str] = {path: read_text(path) for path in core_files}
     sensor_source_text = read_text(sensor_source_path)
+    app_main_text = read_text(app_main_path)
 
     if not core_files or any(not text for text in core_text_by_file.values()):
         print(
             "Structural check failed: could not read all core source files under "
             f"{src_root}."
+        )
+        return 1
+    if not app_main_text:
+        print(
+            "Structural check failed: could not read app entrypoint at "
+            f"{app_main_path}."
         )
         return 1
 
@@ -86,6 +93,22 @@ def main() -> int:
     if 'std::getenv("TMP26_SIMULATOR_TEMP")' not in sensor_source_text:
         failures.append(
             "src/tmp26_sensor.cc must keep the starter simulator backdoor behavior."
+        )
+
+    scanned_main_text = strip_comments_and_strings(app_main_text)
+    has_no_arg_evaluate_call = re.search(r"\.\s*Evaluate\s*\(\s*\)", scanned_main_text)
+    has_arg_evaluate_call = re.search(r"\.\s*Evaluate\s*\(\s*[^)\s]", scanned_main_text)
+
+    if not has_no_arg_evaluate_call:
+        failures.append(
+            "app/main.cc must call ThermostatController::Evaluate() without "
+            "passing current temperature manually."
+        )
+
+    if has_arg_evaluate_call:
+        failures.append(
+            "app/main.cc should not call ThermostatController::Evaluate(...) "
+            "with manual temperature arguments."
         )
 
     if failures:

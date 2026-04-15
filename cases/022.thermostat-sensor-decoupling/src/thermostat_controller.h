@@ -15,10 +15,11 @@ class ThermostatController {
   explicit ThermostatController(float target_temperature);
 
   Command Evaluate(float current_temperature) const;
+  Command Evaluate() const;
   float target_temperature() const;
 
  private:
   float target_temperature_;
 };
 
-}
+}  // namespace nitr::case022

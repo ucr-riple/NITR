@@ -12,4 +12,4 @@ float Tmp26Sensor::ReadTemperature() const {
   return 22.5f;
 }
 
-}
+}  // namespace nitr::case022

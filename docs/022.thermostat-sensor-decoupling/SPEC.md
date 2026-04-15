@@ -26,7 +26,7 @@ Starter code provides:
 - `app/main.cc` entrypoint
 - evaluator tests and a structural dependency check
 
-Initial state compiles and tests run, but the controller is not yet wired through a no-argument sensor based evaluate path.
+Initial state compiles and tests fail because the controller is not yet wired through a no-argument sensor based evaluate path.
 
 ## Agent-Facing Contract (This Text Must Match TASK.md)
 
@@ -36,9 +36,7 @@ The `ThermostatController` currently requires the current room temperature to be
 passed into its evaluation function manually. We need to automate this by
 hooking it up to our new hardware sensor.
 
-Update the code so that the thermostat reads the current
-room temperature using the newly added `Tmp26Sensor` and the current temperature
-no longer needs to be passed into the evaluation function manually.
+Update the code so that the thermostat controller can be connected to a temperature source, so callers no longer need to read the sensor and pass the value manually.
 
 ### Requirements
 
@@ -56,7 +54,7 @@ no longer needs to be passed into the evaluation function manually.
 - You may modify or add new files under `cases/022.thermostat-sensor-decoupling/src/`
   and `cases/022.thermostat-sensor-decoupling/app/`.
 - If you modify `src/tmp26_sensor.cc`, preserve the `TMP26_SIMULATOR_TEMP` behavior.
-- The project must continue to compile, and all existing tests must still pass
+- The project must compile, and all existing tests must pass
   after the change.
 
 ## Expected Design Direction (Human-Facing)
@@ -111,10 +109,12 @@ The evaluator penalizes:
 - thermostat core API/fields expose an abstraction seam (interface/callable/provider), not a hardware sensor type
 - `Tmp26Sensor` wiring is allowed in composition code (for example `app/main.cc`) and rejected in thermostat core files
 - `tmp26_sensor.cc` preserves `TMP26_SIMULATOR_TEMP` simulation behavior for deterministic evaluator execution
+- `Evaluate()` with no arguments is present and called by the app harness
 
 ## Common Failure Modes (Non-Scoring)
 - including `tmp26_sensor.h` in `thermostat_controller.cc` or `.h`
 - instantiating `Tmp26Sensor` directly inside controller methods
+- `Evaluate()` with arguments is not called by the app harness
 - editing evaluator tests or checks instead of fixing architecture
 - deleting the `TMP26_SIMULATOR_TEMP` sensor simulation behavior
 

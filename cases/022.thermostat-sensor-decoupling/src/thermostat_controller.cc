@@ -20,4 +20,4 @@ float ThermostatController::target_temperature() const {
   return target_temperature_;
 }
 
-}
+}  // namespace nitr::case022

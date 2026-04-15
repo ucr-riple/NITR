@@ -7,4 +7,4 @@ class Tmp26Sensor {
   float ReadTemperature() const;
 };
 
-}
+}  // namespace nitr::case022
