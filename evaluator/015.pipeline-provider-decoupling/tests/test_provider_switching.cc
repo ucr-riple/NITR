@@ -17,9 +17,9 @@ int main() {
   const auto static_output = static_pipeline.runner.Run(case015_test::SampleEvents());
   const auto file_output = file_pipeline.runner.Run(case015_test::SampleEvents());
 
-  if (static_output != file_output) {
+  if (static_output == file_output) {
     return case015_test::Fail(
-        "Starter skeleton should keep static/file outputs identical before enrichment is wired.");
+        "Policy source selection should be configuration-driven once enrichment is enabled.");
   }
   return 0;
 }
