@@ -5,6 +5,8 @@
 
 namespace nitr::case008 {
 
+void RegisterBuiltinLayerProviders();
+
 class GeometryProvider final : public ILayerProvider {
  public:
   std::string Name() const override {

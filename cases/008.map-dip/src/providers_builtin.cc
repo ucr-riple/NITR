@@ -1,8 +1,35 @@
 #include "providers_builtin.h"
 
 #include <cctype>
+#include <memory>
+
+#include <nlohmann/json.hpp>
 
 namespace nitr::case008 {
+
+namespace {
+
+std::unique_ptr<ILayerProvider> CreateGeometryProvider(const nlohmann::json&) {
+  return std::make_unique<GeometryProvider>();
+}
+
+std::unique_ptr<ILayerProvider> CreateSemanticsProvider(const nlohmann::json&) {
+  return std::make_unique<SemanticsProvider>();
+}
+
+struct BuiltinProviderRegistration {
+  BuiltinProviderRegistration() {
+    GlobalLayerRegistry().Register("geometry", &CreateGeometryProvider);
+    GlobalLayerRegistry().Register("semantics", &CreateSemanticsProvider);
+  }
+};
+
+}  // namespace
+
+void RegisterBuiltinLayerProviders() {
+  static const BuiltinProviderRegistration kBuiltinProviderRegistration{};
+  (void)kBuiltinProviderRegistration;
+}
 
 std::string GeometryProvider::BuildLayer(const std::string& payload) const {
   // Toy "geometry": count alnum chars.
