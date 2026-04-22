@@ -6,9 +6,9 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[3] / "cases" / pathlib.Path(__file__).resolve().parents[1].name
 
 EXPECTED_HASHES = {
-    "src/feature_transform.h": "734fc0b02283ef4791fbfcdca6a7761c21c4f2dd789946998b0a6512c1abe89e",
-    "src/feature_pipeline.h": "fafe534b6dab223d85157edbdf4a18a5816fac5f2563e9a25e19c75a1aa93854",
-    "src/feature_pipeline.cc": "0739501a6f87972d5b8d3647bd052f592ad715858521a751aef0f689b67ace76",
+    "src/feature_transform.h": "73f6067d946fafff153d1ff9fc72f10bd6f7934efbe0fc0ee90ef4213dea4570",
+    "src/feature_pipeline.h": "095c9b09d68ccb459ee2a667cf10073f5b69fe8e22457eaa7105b7f7cefefa41",
+    "src/feature_pipeline.cc": "458fc454940fe878a1c761f73c6074fbd6d3458af4f97c55f63656e8817aec87",
 }
 
 REQUIRED_FILES = [
