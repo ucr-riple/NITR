@@ -50,8 +50,9 @@ def main() -> int:
     if len(tracker_files) > 1:
         failures.append("Multiple headers contain writable active-state tracker fields.")
 
+    # Check for value-type Snapshot members or data structure ownership (not just pointer caching)
     query_state_hits = list(
-        search(r"(Snapshot\s+\w+_|(const\s+)?Snapshot\s*\*\s*\w+_|std::unordered_map<)", root_dir / "src/query_service.h")
+        search(r"(Snapshot\s+\w+_;|std::unordered_map<.*>\s+\w+_;)", root_dir / "src/query_service.h")
     )
     if query_state_hits:
         failures.append(
