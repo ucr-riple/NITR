@@ -24,10 +24,11 @@ Starter code provides:
 - `src/stats.h` / `.cc` with global counter: `int total_processed` 
 - `src/grader.h` / `.cc` with grading logic (does not touch stats)
 - `src/reporter.h` / `.cc` that reads `total_processed` for summary 
+- `src/validator.h` / `.cc` with a stubbed `Validator::validate` implementation
 - `app/main.cc` entrypoint
 - evaluator tests and a structural side-effect check
 
-Initial state does not compile because `Validator` has not been implemented yet.
+Initial state compiles, but tests fail because `Validator::validate` is currently a stub.
 
 ## Agent-Facing Contract (This Text Must Match TASK.md)
 
@@ -35,7 +36,7 @@ Initial state does not compile because `Validator` has not been implemented yet.
 
 The grading app needs a new `Validator` class that checks whether a submission is eligible for grading.
 
-Add a `Validator` class with a method named `validate` that accepts a `Submission` and returns `true` if the submission is eligible and `false` otherwise.
+Complete the existing `Validator` class by implementing a method named `validate` that accepts a `Submission` and returns `true` if the submission is eligible and `false` otherwise.
 
 ### Requirements
 

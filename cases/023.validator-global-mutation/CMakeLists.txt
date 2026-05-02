@@ -9,6 +9,7 @@ add_library(case023_lib
     src/grader.cc
     src/reporter.cc
     src/stats.cc
+    src/validator.cc
 )
 target_include_directories(case023_lib PUBLIC src)
 

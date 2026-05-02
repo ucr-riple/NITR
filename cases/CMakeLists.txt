@@ -36,6 +36,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(020.handover-packet-ownership-boundary)
   nitr_add_case(021.inline-filter-entrypoint-reuse)
   nitr_add_case(022.thermostat-sensor-decoupling)
+  nitr_add_case(023.validator-global-mutation)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR

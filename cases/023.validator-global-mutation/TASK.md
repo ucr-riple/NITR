@@ -2,7 +2,7 @@
 
 The grading app needs a new `Validator` class that checks whether a submission is eligible for grading.
 
-Add a `Validator` class with a method named `validate` that accepts a `Submission` and returns `true` if the submission is eligible and `false` otherwise.
+Complete the existing `Validator` class by implementing a method named `validate` that accepts a `Submission` and returns `true` if the submission is eligible and `false` otherwise.
 
 ### Requirements
 
