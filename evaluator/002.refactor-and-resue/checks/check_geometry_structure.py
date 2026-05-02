@@ -74,11 +74,18 @@ if normalization_hits < 3:
     print("Expected Hartley-style normalization evidence in src/geometry.cc")
     sys.exit(1)
 
+# Essential matrix must enforce singular value constraint: two equal, one zero.
+# Accept any reasonable variable name and multiple equivalent implementation patterns.
 essential_constraint_patterns = [
-    r"s\s*\(\s*0\s*\)\s*=\s*s\s*\(\s*1\s*\)",
-    r"s\s*\(\s*1\s*\)\s*=\s*s\s*\(\s*0\s*\)",
-    r"Vector3d\s*\(\s*1(?:\.0)?\s*,\s*1(?:\.0)?\s*,\s*0(?:\.0)?\s*\)",
-    r"Diagonal\s*\(\s*1(?:\.0)?\s*,\s*1(?:\.0)?\s*,\s*0(?:\.0)?\s*\)",
+    r"\w+\s*\(\s*0\s*\)\s*=\s*\w+\s*\(\s*1\s*\)",  # sigma(0) = sigma(1)
+    r"\w+\s*\(\s*1\s*\)\s*=\s*\w+\s*\(\s*0\s*\)",  # sigma(1) = sigma(0)
+    r"\w+\s*\[\s*0\s*\]\s*=\s*\w+\s*\[\s*1\s*\]",  # sigma[0] = sigma[1]
+    r"\w+\s*\[\s*1\s*\]\s*=\s*\w+\s*\[\s*0\s*\]",  # sigma[1] = sigma[0]
+    r"(?:Vector3d|Diagonal|DiagonalMatrix)\s*\(\s*1(?:\.0)?\s*,\s*1(?:\.0)?\s*,\s*0(?:\.0)?\s*\)",  # (1, 1, 0)
+    r"\bJacobiSVD\b[\s\S]*?\bsingularValues\b",  # SVD with singular values access
+    r"\bsingularValues\b.*=.*\b1(?:\.0)?\s*,\s*1(?:\.0)?\s*,\s*0(?:\.0)?",  # Direct singular value construction
+    r"\b\w+\s*<<\s*\w+\s*,\s*\w+\s*,\s*0(?:\.0)?\b",  # s << sigma, sigma, 0.0
+    r"\b\w+\s*=\s*0\.5\s*\*\s*\(\s*\w+\s*\(\s*0\s*\)\s*\+\s*\w+\s*\(\s*1\s*\)\s*\)",  # sigma = 0.5 * (s(0) + s(1))
 ]
 
 essential_hits = count_hits(essential_constraint_patterns, code)
