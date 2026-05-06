@@ -34,7 +34,7 @@ Initial state compiles, but tests fail because `RecentSearches::CountByCategory`
 
 ### Task
 
-The data needs a per-category count of recent searches. Complete the existing `RecentSearches` class by implementing a method named `CountByCategory` that accepts a category and returns how many entries in recent-searches belong to that category.
+An analytics team needs a per-category count of recent searches. Complete the existing `RecentSearches` class by implementing a method named `CountByCategory` that accepts a category and returns how many entries in recent-searches belong to that category.
 
 Recent search entries are stored as category-prefixed strings in the format `"<category>:<term>"`. For example, `"book:harry potter"` belongs to the `"book"` category and `"video:NCAA water polo final"` belongs to the `"video"` category.
 
