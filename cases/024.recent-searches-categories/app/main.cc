@@ -1,0 +1,36 @@
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "recent_searches.h"
+#include "reporter.h"
+#include "search.h"
+
+int main() {
+    using namespace nitr::case024;
+
+    RecentSearches recent;
+    Search search(recent);
+
+    const std::vector<std::pair<std::string, std::string>> search_strings = {
+        {"book", "harry potter"},
+        {"video", "cooking"},
+        {"book", "lord of the rings"},
+        {"image", "sunset"},
+    };
+
+    for (const std::pair<std::string, std::string>& search_string : search_strings) {
+        std::cout << search.Item(search_string.first, search_string.second) << '\n';
+    }
+
+    Reporter reporter(recent);
+    std::cout << reporter.Summary() << '\n';
+
+    const std::vector<std::string> categories = {"book", "video", "image"};
+    for (const std::string& category : categories) {
+        std::cout << category << ": " << recent.CountByCategory(category)<< " recent\n";
+    }
+
+    return 0;
+}

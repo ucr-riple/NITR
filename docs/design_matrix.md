@@ -224,7 +224,7 @@ Notes:
 | 020 handover-packet-ownership-boundary | D3 Responsibility Decomposition | micro |
 | 021 inline-filter-entrypoint-reuse | D2 Reuse and Repo Awareness | micro |
 | 022 thermostat-sensor-decoupling | D6 Dependency Control | micro |
-
+| 024 recent-searches-categories| D3 Responsibility Decomposition | micro |
 ---
 
 ## Coverage snapshot
