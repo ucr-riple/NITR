@@ -48,12 +48,16 @@ Current cases:
 - `002 refactor-and-reuse`
 - `003 reuse-exising-code`
 - `021 inline-filter-entrypoint-reuse` (**micro**)
+- `024 reuse-parameter-sweep` (**micro**)
 
-Current count: **3**
+Current count: **4**
 
 Notes:
-- `021` is the D2 micro case that completes the previously missing D2 coverage slot.
-- Its pressure point is convergence into the repository's existing structured parse/validate path rather than introducing a shadow inline parser.
+- `021` is the D2 micro case focused on routing through an existing entrypoint rather
+  than creating a shadow inline implementation.
+- `024` is a second D2 micro case targeting pattern conformance: the model must recognise
+  and mirror the established sweep structure (iteration order, result layout, aggregate
+  helper calls) rather than reimplementing trial execution or aggregation inline.
 
 ---
 
@@ -224,6 +228,7 @@ Notes:
 | 020 handover-packet-ownership-boundary | D3 Responsibility Decomposition | micro |
 | 021 inline-filter-entrypoint-reuse | D2 Reuse and Repo Awareness | micro |
 | 022 thermostat-sensor-decoupling | D6 Dependency Control | micro |
+| 024 reuse-parameter-sweep | D2 Reuse and Repo Awareness | micro |
 
 ---
 
@@ -232,7 +237,7 @@ Notes:
 | Dimension | Count |
 |---|---:|
 | D1 Change Locality | 3 |
-| D2 Reuse and Repo Awareness | 3 |
+| D2 Reuse and Repo Awareness | 4 |
 | D3 Responsibility Decomposition | 2 |
 | D4 Extension Structure | 2 |
 | D5 Interface and Substitutability Discipline | 2 |
@@ -241,8 +246,8 @@ Notes:
 | D8 State Ownership and Lifecycle | 2 |
 | D9 Side-Effect Isolation | 2 |
 
-Total cases recorded: **22**
+Total cases recorded: **23**
 
 Notes:
-- Current matrix contents cover cases `001`-`022`.
+- Current matrix contents cover cases `001`-`022` and `024` (case `023` pending matrix entry).
 - With `021` and `016` included, D1, D2, and D7 each have three cases; D3-D6 and D8-D9 each have two.
