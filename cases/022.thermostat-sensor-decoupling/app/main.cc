@@ -19,7 +19,7 @@ const char* toString(nitr::case022::ThermostatController::Command command) {
   return "Unknown";
 }
 
-}
+}  // namespace
 
 int main(int argc, char** argv) {
   if (argc < 2) {

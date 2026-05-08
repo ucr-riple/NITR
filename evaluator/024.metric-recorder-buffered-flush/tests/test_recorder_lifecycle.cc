@@ -49,7 +49,8 @@ TEST(BufferedMetricRecorderTest, FlushesWhenCapacityIsReached) {
 
   recorder.Record({"a", 1.0});
   recorder.Record({"b", 2.0});
-  EXPECT_TRUE(out.str().empty()) << "Buffer should still hold first two metrics.";
+  EXPECT_TRUE(out.str().empty())
+      << "Buffer should still hold first two metrics.";
 
   recorder.Record({"c", 3.0});
   const std::string output = out.str();
@@ -110,7 +111,8 @@ TEST(MetricCollectorTest, CheckpointIsHarmlessForImmediateRecorder) {
   collector.Collect({4.0, 5.0});
   const std::string before_checkpoint = out.str();
   EXPECT_FALSE(before_checkpoint.empty())
-      << "Console recorder should already have published metrics during Collect.";
+      << "Console recorder should already have published metrics during "
+         "Collect.";
 
   // Checkpoint on an immediate-write recorder must be safe and idempotent.
   // It should not throw, must not corrupt prior output, and need not add

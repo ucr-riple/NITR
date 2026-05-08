@@ -54,20 +54,21 @@ std::vector<Candidate> ActivePool(const std::vector<Candidate>& candidates) {
   return !primary.empty() ? primary : fallback;
 }
 
-std::vector<std::string> ReferenceReplay(const std::vector<Candidate>& candidates,
-                                         std::size_t k,
-                                         std::uint64_t seed) {
+std::vector<std::string> ReferenceReplay(
+    const std::vector<Candidate>& candidates, std::size_t k,
+    std::uint64_t seed) {
   std::vector<Candidate> pool = ActivePool(candidates);
   if (pool.empty() || k == 0U) {
     return {};
   }
 
-  std::sort(pool.begin(), pool.end(), [](const Candidate& a, const Candidate& b) {
-    if (a.score != b.score) {
-      return a.score > b.score;
-    }
-    return a.id < b.id;
-  });
+  std::sort(pool.begin(), pool.end(),
+            [](const Candidate& a, const Candidate& b) {
+              if (a.score != b.score) {
+                return a.score > b.score;
+              }
+              return a.id < b.id;
+            });
 
   RefSamplerV1 sampler(seed);
   std::vector<Candidate> arranged;
@@ -100,7 +101,8 @@ std::vector<std::string> ReferenceReplay(const std::vector<Candidate>& candidate
   return out;
 }
 
-std::unordered_map<std::string, Candidate> AsMap(const std::vector<Candidate>& candidates) {
+std::unordered_map<std::string, Candidate> AsMap(
+    const std::vector<Candidate>& candidates) {
   std::unordered_map<std::string, Candidate> m;
   for (const Candidate& c : candidates) {
     m[c.id] = c;
@@ -129,7 +131,8 @@ void AssertPolicyInvariants(const std::vector<Candidate>& candidates,
     Assert(it != by_id.end(), "Output contains unknown candidate id");
     const Candidate& c = it->second;
     Assert(c.eligible, "Output contains ineligible candidate");
-    Assert(c.is_fallback == pool_is_fallback, "Output violates fallback precedence");
+    Assert(c.is_fallback == pool_is_fallback,
+           "Output violates fallback precedence");
     Assert(seen.insert(id).second, "Output contains duplicate id");
     Assert(c.score <= prev_score, "Output violates score-priority invariant");
     prev_score = c.score;
@@ -138,44 +141,48 @@ void AssertPolicyInvariants(const std::vector<Candidate>& candidates,
 
 std::vector<Candidate> FixtureCore() {
   return {
-      {"a1", 100, true, false},
-      {"a2", 100, true, false},
-      {"a3", 100, true, false},
-      {"b1", 90, true, false},
-      {"b2", 90, true, false},
-      {"c1", 80, true, false},
-      {"fb1", 70, true, true},
-      {"blocked", 120, false, false},
+      {"a1", 100, true, false}, {"a2", 100, true, false},
+      {"a3", 100, true, false}, {"b1", 90, true, false},
+      {"b2", 90, true, false},  {"c1", 80, true, false},
+      {"fb1", 70, true, true},  {"blocked", 120, false, false},
   };
 }
 
 void TestReplayExactSingle() {
   const std::vector<Candidate> fixture = FixtureCore();
   const auto expected = ReferenceReplay(fixture, 1U, 42U);
-  const auto actual = nitr::case018::SelectRecommendationsReplay(fixture, 1U, 42U);
-  Assert(actual == expected, "Replay single-pick output mismatch vs SamplerV1 contract");
+  const auto actual =
+      nitr::case018::SelectRecommendationsReplay(fixture, 1U, 42U);
+  Assert(actual == expected,
+         "Replay single-pick output mismatch vs SamplerV1 contract");
 }
 
 void TestReplayExactMulti() {
   const std::vector<Candidate> fixture = FixtureCore();
   const auto expected = ReferenceReplay(fixture, 4U, 4242U);
-  const auto actual = nitr::case018::SelectRecommendationsReplay(fixture, 4U, 4242U);
-  Assert(actual == expected, "Replay multi-pick output mismatch vs SamplerV1 contract");
+  const auto actual =
+      nitr::case018::SelectRecommendationsReplay(fixture, 4U, 4242U);
+  Assert(actual == expected,
+         "Replay multi-pick output mismatch vs SamplerV1 contract");
 }
 
 void TestReplayDeterminismRepeat() {
   const std::vector<Candidate> fixture = FixtureCore();
-  const auto baseline = nitr::case018::SelectRecommendationsReplay(fixture, 5U, 9U);
+  const auto baseline =
+      nitr::case018::SelectRecommendationsReplay(fixture, 5U, 9U);
   for (int i = 0; i < 10; ++i) {
-    const auto next = nitr::case018::SelectRecommendationsReplay(fixture, 5U, 9U);
-    Assert(next == baseline, "Replay output changed across repeated calls with same seed");
+    const auto next =
+        nitr::case018::SelectRecommendationsReplay(fixture, 5U, 9U);
+    Assert(next == baseline,
+           "Replay output changed across repeated calls with same seed");
   }
 }
 
 void TestReplayKGreaterThanPool() {
   const std::vector<Candidate> fixture = FixtureCore();
   const auto expected = ReferenceReplay(fixture, 100U, 7U);
-  const auto actual = nitr::case018::SelectRecommendationsReplay(fixture, 100U, 7U);
+  const auto actual =
+      nitr::case018::SelectRecommendationsReplay(fixture, 100U, 7U);
   Assert(actual == expected, "Replay k>pool behavior mismatch");
 }
 
@@ -185,7 +192,8 @@ void TestFallbackAndEmpty() {
       {"fb1", 30, true, true},
       {"fb2", 20, true, true},
   };
-  const auto out_fb = nitr::case018::SelectRecommendationsReplay(fallback_only, 2U, 5U);
+  const auto out_fb =
+      nitr::case018::SelectRecommendationsReplay(fallback_only, 2U, 5U);
   const auto exp_fb = ReferenceReplay(fallback_only, 2U, 5U);
   Assert(out_fb == exp_fb, "Fallback replay output mismatch");
 
@@ -193,8 +201,10 @@ void TestFallbackAndEmpty() {
       {"p1", 100, false, false},
       {"fb1", 30, false, true},
   };
-  const auto out_empty = nitr::case018::SelectRecommendationsReplay(empty, 3U, 1U);
-  Assert(out_empty.empty(), "Replay should return empty when no eligible candidates");
+  const auto out_empty =
+      nitr::case018::SelectRecommendationsReplay(empty, 3U, 1U);
+  Assert(out_empty.empty(),
+         "Replay should return empty when no eligible candidates");
 }
 
 void TestDefaultPolicyInvariants() {
@@ -210,15 +220,19 @@ void TestPolicyEquivalenceUnderSameSampler() {
   nitr::case018::SamplerV1 sampler(12345U);
   const auto with_sampler =
       nitr::case018::SelectRecommendationsWithSampler(fixture, 6U, sampler);
-  const auto replay = nitr::case018::SelectRecommendationsReplay(fixture, 6U, 12345U);
-  Assert(with_sampler == replay,
-         "Replay path diverges from explicit-sampler path under same seed/stream");
+  const auto replay =
+      nitr::case018::SelectRecommendationsReplay(fixture, 6U, 12345U);
+  Assert(
+      with_sampler == replay,
+      "Replay path diverges from explicit-sampler path under same seed/stream");
 }
 
 void TestSeedChangeOnlyAffectsRandomAspect() {
   const std::vector<Candidate> fixture = FixtureCore();
-  const auto out_a = nitr::case018::SelectRecommendationsReplay(fixture, 5U, 11U);
-  const auto out_b = nitr::case018::SelectRecommendationsReplay(fixture, 5U, 12U);
+  const auto out_a =
+      nitr::case018::SelectRecommendationsReplay(fixture, 5U, 11U);
+  const auto out_b =
+      nitr::case018::SelectRecommendationsReplay(fixture, 5U, 12U);
   AssertPolicyInvariants(fixture, 5U, out_a);
   AssertPolicyInvariants(fixture, 5U, out_b);
 }
@@ -233,8 +247,10 @@ int main() {
       {"ReplayKGreaterThanPool", TestReplayKGreaterThanPool},
       {"FallbackAndEmpty", TestFallbackAndEmpty},
       {"DefaultPolicyInvariants", TestDefaultPolicyInvariants},
-      {"PolicyEquivalenceUnderSameSampler", TestPolicyEquivalenceUnderSameSampler},
-      {"SeedChangeOnlyAffectsRandomAspect", TestSeedChangeOnlyAffectsRandomAspect},
+      {"PolicyEquivalenceUnderSameSampler",
+       TestPolicyEquivalenceUnderSameSampler},
+      {"SeedChangeOnlyAffectsRandomAspect",
+       TestSeedChangeOnlyAffectsRandomAspect},
   };
 
   int failed = 0;

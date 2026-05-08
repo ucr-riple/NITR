@@ -54,8 +54,7 @@ void ExpectVectorEq(const std::vector<float>& actual,
 }
 
 void CheckTransformContract(const std::string& name) {
-  nitr::case007::FeaturePipeline pipeline(
-      nitr::case007::MakeTransform(name));
+  nitr::case007::FeaturePipeline pipeline(nitr::case007::MakeTransform(name));
 
   {
     const std::vector<float> input{2.0F, -4.0F, 0.5F};
@@ -115,12 +114,12 @@ void CheckBatchPathForClamp() {
 
 void CheckBatchPathForL2() {
   nitr::case007::L2NormalizeTransform transform;
-  const std::vector<std::vector<float>> batch{{3.0F, 4.0F}, {0.0F, 0.0F}, {1.0F}};
+  const std::vector<std::vector<float>> batch{
+      {3.0F, 4.0F}, {0.0F, 0.0F}, {1.0F}};
   const std::vector<std::vector<float>> output =
       nitr::case007::TransformBatch(transform, batch);
   Expect(output.size() == batch.size(), "l2 batch outer size mismatch");
-  ExpectVectorEq(output[0], std::vector<float>({0.6F, 0.8F}),
-                 "l2 batch first");
+  ExpectVectorEq(output[0], std::vector<float>({0.6F, 0.8F}), "l2 batch first");
   ExpectVectorEq(output[1], std::vector<float>({0.0F, 0.0F}),
                  "l2 batch second");
   ExpectVectorEq(output[2], std::vector<float>({1.0F}), "l2 batch third");
@@ -130,8 +129,8 @@ void CheckTransformChainWithSingleStep() {
   nitr::case007::TransformChain chain;
   chain.AddStep(std::make_unique<nitr::case007::ClampTransform>());
   const std::vector<float> input{-3.0F, 0.2F, 5.0F};
-  ExpectVectorEq(chain.Transform(input), std::vector<float>({-1.0F, 0.2F, 1.0F}),
-                 "chain single step");
+  ExpectVectorEq(chain.Transform(input),
+                 std::vector<float>({-1.0F, 0.2F, 1.0F}), "chain single step");
 }
 
 void CheckTransformChainOrder() {
@@ -140,8 +139,7 @@ void CheckTransformChainOrder() {
   chain.AddStep(std::make_unique<nitr::case007::L2NormalizeTransform>());
   const float inv_norm = 1.0F / std::sqrt(2.0F);
   ExpectVectorEq(chain.Transform(std::vector<float>({-3.0F, 4.0F})),
-                 std::vector<float>({-inv_norm, inv_norm}),
-                 "chain order");
+                 std::vector<float>({-inv_norm, inv_norm}), "chain order");
 }
 
 void CheckTransformChainWorksAsFeatureTransform() {
@@ -150,8 +148,7 @@ void CheckTransformChainWorksAsFeatureTransform() {
   chain->AddStep(std::make_unique<nitr::case007::IdentityTransform>());
   nitr::case007::FeaturePipeline pipeline(std::move(chain));
   ExpectVectorEq(pipeline.Run(std::vector<float>({-2.0F, 3.0F})),
-                 std::vector<float>({-1.0F, 1.0F}),
-                 "chain as transform");
+                 std::vector<float>({-1.0F, 1.0F}), "chain as transform");
 }
 
 }  // namespace

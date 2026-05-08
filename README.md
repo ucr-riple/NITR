@@ -81,6 +81,19 @@ Configure all cases:
 cmake -S . -B build
 ```
 
+Run the repository-wide C++ formatting check:
+
+```bash
+cmake -S . -B build
+ctest --test-dir build -R format
+```
+
+Apply `clang-format` to tracked C/C++ files:
+
+```bash
+tools/format.sh
+```
+
 Configure one case plus its evaluator:
 
 ```bash

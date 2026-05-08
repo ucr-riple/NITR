@@ -13,8 +13,9 @@ TEST(ThermostatControllerTest, ReturnsConfiguredTargetTemperature) {
 
 TEST(ThermostatControllerTest, SupportsNoArgumentEvaluateOverload) {
   using Controller = nitr::case022::ThermostatController;
-  static_assert(std::is_same_v<decltype(std::declval<const Controller&>().Evaluate()),
-                               Controller::Command>);
+  static_assert(
+      std::is_same_v<decltype(std::declval<const Controller&>().Evaluate()),
+                     Controller::Command>);
 }
 
 TEST(ThermostatControllerTest, HeatsAtOrBelowLowerThreshold) {

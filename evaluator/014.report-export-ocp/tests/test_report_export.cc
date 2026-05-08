@@ -7,12 +7,12 @@
 
 namespace {
 
-bool ExpectEq(const std::string& actual,
-              const std::string& expected,
+bool ExpectEq(const std::string& actual, const std::string& expected,
               const std::string& label) {
   if (actual != expected) {
     std::cerr << "FAILED: " << label << "\nExpected:\n"
-              << expected << "\nActual:\n" << actual << "\n";
+              << expected << "\nActual:\n"
+              << actual << "\n";
     return false;
   }
   return true;
@@ -37,19 +37,23 @@ int main() {
 
   ok = ExpectEq(service.ExportReport(report, "text"),
                 "Quarterly Metrics\nName, Value\nLatency, 120ms\nErrors, 3\n",
-                "text export") && ok;
+                "text export") &&
+       ok;
 
   ok = ExpectEq(service.ExportReport(report, "csv"),
-                "Name,Value\nLatency,120ms\nErrors,3\n",
-                "csv export") && ok;
+                "Name,Value\nLatency,120ms\nErrors,3\n", "csv export") &&
+       ok;
 
   try {
     const std::string markdown = service.ExportReport(report, "markdown");
     ok = ExpectEq(markdown,
-                  "# Quarterly Metrics\n\n| Name | Value |\n| --- | --- |\n| Latency | 120ms |\n| Errors | 3 |\n",
-                  "markdown export") && ok;
+                  "# Quarterly Metrics\n\n| Name | Value |\n| --- | --- |\n| "
+                  "Latency | 120ms |\n| Errors | 3 |\n",
+                  "markdown export") &&
+         ok;
   } catch (const std::exception& ex) {
-    std::cerr << "FAILED: markdown export threw exception: " << ex.what() << "\n";
+    std::cerr << "FAILED: markdown export threw exception: " << ex.what()
+              << "\n";
     ok = false;
   }
 
