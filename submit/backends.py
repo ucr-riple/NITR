@@ -471,6 +471,7 @@ Then return only one JSON object with this exact shape:
 }}
 Include both modified AND newly created files.
 Use project-relative file paths.
+Do not prefix paths with "cases/<case-slug>/"; paths must be relative to this case root.
 Do not include explanations, markdown fences, or any text outside the JSON object.
 Do not return partial patches or diffs.
 Focus only on the implementation requested in {task_file}."""
@@ -688,6 +689,7 @@ def run_gemini_cli(args):
     }}
     Include only the files you changed.
     Use project-relative file paths.
+    Do not prefix paths with "cases/<case-slug>/"; paths must be relative to this case root.
     Do not include explanations, markdown fences, or any text outside the JSON object.
     Do not return partial patches or diffs.
     """

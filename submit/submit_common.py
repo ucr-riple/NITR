@@ -232,6 +232,7 @@ def build_json_patch_prompt(project_context, task_file):
     }}
     Include only the files you changed.
     Use project-relative file paths.
+    Do not prefix paths with "cases/<case-slug>/"; paths must be relative to this case root.
     Do not include explanations, markdown fences, or any text outside the JSON object.
     Do not return partial patches or diffs.
     Focus only on the implementation requested in {task_file}.
