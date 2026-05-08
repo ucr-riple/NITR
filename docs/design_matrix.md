@@ -110,12 +110,16 @@ Typical failures:
 Current cases:
 - `006 gs-isp` (**micro**)
 - `007 ml-lsp` (**upgraded to multi-step**)
+- `024 metric-recorder-buffered-flush` (**micro**)
 
-Current count: **2**
+Current count: **3**
 
 Notes:
 - `006` remains a micro probe.
 - `007` is the D5 multi-step case.
+- `024` is a second D5 micro covering interface evolution: extending an
+  existing abstract base to admit a new implementation while keeping the
+  existing implementation substitutable through the same reference.
 
 ---
 
@@ -224,6 +228,7 @@ Notes:
 | 020 handover-packet-ownership-boundary | D3 Responsibility Decomposition | micro |
 | 021 inline-filter-entrypoint-reuse | D2 Reuse and Repo Awareness | micro |
 | 022 thermostat-sensor-decoupling | D6 Dependency Control | micro |
+| 024 metric-recorder-buffered-flush | D5 Interface and Substitutability Discipline | micro |
 
 ---
 
@@ -235,14 +240,15 @@ Notes:
 | D2 Reuse and Repo Awareness | 3 |
 | D3 Responsibility Decomposition | 2 |
 | D4 Extension Structure | 2 |
-| D5 Interface and Substitutability Discipline | 2 |
+| D5 Interface and Substitutability Discipline | 3 |
 | D6 Dependency Control | 3 |
 | D7 Testability and Determinism | 3 |
 | D8 State Ownership and Lifecycle | 2 |
 | D9 Side-Effect Isolation | 2 |
 
-Total cases recorded: **22**
+Total cases recorded: **23**
 
 Notes:
-- Current matrix contents cover cases `001`-`022`.
-- With `021` and `016` included, D1, D2, and D7 each have three cases; D3-D6 and D8-D9 each have two.
+- Current matrix contents cover cases `001`-`022` and `024`.
+- (Case `023 validator-global-mutation` is registered separately under D9.)
+- With `021`, `016`, and `024` included, D1, D2, D5, and D7 each have three cases; D3, D4, D8, and D9 each have two.

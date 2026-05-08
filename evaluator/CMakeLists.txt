@@ -376,6 +376,21 @@ function(nitr_register_case_023)
   )
 endfunction()
 
+function(nitr_register_case_024)
+  nitr_case_evaluator_dir(EVAL_DIR 024.metric-recorder-buffered-flush)
+
+  nitr_add_gtest(
+    case024_recorder_lifecycle_tests
+    case024_lib
+    ${EVAL_DIR}/tests/test_recorder_lifecycle.cc
+  )
+
+  add_test(
+    NAME case024_substitutability_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_substitutability.py
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -422,7 +437,9 @@ function(nitr_add_evaluator case_dir)
   elseif(case_dir STREQUAL "022.thermostat-sensor-decoupling")
     nitr_register_case_022()
   elseif(case_dir STREQUAL "023.validator-global-mutation")
-    nitr_register_case_023()  
+    nitr_register_case_023()
+  elseif(case_dir STREQUAL "024.metric-recorder-buffered-flush")
+    nitr_register_case_024()
   endif()
 endfunction()
 
@@ -450,6 +467,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(021.inline-filter-entrypoint-reuse)
   nitr_add_evaluator(022.thermostat-sensor-decoupling)
   nitr_add_evaluator(023.validator-global-mutation)
+  nitr_add_evaluator(024.metric-recorder-buffered-flush)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()
