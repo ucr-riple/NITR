@@ -31,6 +31,10 @@ def include_paths(text: str) -> list[str]:
     return includes
 
 
+def has_any_pattern(patterns: list[str], text: str) -> bool:
+    return any(re.search(pattern, text) for pattern in patterns)
+
+
 def main() -> int:
     if len(sys.argv) > 1:
         case_root = Path(sys.argv[1]).resolve()
@@ -67,6 +71,11 @@ def main() -> int:
         return 1
 
     failures: list[str] = []
+    forbidden_core_coupling_patterns = [
+        r"\bTmp26Sensor\b",
+        r"\bgetenv\s*\(",
+        r"\bTMP26_SIMULATOR_TEMP\b",
+    ]
 
     for path, raw_text in core_text_by_file.items():
         scanned_text = strip_comments_and_strings(raw_text)
@@ -84,10 +93,10 @@ def main() -> int:
                 "include style."
             )
 
-        if re.search(r"\bTmp26Sensor\b", scanned_text):
+        if has_any_pattern(forbidden_core_coupling_patterns, scanned_text):
             failures.append(
-                f"{path.name}: core thermostat logic must not reference a "
-                "hardware sensor types directly."
+                f"{path.name}: core thermostat logic must not reference hardware "
+                "sensor or environment-specific reading hooks directly."
             )
 
     if 'std::getenv("TMP26_SIMULATOR_TEMP")' not in sensor_source_text:
@@ -116,8 +125,9 @@ def main() -> int:
         for failure in failures:
             print(f"- {failure}")
         print(
-            "ThermostatController should depend on an abstract temperature source, "
-            "not a concrete hardware implementation."
+            "ThermostatController should keep policy logic free of hardware and "
+            "environment-specific reading details. Wire concrete sensor access "
+            "outside the core controller files."
         )
         return 1
 

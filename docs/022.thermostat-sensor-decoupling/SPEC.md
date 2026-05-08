@@ -83,6 +83,7 @@ The evaluator rewards:
 The evaluator penalizes:
 - direct include of hardware sensor headers in thermostat core business logic files
 - direct construction/reference of `Tmp26Sensor` in controller code
+- calling `getenv(...)` or referencing `TMP26_SIMULATOR_TEMP` inside thermostat core files
 - removing `TMP26_SIMULATOR_TEMP` behavior from `tmp26_sensor.cc`
 
 ## Evaluation Criteria
@@ -95,7 +96,7 @@ The evaluator penalizes:
 ### Structural
 - enforced by `evaluator/022.thermostat-sensor-decoupling/checks/check_dependency.py`
 - `thermostat_controller.h` / `.cc` must not include `tmp26_sensor.h`
-- thermostat core files must not reference `Tmp26Sensor`
+- thermostat core files must not reference `Tmp26Sensor`, `getenv`, or `TMP26_SIMULATOR_TEMP`
 - `tmp26_sensor.cc` must preserve the `TMP26_SIMULATOR_TEMP` simulator behavior
 
 ### Maintainability
@@ -106,14 +107,28 @@ The evaluator penalizes:
 ## Oracle Signals
 - Python functional tests verify thermostat command outputs via app-level execution
 - structural dependency check catches hardware sensor coupling in core files
-- thermostat core API/fields expose an abstraction seam (interface/callable/provider), not a hardware sensor type
+- policy unit tests stay focused on deterministic threshold behavior through `Evaluate(float)`
 - `Tmp26Sensor` wiring is allowed in composition code (for example `app/main.cc`) and rejected in thermostat core files
+- thermostat core files are rejected if they reference `Tmp26Sensor`, call `getenv(...)`, or use `TMP26_SIMULATOR_TEMP` directly
 - `tmp26_sensor.cc` preserves `TMP26_SIMULATOR_TEMP` simulation behavior for deterministic evaluator execution
 - `Evaluate()` with no arguments is present and called by the app harness
+
+## Test Coverage Strategy
+The visible unit tests verify `Evaluate(float)` logic and confirm that the no-argument `Evaluate()` API exists (compile-time check), but do not verify the no-argument path's runtime behavior in isolation.
+
+This is a deliberate trade-off: verifying the no-argument overload's correctness at the unit level without prescribing a specific dependency injection mechanism would require environment-variable-based tests that could encourage poor design (controller reading globals directly). Instead, the no-argument path's behavioral correctness is verified via functional app-level tests, while structural checks ensure the controller remains decoupled from hardware-specific dependencies.
+
+The test pyramid for this case prioritizes:
+- unit tests for core threshold logic (`Evaluate(float)`)
+- structural checks for dependency boundaries (no `Tmp26Sensor`, `getenv`, or `TMP26_SIMULATOR_TEMP` in core files)
+- functional tests for end-to-end integration (environment → sensor → controller → output)
+
+This approach prevents prescriptive unit tests from reducing implementation flexibility while still ensuring the maintainability dimension (D6 Dependency Control) is properly evaluated.
 
 ## Common Failure Modes (Non-Scoring)
 - including `tmp26_sensor.h` in `thermostat_controller.cc` or `.h`
 - instantiating `Tmp26Sensor` directly inside controller methods
+- calling `getenv(...)` or referencing `TMP26_SIMULATOR_TEMP` directly inside thermostat core files
 - `Evaluate()` with arguments is not called by the app harness
 - editing evaluator tests or checks instead of fixing architecture
 - deleting the `TMP26_SIMULATOR_TEMP` sensor simulation behavior
