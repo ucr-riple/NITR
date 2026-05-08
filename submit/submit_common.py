@@ -81,7 +81,7 @@ def list_case_task_files(case_dir, granularity):
 def collect_project_data(project_dir, task_file):
     """Collect the source context that should be shown to the model for one task."""
     context = []
-    valid_exts = (".cpp", ".h", ".hpp", ".cmake", ".cu", ".txt")
+    valid_exts = (".cpp", ".h", ".cc", ".hpp", ".cmake", ".cu", ".txt")
     ignore_dirs = {"build", ".git", "bin", "obj"}
     selected_task_relpath = os.path.normpath(task_file)
 
