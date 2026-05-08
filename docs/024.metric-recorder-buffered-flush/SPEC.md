@@ -83,8 +83,8 @@ implementation is wired in.
 
 ### Constraints
 
-- Do not modify files under `evaluator/024.metric-recorder-buffered-flush/`.
-- You may add new files under `cases/024.metric-recorder-buffered-flush/src/`.
+- Do not modify files under `evaluator`.
+- You may add new files under `src`.
 - Keep existing `ConsoleMetricRecorder` immediate-write behavior unchanged.
 - The project must compile, and all evaluator tests must pass after the
   change.
@@ -209,7 +209,7 @@ Secondary Dimensions:
 
 | Action | Allowed |
 |---|---|
-| Add new files under `cases/024.metric-recorder-buffered-flush/src/` | Yes |
+| Add new files under `src/` | Yes |
 | Modify existing core logic | Yes, where required by the new behavior |
 | Modify existing tests | No (evaluator-owned) |
 | Add new dependencies | No |

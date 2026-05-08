@@ -18,9 +18,9 @@ Update the code so that the thermostat controller can be connected to a temperat
 ### Constraints
 
 - Do not add external dependencies.
-- Do not modify files under `evaluator/022.thermostat-sensor-decoupling/`.
-- You may modify or add new files under `cases/022.thermostat-sensor-decoupling/src/`
-  and `cases/022.thermostat-sensor-decoupling/app/`.
+- Do not modify files under `evaluator`.
+- You may modify or add new files under `src/`
+  and `app/`.
 - If you modify `src/tmp26_sensor.cc`, preserve the `TMP26_SIMULATOR_TEMP` behavior.
 - The project must compile, and all existing tests must pass
   after the change.
