@@ -1,0 +1,18 @@
+```json
+{
+  "files": [
+    {
+      "filename": "src/thermostat_controller.h",
+      "content": "#pragma once\n\nnamespace nitr::case022 {\n\nclass Tmp26Sensor;\n\nclass ThermostatController {\n public:\n  static constexpr float kTemperatureDeltaThreshold = 2.0f;\n\n  enum class Command {\n    kHeating,\n    kCooling,\n    kIdle,\n  };\n\n  explicit ThermostatController(float target_temperature);\n\n  void ConnectSensor(const Tmp26Sensor* sensor);\n  Command Evaluate(float current_temperature) const;\n  Command Evaluate() const;\n  float target_temperature() const;\n\n private:\n  float target_temperature_;\n  const Tmp26Sensor* sensor_ = nullptr;\n};\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "src/thermostat_controller.cc",
+      "content": "#include \"thermostat_controller.h\"\n\n#include \"tmp26_sensor.h\"\n\nnamespace nitr::case022 {\n\nThermostatController::ThermostatController(float target_temperature)\n    : target_temperature_(target_temperature) {}\n\nvoid ThermostatController::ConnectSensor(const Tmp26Sensor* sensor) {\n  sensor_ = sensor;\n}\n\nThermostatController::Command ThermostatController::Evaluate(\n    float current_temperature) const {\n  if (current_temperature <= target_temperature_ - kTemperatureDeltaThreshold) {\n    return Command::kHeating;\n  }\n  if (current_temperature >= target_temperature_ + kTemperatureDeltaThreshold) {\n    return Command::kCooling;\n  }\n  return Command::kIdle;\n}\n\nThermostatController::Command ThermostatController::Evaluate() const {\n  float current_temperature = sensor_->ReadTemperature();\n  return Evaluate(current_temperature);\n}\n\nfloat ThermostatController::target_temperature() const {\n  return target_temperature_;\n}\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "app/main.cc",
+      "content": "#include <iostream>\n#include <string>\n\n#include \"thermostat_controller.h\"\n#include \"tmp26_sensor.h\"\n\nnamespace {\n\nconst char* toString(nitr::case022::ThermostatController::Command command) {\n  using Command = nitr::case022::ThermostatController::Command;\n  switch (command) {\n    case Command::kHeating:\n      return \"Heating\";\n    case Command::kCooling:\n      return \"Cooling\";\n    case Command::kIdle:\n      return \"Idle\";\n  }\n  return \"Unknown\";\n}\n\n}\n\nint main(int argc, char** argv) {\n  if (argc < 2) {\n    std::cerr << \"Usage: \" << argv[0] << \" <target_temperature>\\n\";\n    return 1;\n  }\n  float target = std::stof(argv[1]);\n\n  nitr::case022::ThermostatController controller(target);\n\n  nitr::case022::Tmp26Sensor sensor;\n  controller.ConnectSensor(&sensor);\n  const auto command = controller.Evaluate();\n\n  std::cout << toString(command) << '\\n';\n  return 0;\n}\n"
+    }
+  ]
+}
+```

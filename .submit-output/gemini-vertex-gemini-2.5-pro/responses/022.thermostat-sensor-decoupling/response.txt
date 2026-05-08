@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "filename": "src/thermostat_controller.cc",
+      "content": "#include \"src/thermostat_controller.h\"\n\n#include \"src/tmp26_sensor.h\"\n\nnamespace nitr::case022 {\n\nThermostatController::ThermostatController(float target_temperature)\n    : target_temperature_(target_temperature) {}\n\nThermostatController::Command ThermostatController::Evaluate(\n    float current_temperature) const {\n  if (current_temperature <= target_temperature_ - kTemperatureDeltaThreshold) {\n    return Command::kHeating;\n  }\n  if (current_temperature >= target_temperature_ + kTemperatureDeltaThreshold) {\n    return Command::kCooling;\n  }\n  return Command::kIdle;\n}\n\nThermostatController::Command ThermostatController::Evaluate() const {\n  const Tmp26Sensor sensor;\n  const float current_temperature = sensor.ReadTemperature();\n  return Evaluate(current_temperature);\n}\n\nfloat ThermostatController::target_temperature() const {\n  return target_temperature_;\n}\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "app/main.cc",
+      "content": "#include <iostream>\n\n#include \"src/thermostat_controller.h\"\n\nint main() {\n  // Create a thermostat controller with a target temperature of 25.0 C.\n  nitr::case022::ThermostatController controller(25.0f);\n\n  // The controller now reads from the sensor internally.\n  // The Tmp26Sensor might be compiled with a simulated temperature,\n  // so the output could vary based on build flags.\n  const auto command = controller.Evaluate();\n\n  std::cout << \"Target: \" << controller.target_temperature() << \" C\\n\";\n  std::cout << \"Command: \";\n  switch (command) {\n    case nitr::case022::ThermostatController::Command::kHeating:\n      std::cout << \"Heating\";\n      break;\n    case nitr::case022::ThermostatController::Command::kCooling:\n      std::cout << \"Cooling\";\n      break;\n    case nitr::case022::ThermostatController::Command::kIdle:\n      std::cout << \"Idle\";\n      break;\n  }\n  std::cout << std::endl;\n\n  return 0;\n}\n"
+    }
+  ]
+}

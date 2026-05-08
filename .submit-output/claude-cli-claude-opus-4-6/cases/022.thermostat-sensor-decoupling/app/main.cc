@@ -1,0 +1,35 @@
+#include <iostream>
+#include <string>
+
+#include "thermostat_controller.h"
+
+namespace {
+
+const char* toString(nitr::case022::ThermostatController::Command command) {
+  using Command = nitr::case022::ThermostatController::Command;
+  switch (command) {
+    case Command::kHeating:
+      return "Heating";
+    case Command::kCooling:
+      return "Cooling";
+    case Command::kIdle:
+      return "Idle";
+  }
+  return "Unknown";
+}
+
+}
+
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <target_temperature>\n";
+    return 1;
+  }
+  float target = std::stof(argv[1]);
+
+  nitr::case022::ThermostatController controller(target);
+  const auto command = controller.Evaluate();
+
+  std::cout << toString(command) << '\n';
+  return 0;
+}

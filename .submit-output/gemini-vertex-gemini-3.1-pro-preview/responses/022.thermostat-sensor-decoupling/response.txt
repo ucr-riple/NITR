@@ -1,0 +1,20 @@
+{
+  "files": [
+    {
+      "filename": "src/temperature_sensor.h",
+      "content": "#pragma once\n\nnamespace nitr::case022 {\n\nclass TemperatureSensor {\n public:\n  virtual ~TemperatureSensor() = default;\n  virtual float ReadTemperature() const = 0;\n};\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "src/tmp26_sensor.h",
+      "content": "#pragma once\n\n#include \"temperature_sensor.h\"\n\nnamespace nitr::case022 {\n\nclass Tmp26Sensor : public TemperatureSensor {\n public:\n  float ReadTemperature() const override;\n};\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "src/thermostat_controller.h",
+      "content": "#pragma once\n\n#include \"temperature_sensor.h\"\n\nnamespace nitr::case022 {\n\nclass ThermostatController {\n public:\n  static constexpr float kTemperatureDeltaThreshold = 2.0f;\n\n  enum class Command {\n    kHeating,\n    kCooling,\n    kIdle,\n  };\n\n  explicit ThermostatController(float target_temperature);\n  ThermostatController(float target_temperature, TemperatureSensor* sensor);\n\n  void set_sensor(TemperatureSensor* sensor);\n\n  Command Evaluate(float current_temperature) const;\n  Command Evaluate() const;\n  float target_temperature() const;\n\n private:\n  float target_temperature_;\n  TemperatureSensor* sensor_;\n};\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "src/thermostat_controller.cc",
+      "content": "#include \"thermostat_controller.h\"\n\nnamespace nitr::case022 {\n\nThermostatController::ThermostatController(float target_temperature)\n    : target_temperature_(target_temperature), sensor_(nullptr) {}\n\nThermostatController::ThermostatController(float target_temperature, TemperatureSensor* sensor)\n    : target_temperature_(target_temperature), sensor_(sensor) {}\n\nvoid ThermostatController::set_sensor(TemperatureSensor* sensor) {\n  sensor_ = sensor;\n}\n\nThermostatController::Command ThermostatController::Evaluate(float current_temperature) const {\n  if (current_temperature <= target_temperature_ - kTemperatureDeltaThreshold) {\n    return Command::kHeating;\n  }\n  if (current_temperature >= target_temperature_ + kTemperatureDeltaThreshold) {\n    return Command::kCooling;\n  }\n  return Command::kIdle;\n}\n\nThermostatController::Command ThermostatController::Evaluate() const {\n  if (sensor_) {\n    return Evaluate(sensor_->ReadTemperature());\n  }\n  return Command::kIdle;\n}\n\nfloat ThermostatController::target_temperature() const {\n  return target_temperature_;\n}\n\n}  // namespace nitr::case022\n"
+    }
+  ]
+}

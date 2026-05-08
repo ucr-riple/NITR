@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "filename": "src/temperature_source.h",
+      "content": "#pragma once\n\nnamespace nitr::case022 {\n\nclass TemperatureSource {\n public:\n  virtual ~TemperatureSource() = default;\n  virtual float ReadTemperature() const = 0;\n};\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "src/tmp26_sensor.h",
+      "content": "#pragma once\n\n#include \"temperature_source.h\"\n\nnamespace nitr::case022 {\n\nclass Tmp26Sensor : public TemperatureSource {\n public:\n  float ReadTemperature() const override;\n};\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "src/tmp26_sensor.cc",
+      "content": "#include \"tmp26_sensor.h\"\n#include <cstdlib>\n\nnamespace nitr::case022 {\n\nfloat Tmp26Sensor::ReadTemperature() const {\n  const char* env_temp = std::getenv(\"TMP26_SIMULATOR_TEMP\");\n  if (env_temp != nullptr) {\n    return static_cast<float>(std::atof(env_temp));\n  }\n  return 20.0f;\n}\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "src/thermostat_controller.h",
+      "content": "#pragma once\n\nnamespace nitr::case022 {\n\nclass TemperatureSource;\n\nclass ThermostatController {\n public:\n  static constexpr float kTemperatureDeltaThreshold = 2.0f;\n\n  enum class Command {\n    kHeating,\n    kCooling,\n    kIdle,\n  };\n\n  explicit ThermostatController(float target_temperature);\n\n  Command Evaluate(float current_temperature) const;\n  Command Evaluate() const;\n  float target_temperature() const;\n\n  void ConnectSource(const TemperatureSource* source);\n\n private:\n  float target_temperature_;\n  const TemperatureSource* source_ = nullptr;\n};\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "src/thermostat_controller.cc",
+      "content": "#include \"thermostat_controller.h\"\n#include \"temperature_source.h\"\n\nnamespace nitr::case022 {\n\nThermostatController::ThermostatController(float target_temperature)\n    : target_temperature_(target_temperature), source_(nullptr) {}\n\nvoid ThermostatController::ConnectSource(const TemperatureSource* source) {\n  source_ = source;\n}\n\nThermostatController::Command ThermostatController::Evaluate(float current_temperature) const {\n  if (current_temperature <= target_temperature_ - kTemperatureDeltaThreshold) {\n    return Command::kHeating;\n  }\n  if (current_temperature >= target_temperature_ + kTemperatureDeltaThreshold) {\n    return Command::kCooling;\n  }\n  return Command::kIdle;\n}\n\nThermostatController::Command ThermostatController::Evaluate() const {\n  if (source_) {\n    return Evaluate(source_->ReadTemperature());\n  }\n  return Command::kIdle;\n}\n\nfloat ThermostatController::target_temperature() const {\n  return target_temperature_;\n}\n\n}  // namespace nitr::case022\n"
+    },
+    {
+      "filename": "app/main.cc",
+      "content": "#include \"thermostat_controller.h\"\n#include \"tmp26_sensor.h\"\n\nint main() {\n  nitr::case022::Tmp26Sensor sensor;\n  nitr::case022::ThermostatController controller(22.0f);\n  controller.ConnectSource(&sensor);\n\n  // The controller can now be evaluated without passing a temperature manually.\n  [[maybe_unused]] auto command = controller.Evaluate();\n\n  return 0;\n}\n"
+    }
+  ]
+}

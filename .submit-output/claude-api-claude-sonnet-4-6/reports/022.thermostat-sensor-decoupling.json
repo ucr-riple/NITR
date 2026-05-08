@@ -1,0 +1,127 @@
+{
+  "case_id": "022",
+  "case_slug": "022.thermostat-sensor-decoupling",
+  "generated_root": "/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.submit-output/claude-api-claude-sonnet-4-6",
+  "generated_case_dir": "/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.submit-output/claude-api-claude-sonnet-4-6/cases/022.thermostat-sensor-decoupling",
+  "generated_evaluator_dir": "/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.submit-output/claude-api-claude-sonnet-4-6/evaluator/022.thermostat-sensor-decoupling",
+  "workspace_dir": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o",
+  "configure": {
+    "cmd": [
+      "cmake",
+      "-S",
+      "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o",
+      "-B",
+      "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+      "-DNITR_BUILD_ALL_CASES=OFF",
+      "-DNITR_CASE=022.thermostat-sensor-decoupling",
+      "-DNITR_BUILD_EVALUATOR=ON"
+    ],
+    "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o",
+    "exit_code": 0,
+    "stdout": "-- The CXX compiler identification is AppleClang 21.0.0.21000099\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- The C compiler identification is AppleClang 21.0.0.21000099\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n-- Found Threads: TRUE\n-- Found Python3: /Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.venv/bin/python3.13 (found version \"3.13.7\") found components: Interpreter\n-- Configuring done (0.8s)\n-- Generating done (0.1s)\n-- Build files have been written to: /var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build\n",
+    "stderr": "",
+    "timed_out": false
+  },
+  "build": {
+    "cmd": [
+      "cmake",
+      "--build",
+      "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build"
+    ],
+    "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o",
+    "exit_code": 0,
+    "stdout": "[  9%] Building CXX object cases/022.thermostat-sensor-decoupling/CMakeFiles/case022_lib.dir/src/thermostat_controller.cc.o\n[ 18%] Building CXX object cases/022.thermostat-sensor-decoupling/CMakeFiles/case022_lib.dir/src/tmp26_sensor.cc.o\n[ 27%] Linking CXX static library libcase022_lib.a\n[ 27%] Built target case022_lib\n[ 36%] Building CXX object cases/022.thermostat-sensor-decoupling/CMakeFiles/case022_app.dir/app/main.cc.o\n[ 45%] Linking CXX executable case022_app\n[ 45%] Built target case022_app\n[ 54%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o\n[ 63%] Linking CXX static library ../../../lib/libgtest.a\n[ 63%] Built target gtest\n[ 72%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o\n[ 81%] Linking CXX static library ../../../lib/libgtest_main.a\n[ 81%] Built target gtest_main\n[ 90%] Building CXX object evaluator/CMakeFiles/case022_thermostat_tests.dir/022.thermostat-sensor-decoupling/tests/test_thermostat.cc.o\n[100%] Linking CXX executable case022_thermostat_tests\n[100%] Built target case022_thermostat_tests\n",
+    "stderr": "",
+    "timed_out": false
+  },
+  "ctest": {
+    "discover": {
+      "cmd": [
+        "ctest",
+        "--test-dir",
+        "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+        "-N",
+        "--show-only=json-v1"
+      ],
+      "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+      "exit_code": 0,
+      "stdout": "{\n  \"backtraceGraph\" : \n  {\n    \"commands\" : \n    [\n      \"add_test\",\n      \"nitr_add_gtest\",\n      \"nitr_register_case_022\",\n      \"nitr_add_evaluator\"\n    ],\n    \"files\" : \n    [\n      \"/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/evaluator/CMakeLists.txt\"\n    ],\n    \"nodes\" : \n    [\n      {\n        \"file\" : 0\n      },\n      {\n        \"command\" : 3,\n        \"file\" : 0,\n        \"line\" : 454,\n        \"parent\" : 0\n      },\n      {\n        \"command\" : 2,\n        \"file\" : 0,\n        \"line\" : 423,\n        \"parent\" : 1\n      },\n      {\n        \"command\" : 1,\n        \"file\" : 0,\n        \"line\" : 341,\n        \"parent\" : 2\n      },\n      {\n        \"command\" : 0,\n        \"file\" : 0,\n        \"line\" : 26,\n        \"parent\" : 3\n      },\n      {\n        \"file\" : 0\n      },\n      {\n        \"command\" : 3,\n        \"file\" : 0,\n        \"line\" : 454,\n        \"parent\" : 5\n      },\n      {\n        \"command\" : 2,\n        \"file\" : 0,\n        \"line\" : 423,\n        \"parent\" : 6\n      },\n      {\n        \"command\" : 0,\n        \"file\" : 0,\n        \"line\" : 347,\n        \"parent\" : 7\n      },\n      {\n        \"file\" : 0\n      },\n      {\n        \"command\" : 3,\n        \"file\" : 0,\n        \"line\" : 454,\n        \"parent\" : 9\n      },\n      {\n        \"command\" : 2,\n        \"file\" : 0,\n        \"line\" : 423,\n        \"parent\" : 10\n      },\n      {\n        \"command\" : 0,\n        \"file\" : 0,\n        \"line\" : 352,\n        \"parent\" : 11\n      }\n    ]\n  },\n  \"kind\" : \"ctestInfo\",\n  \"tests\" : \n  [\n    {\n      \"backtrace\" : 4,\n      \"command\" : \n      [\n        \"/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build/evaluator/case022_thermostat_tests\"\n      ],\n      \"name\" : \"case022_thermostat_tests\",\n      \"properties\" : \n      [\n        {\n          \"name\" : \"WORKING_DIRECTORY\",\n          \"value\" : \"/private/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build/evaluator\"\n        }\n      ]\n    },\n    {\n      \"backtrace\" : 8,\n      \"command\" : \n      [\n        \"/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.venv/bin/python3.13\",\n        \"/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/evaluator/022.thermostat-sensor-decoupling/tests/test_functional.py\",\n        \"/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build/cases/022.thermostat-sensor-decoupling/case022_app\"\n      ],\n      \"name\" : \"case022_functional_tests\",\n      \"properties\" : \n      [\n        {\n          \"name\" : \"WORKING_DIRECTORY\",\n          \"value\" : \"/private/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build/evaluator\"\n        }\n      ]\n    },\n    {\n      \"backtrace\" : 12,\n      \"command\" : \n      [\n        \"/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.venv/bin/python3.13\",\n        \"/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/evaluator/022.thermostat-sensor-decoupling/checks/check_dependency.py\",\n        \"/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/cases/022.thermostat-sensor-decoupling\"\n      ],\n      \"name\" : \"case022_dependency_check\",\n      \"properties\" : \n      [\n        {\n          \"name\" : \"WORKING_DIRECTORY\",\n          \"value\" : \"/private/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build/evaluator\"\n        }\n      ]\n    }\n  ],\n  \"version\" : \n  {\n    \"major\" : 1,\n    \"minor\" : 0\n  }\n}",
+      "stderr": "",
+      "timed_out": false
+    },
+    "tests": [
+      {
+        "cmd": [
+          "ctest",
+          "--test-dir",
+          "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+          "--output-on-failure",
+          "--timeout",
+          "120",
+          "-R",
+          "^case022_thermostat_tests$"
+        ],
+        "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+        "exit_code": 0,
+        "stdout": "Internal ctest changing into directory: /var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build\nTest project /private/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build\n    Start 1: case022_thermostat_tests\n1/1 Test #1: case022_thermostat_tests .........   Passed    0.25 sec\n\n100% tests passed, 0 tests failed out of 1\n\nTotal Test time (real) =   0.25 sec\n",
+        "stderr": "",
+        "timed_out": false,
+        "test_name": "case022_thermostat_tests"
+      },
+      {
+        "cmd": [
+          "ctest",
+          "--test-dir",
+          "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+          "--output-on-failure",
+          "--timeout",
+          "120",
+          "-R",
+          "^case022_functional_tests$"
+        ],
+        "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+        "exit_code": 0,
+        "stdout": "Internal ctest changing into directory: /var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build\nTest project /private/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build\n    Start 2: case022_functional_tests\n1/1 Test #2: case022_functional_tests .........   Passed    0.35 sec\n\n100% tests passed, 0 tests failed out of 1\n\nTotal Test time (real) =   0.36 sec\n",
+        "stderr": "",
+        "timed_out": false,
+        "test_name": "case022_functional_tests"
+      },
+      {
+        "cmd": [
+          "ctest",
+          "--test-dir",
+          "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+          "--output-on-failure",
+          "--timeout",
+          "120",
+          "-R",
+          "^case022_dependency_check$"
+        ],
+        "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build",
+        "exit_code": 8,
+        "stdout": "Internal ctest changing into directory: /var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build\nTest project /private/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/build\n    Start 3: case022_dependency_check\n1/1 Test #3: case022_dependency_check .........***Failed    0.03 sec\nMaintainability check failed:\n- thermostat_controller.cc: core thermostat logic must not include hardware sensor headers directly.\n- thermostat_controller.cc: core thermostat logic must not reference a hardware sensor types directly.\n- app/main.cc must call ThermostatController::Evaluate() without passing current temperature manually.\n- app/main.cc should not call ThermostatController::Evaluate(...) with manual temperature arguments.\nThermostatController should depend on an abstract temperature source, not a concrete hardware implementation.\n\n\n0% tests passed, 1 tests failed out of 1\n\nTotal Test time (real) =   0.03 sec\n\nThe following tests FAILED:\n\t  3 - case022_dependency_check (Failed)\nErrors while running CTest\n",
+        "stderr": "",
+        "timed_out": false,
+        "test_name": "case022_dependency_check"
+      }
+    ],
+    "exit_code": 8,
+    "timed_out": false
+  },
+  "checks": [
+    {
+      "cmd": [
+        "/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.venv/bin/python3",
+        "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/evaluator/022.thermostat-sensor-decoupling/checks/check_dependency.py",
+        "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o/cases/022.thermostat-sensor-decoupling"
+      ],
+      "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_xnctgs7o",
+      "exit_code": 1,
+      "stdout": "Maintainability check failed:\n- thermostat_controller.cc: core thermostat logic must not include hardware sensor headers directly.\n- thermostat_controller.cc: core thermostat logic must not reference a hardware sensor types directly.\n- app/main.cc must call ThermostatController::Evaluate() without passing current temperature manually.\n- app/main.cc should not call ThermostatController::Evaluate(...) with manual temperature arguments.\nThermostatController should depend on an abstract temperature source, not a concrete hardware implementation.\n",
+      "stderr": "",
+      "timed_out": false,
+      "script": "evaluator/022.thermostat-sensor-decoupling/checks/check_dependency.py"
+    }
+  ],
+  "passed": false
+}

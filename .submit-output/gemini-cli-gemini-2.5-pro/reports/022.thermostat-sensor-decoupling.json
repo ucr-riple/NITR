@@ -1,0 +1,54 @@
+{
+  "case_id": "022",
+  "case_slug": "022.thermostat-sensor-decoupling",
+  "generated_root": "/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.submit-output/gemini-cli-gemini-2.5-pro",
+  "generated_case_dir": "/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.submit-output/gemini-cli-gemini-2.5-pro/cases/022.thermostat-sensor-decoupling",
+  "generated_evaluator_dir": "/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.submit-output/gemini-cli-gemini-2.5-pro/evaluator/022.thermostat-sensor-decoupling",
+  "workspace_dir": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9",
+  "configure": {
+    "cmd": [
+      "cmake",
+      "-S",
+      "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9",
+      "-B",
+      "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9/build",
+      "-DNITR_BUILD_ALL_CASES=OFF",
+      "-DNITR_CASE=022.thermostat-sensor-decoupling",
+      "-DNITR_BUILD_EVALUATOR=ON"
+    ],
+    "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9",
+    "exit_code": 0,
+    "stdout": "-- The CXX compiler identification is AppleClang 21.0.0.21000099\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- The C compiler identification is AppleClang 21.0.0.21000099\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n-- Found Threads: TRUE\n-- Found Python3: /Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.venv/bin/python3.13 (found version \"3.13.7\") found components: Interpreter\n-- Configuring done (1.2s)\n-- Generating done (0.2s)\n-- Build files have been written to: /var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9/build\n",
+    "stderr": "",
+    "timed_out": false
+  },
+  "build": {
+    "cmd": [
+      "cmake",
+      "--build",
+      "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9/build"
+    ],
+    "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9",
+    "exit_code": 2,
+    "stdout": "[  9%] Building CXX object cases/022.thermostat-sensor-decoupling/CMakeFiles/case022_lib.dir/src/thermostat_controller.cc.o\n/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9/cases/022.thermostat-sensor-decoupling/src/thermostat_controller.cc:1:10: fatal error: 'src/thermostat_controller.h' file not found\n    1 | #include \"src/thermostat_controller.h\"\n      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n1 error generated.\nmake[2]: *** [cases/022.thermostat-sensor-decoupling/CMakeFiles/case022_lib.dir/src/thermostat_controller.cc.o] Error 1\nmake[1]: *** [cases/022.thermostat-sensor-decoupling/CMakeFiles/case022_lib.dir/all] Error 2\nmake: *** [all] Error 2\n",
+    "stderr": "",
+    "timed_out": false
+  },
+  "ctest": null,
+  "checks": [
+    {
+      "cmd": [
+        "/Users/justinalbert/Code_Projects/UCR/CS_180/NITR/.venv/bin/python3",
+        "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9/evaluator/022.thermostat-sensor-decoupling/checks/check_dependency.py",
+        "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9/cases/022.thermostat-sensor-decoupling"
+      ],
+      "cwd": "/var/folders/4l/rnrkwj5d0dv7pptm2b5rytrh0000gn/T/nitr_eval_022_nl49ghg9",
+      "exit_code": 1,
+      "stdout": "Maintainability check failed:\n- thermostat_controller.cc: do not use #include \"src/...\"; keep starter relative include style.\nThermostatController should depend on an abstract temperature source, not a concrete hardware implementation.\n",
+      "stderr": "",
+      "timed_out": false,
+      "script": "evaluator/022.thermostat-sensor-decoupling/checks/check_dependency.py"
+    }
+  ],
+  "passed": false
+}

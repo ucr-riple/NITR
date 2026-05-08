@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "filename": "src/thermostat_controller.cc",
+      "content": "#include \"thermostat_controller.h\"\n\n#include \"tmp26_sensor.h\"\n\nnamespace nitr::case022 {\n\nThermostatController::ThermostatController(float target_temperature)\n    : target_temperature_(target_temperature) {}\n\nThermostatController::Command ThermostatController::Evaluate(\n    float current_temperature) const {\n  if (current_temperature <= target_temperature_ - kTemperatureDeltaThreshold) {\n    return Command::kHeating;\n  }\n  if (current_temperature >= target_temperature_ + kTemperatureDeltaThreshold) {\n    return Command::kCooling;\n  }\n  return Command::kIdle;\n}\n\nThermostatController::Command ThermostatController::Evaluate() const {\n  Tmp26Sensor sensor;\n  return Evaluate(sensor.ReadTemperature());\n}\n\nfloat ThermostatController::target_temperature() const {\n  return target_temperature_;\n}\n\n}  // namespace nitr::case022\n"
+    }
+  ]
+}
