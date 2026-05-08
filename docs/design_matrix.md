@@ -70,8 +70,9 @@ Typical failures:
 Current cases:
 - `004 cv-srp`
 - `020 handover-packet-ownership-boundary` (**micro**)
+- `025 extend_benchmark_modelvmodel` (**micro**)
 
-Current count: **2**
+Current count: **3**
 
 Notes:
 - `020` is the newly added D3 micro case.
@@ -155,9 +156,10 @@ Typical failures:
 
 Current cases:
 - `009 session-expiry-testability`
+- `016 device-segment-planner` (**multi-step**)
 - `018 seeded-selection-testability` (**multi-step**)
 
-Current count: **2**
+Current count: **3**
 
 ---
 
@@ -194,9 +196,8 @@ Current cases:
 - `010 logging-side-effects`
 - `019 ranking-explainability-boundary` (**multi-step**)
 - `023 validator-global-mutation` (**micro**)
-- `025 extend_benchmark_modelvmodel` (**micro**)
 
-Current count: **4**
+Current count: **3**
 
 Notes:
 - `010` remains the micro side-effect probe.
@@ -232,7 +233,7 @@ Notes:
 | 022 thermostat-sensor-decoupling | D6 Dependency Control | micro |
 | 024 metric-recorder-buffered-flush | D5 Interface and Substitutability Discipline | micro |
 | 023 validator-global-mutation | D9 Side-Effect Isolation | micro |
-| 025 extend_benchmark_modelvmodel | D9 Side-Effect Isolation | micro |
+| 025 extend_benchmark_modelvmodel | D3 Responsibility Decomposition | micro |
 
 ---
 
@@ -242,16 +243,17 @@ Notes:
 |---|---:|
 | D1 Change Locality | 3 |
 | D2 Reuse and Repo Awareness | 3 |
-| D3 Responsibility Decomposition | 2 |
+| D3 Responsibility Decomposition | 3 |
 | D4 Extension Structure | 2 |
 | D5 Interface and Substitutability Discipline | 3 |
 | D6 Dependency Control | 3 |
 | D7 Testability and Determinism | 3 |
 | D8 State Ownership and Lifecycle | 2 |
-| D9 Side-Effect Isolation | 4 |
+| D9 Side-Effect Isolation | 2 |
 
-Total cases recorded: **24**
+Total cases recorded: **25**
 
 Notes:
 - Current matrix contents cover cases `001`-`025`.
-- With `021`, `025`, and `016` included, D1, D2, D7 and D9 each have three cases; D3-D6 and D8-D9 each have two.
+- With `024` and `025` included, D1, D2, D3, D5, D6, and D7 each have
+  three cases; D4, D8, and D9 each have two.

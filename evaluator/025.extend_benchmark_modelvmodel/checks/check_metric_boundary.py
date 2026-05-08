@@ -29,56 +29,55 @@ def main() -> int:
 
     src_root = case_root / "src"
     runner_text = strip_comments_and_strings(read_text(src_root / "benchmark_runner.cc"))
-    metric_candidates = [
-        path for path in src_root.glob("*metric*.*")
-        if path.suffix in {".h", ".cc", ".hpp", ".cpp"}
-    ]
+    record_text = strip_comments_and_strings(read_text(src_root / "benchmark_record.h"))
+    data_text = strip_comments_and_strings(read_text(src_root / "benchmark_data.cc"))
 
     failures: list[str] = []
 
-    if not metric_candidates:
-        failures.append(
-            "Expected metric-specific source or header files under src/."
-        )
-
-    if re.search(r"\baverage_precision\b\s*[*\/+-]\s*\bfps\b", runner_text):
-        failures.append(
-            "benchmark_runner.cc should not compute metric formulas directly."
-        )
-
-    if re.search(r"\bfps\b\s*[*\/+-]\s*\baverage_precision\b", runner_text):
-        failures.append(
-            "benchmark_runner.cc should not compute metric formulas directly."
-        )
-
-    if re.search(r"\bspeed_adjusted\s*=", runner_text):
-        failures.append(
-            "benchmark_runner.cc should orchestrate benchmark flow, not assign "
-            "speed-adjusted scores inline."
-        )
-
-    metric_text = "\n".join(read_text(path) for path in metric_candidates)
-    metric_text = strip_comments_and_strings(metric_text)
-
-    if metric_candidates and not re.search(
-        r"\baverage_precision\b\s*\*\s*\bfps\b|\bfps\b\s*\*\s*\baverage_precision\b",
-        metric_text,
+    if re.search(r"\baverage_precision\b", runner_text) or re.search(
+        r"\bfps\b", runner_text
     ):
         failures.append(
-            "Expected the speed-adjusted formula to live in a metric-focused file."
+            "benchmark_runner.cc should not inspect raw benchmark fields such "
+            "as average_precision or fps."
+        )
+
+    if re.search(r"\baverage_precision\b\s*[*\/+-]\s*\bfps\b", runner_text) or re.search(
+        r"\bfps\b\s*[*\/+-]\s*\baverage_precision\b", runner_text
+    ):
+        failures.append(
+            "benchmark_runner.cc should not compute score formulas directly."
+        )
+
+    if re.search(r"\bD-FINE\b|\bRT-DETR\b", runner_text):
+        failures.append(
+            "benchmark_runner.cc should not special-case concrete model families."
+        )
+
+    if re.search(r"\bspeed_?adjusted\b", record_text):
+        failures.append(
+            "BenchmarkRecord should stay raw input data and not store derived "
+            "speed-adjusted scores."
+        )
+
+    if re.search(r"\bspeed_?adjusted\b", data_text):
+        failures.append(
+            "benchmark_data.cc should contain source benchmark facts, not "
+            "precomputed derived scores."
         )
 
     if failures:
-        print("Metric boundary check failed:")
+        print("Benchmark responsibility check failed:")
         for failure in failures:
             print(f"- {failure}")
         print(
-            "Keep benchmark_runner focused on procedure and move score formulas "
-            "behind metric-focused code."
+            "Keep benchmark_runner focused on orchestration, keep benchmark "
+            "rows raw, and place derived score computation behind a helper or "
+            "component outside the runner."
         )
         return 1
 
-    print("Metric boundary check passed.")
+    print("Benchmark responsibility check passed.")
     return 0
 
 

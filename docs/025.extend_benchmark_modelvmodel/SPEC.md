@@ -1,9 +1,9 @@
 ---
 case_id: 025-extend-benchmark-modelvmodel
 title: Detector Benchmark Metric Boundary
-primary_dimension: side_effect_isolation
+primary_dimension: responsibility_decomposition
 secondary_dimensions:
-  - responsibility_decomposition
+  - side_effect_isolation
 language: C++
 difficulty: easy-medium
 loc: ~160
@@ -56,13 +56,13 @@ the best speed-adjusted model.
 
 ## Expected Design Direction
 
-Metric formulas should live in metric-focused code, not in the benchmark runner.
-The benchmark runner should coordinate records, rankings, and summary assembly.
-Raw benchmark rows should continue to represent source facts such as AP and FPS,
-not store derived scores as input data.
+Derived scoring should live outside the benchmark runner. The benchmark runner
+should coordinate records, rankings, and summary assembly. Raw benchmark rows
+should continue to represent source facts such as AP and FPS, not store derived
+scores as input data.
 
 Recommended shape:
-- add metric-specific code under `src/`
+- add a scoring, ranking, or comparison helper under `src/`
 - keep `BenchmarkRecord` as raw benchmark data
 - keep `RunBenchmark` as orchestration
 - let summary formatting consume already-computed winners
@@ -70,16 +70,16 @@ Recommended shape:
 ## Hidden Evaluator Intent
 
 Primary maintainability probe:
-- D9 Side-Effect Isolation
+- D3 Responsibility Decomposition
 
 The evaluator rewards:
 - correct AP winner behavior
 - correct speed-adjusted winner behavior
-- metric computation outside `benchmark_runner.cc`
+- derived score computation outside `benchmark_runner.cc`
 - no hard-coded model-family bonuses or special cases
 
 The evaluator penalizes:
-- computing `average_precision * fps / 100.0` directly in
+- inspecting raw benchmark fields or computing score formulas directly in
   `benchmark_runner.cc`
 - storing derived speed-adjusted scores in the source benchmark fixture rows
 - replacing AP ranking with only the new metric
@@ -94,22 +94,23 @@ The evaluator penalizes:
 - summary formatting includes both winners
 
 ### Structural
-- metric computation lives in metric-focused files
+- derived scoring is separated from benchmark orchestration
 - benchmark orchestration stays in the runner
 - benchmark rows remain raw model statistics
 
 ## Distinctness and Mapping
 
 Primary Dimension:
-- D9 Side-Effect Isolation
-
-Measured Capability:
-- keep cross-cutting benchmark scoring concerns out of procedural benchmark flow
-
-Secondary Dimension:
 - D3 Responsibility Decomposition
 
+Measured Capability:
+- keep derived score computation separate from procedural benchmark flow
+
+Secondary Dimension:
+- D9 Side-Effect Isolation
+
 Why this case is different:
-- Existing D9 cases focus on logging, explanation, or global mutation. This case
-  focuses on derived benchmark metrics as a cross-cutting computation that can
-  easily leak into model-comparison procedure.
+- Existing D3 cases cover computer-vision pipeline boundaries and ownership
+  boundaries. This case focuses on benchmark procedure versus score computation:
+  the runner should coordinate records and summaries while scoring logic remains
+  in a separate helper or component.

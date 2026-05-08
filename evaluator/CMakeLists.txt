@@ -387,7 +387,10 @@ function(nitr_register_case_024)
 
   add_test(
     NAME case024_substitutability_check
-    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_substitutability.py
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_substitutability.py ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_register_case_025)
   nitr_case_source_dir(CASE_DIR 025.extend_benchmark_modelvmodel)
   nitr_case_evaluator_dir(EVAL_DIR 025.extend_benchmark_modelvmodel)
