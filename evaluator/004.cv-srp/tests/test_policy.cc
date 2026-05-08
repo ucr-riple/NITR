@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "policy.h"
 #include "types.h"
 

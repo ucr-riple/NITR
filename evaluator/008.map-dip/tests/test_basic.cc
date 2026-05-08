@@ -1,17 +1,18 @@
 #include <iostream>
-#include <string>
-
 #include <nlohmann/json.hpp>
+#include <string>
 
 #include "map_snapshot.h"
 
 static int g_failures = 0;
 
-static void ExpectEq(const std::string& got, const std::string& expected, const char* name) {
+static void ExpectEq(const std::string& got, const std::string& expected,
+                     const char* name) {
   if (got != expected) {
     std::cerr << "[FAIL] " << name << "\n"
-              << "  got:\n" << got
-              << "  expected:\n" << expected;
+              << "  got:\n"
+              << got << "  expected:\n"
+              << expected;
     g_failures++;
   } else {
     std::cerr << "[ OK ] " << name << "\n";

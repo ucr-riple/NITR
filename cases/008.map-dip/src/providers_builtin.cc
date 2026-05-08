@@ -2,7 +2,6 @@
 
 #include <cctype>
 #include <memory>
-
 #include <nlohmann/json.hpp>
 
 namespace nitr::case008 {

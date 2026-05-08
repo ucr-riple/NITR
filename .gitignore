@@ -3,3 +3,5 @@ build/
 .vscode/
 *.log
 *.pyc
+build*/
+.submit-output/

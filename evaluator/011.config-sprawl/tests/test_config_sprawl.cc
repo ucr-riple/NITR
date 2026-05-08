@@ -8,8 +8,7 @@
 
 namespace {
 
-bool ExpectEqual(const std::string& actual,
-                 const std::string& expected,
+bool ExpectEqual(const std::string& actual, const std::string& expected,
                  const std::string& test_name) {
   if (actual != expected) {
     std::cerr << "[FAIL] " << test_name << "\n";
@@ -39,8 +38,8 @@ int main() {
       "Summary\n"
       "Total quantity: 14\n";
   ok = ExpectEqual(nitr::case011::RenderInventoryReport(items, full_options),
-                   expected_full,
-                   "full mode remains unchanged") && ok;
+                   expected_full, "full mode remains unchanged") &&
+       ok;
 
   nitr::case011::ReportOptions compact_options;
   compact_options.include_summary = true;
@@ -52,8 +51,8 @@ int main() {
       "C-3:carrot:7\n"
       "Total quantity: 14\n";
   ok = ExpectEqual(nitr::case011::RenderInventoryReport(items, compact_options),
-                   expected_compact,
-                   "compact mode renders correctly") && ok;
+                   expected_compact, "compact mode renders correctly") &&
+       ok;
 
   nitr::case011::ReportOptions compact_no_summary;
   compact_no_summary.include_summary = false;
@@ -63,9 +62,11 @@ int main() {
       "A-1:apple:5\n"
       "B-2:banana:2\n"
       "C-3:carrot:7\n";
-  ok = ExpectEqual(nitr::case011::RenderInventoryReport(items, compact_no_summary),
-                   expected_compact_no_summary,
-                   "compact mode omits summary when requested") && ok;
+  ok = ExpectEqual(
+           nitr::case011::RenderInventoryReport(items, compact_no_summary),
+           expected_compact_no_summary,
+           "compact mode omits summary when requested") &&
+       ok;
 
   return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

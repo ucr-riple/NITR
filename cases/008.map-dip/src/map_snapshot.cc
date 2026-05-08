@@ -9,7 +9,8 @@ namespace nitr::case008 {
 
 namespace {
 
-using RegistryStorage = std::unordered_map<std::string, LayerRegistry::CreatorFn>;
+using RegistryStorage =
+    std::unordered_map<std::string, LayerRegistry::CreatorFn>;
 
 RegistryStorage& RegistryEntries() {
   static RegistryStorage entries;
@@ -61,7 +62,8 @@ std::string MapSnapshotService::BuildSnapshot(
   // ...
   std::string out = "SNAPSHOT\n";
   for (const auto& layer_json : config["layers"]) {
-    std::unique_ptr<ILayerProvider> p = GlobalLayerRegistry().Create(layer_json);
+    std::unique_ptr<ILayerProvider> p =
+        GlobalLayerRegistry().Create(layer_json);
     out += p->Name();
     out += ":";
     out += p->BuildLayer(payload);

@@ -7,6 +7,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CTest)
 
+if(BUILD_TESTING)
+  add_test(
+    NAME nitr_format_check
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_format.sh
+  )
+endif()
+
 add_subdirectory(cases)
 
 option(NITR_BUILD_EVALUATOR "Build evaluator targets and register evaluator tests" OFF)

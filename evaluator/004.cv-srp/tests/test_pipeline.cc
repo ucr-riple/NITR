@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "pipeline.h"
 #include "types.h"
 

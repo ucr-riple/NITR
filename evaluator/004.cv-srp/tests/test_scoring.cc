@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include "scoring.h"
 #include "types.h"
 
