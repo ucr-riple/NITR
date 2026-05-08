@@ -388,6 +388,19 @@ function(nitr_register_case_024)
   add_test(
     NAME case024_substitutability_check
     COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_substitutability.py
+function(nitr_register_case_025)
+  nitr_case_source_dir(CASE_DIR 025.extend_benchmark_modelvmodel)
+  nitr_case_evaluator_dir(EVAL_DIR 025.extend_benchmark_modelvmodel)
+
+  nitr_add_gtest(
+    case025_benchmark_metric_tests
+    case025_lib
+    ${EVAL_DIR}/tests/benchmark_metric_test.cc
+  )
+
+  add_test(
+    NAME case025_metric_boundary_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_metric_boundary.py ${CASE_DIR}
   )
 endfunction()
 
@@ -440,6 +453,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_023()
   elseif(case_dir STREQUAL "024.metric-recorder-buffered-flush")
     nitr_register_case_024()
+  elseif(case_dir STREQUAL "025.extend_benchmark_modelvmodel")
+    nitr_register_case_025()
   endif()
 endfunction()
 
@@ -468,6 +483,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(022.thermostat-sensor-decoupling)
   nitr_add_evaluator(023.validator-global-mutation)
   nitr_add_evaluator(024.metric-recorder-buffered-flush)
+  nitr_add_evaluator(025.extend_benchmark_modelvmodel)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

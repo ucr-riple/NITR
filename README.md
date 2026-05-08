@@ -174,6 +174,8 @@ on before running the evaluator.
 - `020.handover-packet-ownership-boundary`
 - `021.inline-filter-entrypoint-reuse`
 - `022.thermostat-sensor-decoupling`
+- `023.validator-global-mutation`
+- `025.extend_benchmark_modelvmodel`
 
 ## Citation
 
