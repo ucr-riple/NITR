@@ -117,8 +117,8 @@ FilterParseResult ParseInlineFilter(const std::string& text) {
     ++cursor;
   }
 
-  FilterParseResult result = ParseFilterClause(
-      FilterClause{field, op, normalized.substr(cursor)});
+  FilterParseResult result =
+      ParseFilterClause(FilterClause{field, op, normalized.substr(cursor)});
   if (!result.ok) {
     return result;
   }

@@ -1,16 +1,18 @@
+#include "session_manager.h"
+
 #include <cassert>
 #include <cstdint>
 #include <memory>
 #include <string>
 
-#include "session_manager.h"
 #include "time_source.h"
 
 namespace {
 
 class ManualTimeSource final : public nitr::case009::TimeSource {
  public:
-  explicit ManualTimeSource(std::int64_t now_seconds) : now_seconds_(now_seconds) {}
+  explicit ManualTimeSource(std::int64_t now_seconds)
+      : now_seconds_(now_seconds) {}
 
   std::int64_t NowSeconds() const override {
     return now_seconds_;

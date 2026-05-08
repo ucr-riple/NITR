@@ -1,11 +1,13 @@
+#include "validator.h"
+
 #include <gtest/gtest.h>
+
+#include <string>
 
 #include "grader.h"
 #include "reporter.h"
 #include "stats.h"
 #include "submission.h"
-#include "validator.h"
-#include <string>
 
 TEST(ValidatorTest, RejectsEmptySubmissionContent) {
   nitr::case023::Submission submission;

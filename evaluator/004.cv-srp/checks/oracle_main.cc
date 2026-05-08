@@ -35,8 +35,7 @@ int main(int argc, char** argv) {
     std::cerr << nitr::case004::ToStderrString(
                      nitr::case004::ErrorCode::kInvalidSchema)
               << "\n";
-    return nitr::case004::ToExitCode(
-        nitr::case004::ErrorCode::kInvalidSchema);
+    return nitr::case004::ToExitCode(nitr::case004::ErrorCode::kInvalidSchema);
   }
   // Parse
   nitr::case004::ParseOutput parsed =

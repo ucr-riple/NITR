@@ -1,13 +1,12 @@
 #include <iostream>
-#include <string>
-
 #include <nlohmann/json.hpp>
+#include <string>
 
 #include "map_snapshot.h"
 
 // Plugin TU will define this function and call GlobalLayerRegistry().Register(...).
 namespace nitr::case008 {
-  void RegisterReversePayloadLayer();
+void RegisterReversePayloadLayer();
 }  // namespace nitr::case008
 
 static int g_failures = 0;

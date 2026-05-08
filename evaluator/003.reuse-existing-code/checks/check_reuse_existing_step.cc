@@ -10,8 +10,11 @@
 
 static std::string ReadAll(const std::string& path) {
   std::ifstream ifs(path);
-  if (!ifs) { return ""; }
-  return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+  if (!ifs) {
+    return "";
+  }
+  return std::string((std::istreambuf_iterator<char>(ifs)),
+                     std::istreambuf_iterator<char>());
 }
 
 static bool RegexSearch(const std::string& s, const std::regex& re) {
@@ -41,8 +44,10 @@ int main() {
   const std::regex re_sqrt(R"(\bsqrt\s*\()");
   const std::regex re_sum_sq(R"(sum_sq\s*\+=)");
   const std::regex re_mul_acc(R"(sum\s*\+=\s*[^;]*\*[^;]*;)");
-  if (RegexSearch(code, re_sqrt) || RegexSearch(code, re_sum_sq) || RegexSearch(code, re_mul_acc)) {
-    std::cerr << "Structural check failed: detected likely re-implementation of math utilities in "
+  if (RegexSearch(code, re_sqrt) || RegexSearch(code, re_sum_sq) ||
+      RegexSearch(code, re_mul_acc)) {
+    std::cerr << "Structural check failed: detected likely re-implementation "
+                 "of math utilities in "
               << path << std::endl;
     return 1;
   }

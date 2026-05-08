@@ -14,15 +14,19 @@ std::vector<nitr::case015::Event> PartnerAndFallbackEvents() {
 
 std::vector<std::string> ExpectedStatic() {
   return {
-      "source=partner;payload=EXPORT_READY;score=5;policy_tier=archive;retention_days=180",
-      "source=unknown;payload=MANUAL_REVIEW;score=3;policy_tier=standard;retention_days=30",
+      "source=partner;payload=EXPORT_READY;score=5;policy_tier=archive;"
+      "retention_days=180",
+      "source=unknown;payload=MANUAL_REVIEW;score=3;policy_tier=standard;"
+      "retention_days=30",
   };
 }
 
 std::vector<std::string> ExpectedFile() {
   return {
-      "source=partner;payload=EXPORT_READY;score=5;policy_tier=archive;retention_days=365",
-      "source=unknown;payload=MANUAL_REVIEW;score=3;policy_tier=standard;retention_days=30",
+      "source=partner;payload=EXPORT_READY;score=5;policy_tier=archive;"
+      "retention_days=365",
+      "source=unknown;payload=MANUAL_REVIEW;score=3;policy_tier=standard;"
+      "retention_days=30",
   };
 }
 
@@ -35,23 +39,27 @@ int main() {
 
   nitr::case015::PipelineConfig file_config;
   file_config.policy_mode = nitr::case015::PolicyMode::kFile;
-  file_config.policy_file_path = "evaluator/015.pipeline-provider-decoupling/data/policies.json";
+  file_config.policy_file_path =
+      "evaluator/015.pipeline-provider-decoupling/data/policies.json";
   file_config.enable_policy_enrichment = true;
 
   const auto static_pipeline = nitr::case015::BuildPipeline(static_config);
   const auto file_pipeline = nitr::case015::BuildPipeline(file_config);
 
-  const auto static_actual = static_pipeline.runner.Run(PartnerAndFallbackEvents());
+  const auto static_actual =
+      static_pipeline.runner.Run(PartnerAndFallbackEvents());
   const auto file_actual = file_pipeline.runner.Run(PartnerAndFallbackEvents());
 
   if (static_actual != ExpectedStatic()) {
-    return case015_test::Fail("Static-mode partner/fallback behavior mismatch.");
+    return case015_test::Fail(
+        "Static-mode partner/fallback behavior mismatch.");
   }
   if (file_actual != ExpectedFile()) {
     return case015_test::Fail("File-mode partner/fallback behavior mismatch.");
   }
   if (static_actual == file_actual) {
-    return case015_test::Fail("Static and file provider outputs should differ for partner data.");
+    return case015_test::Fail(
+        "Static and file provider outputs should differ for partner data.");
   }
   return 0;
 }

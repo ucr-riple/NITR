@@ -2,7 +2,8 @@
 
 namespace nitr::case024 {
 
-MetricCollector::MetricCollector(MetricRecorder& recorder) : recorder_(recorder) {}
+MetricCollector::MetricCollector(MetricRecorder& recorder)
+    : recorder_(recorder) {}
 
 void MetricCollector::Collect(const std::vector<double>& samples) {
   if (samples.empty()) {
@@ -14,7 +15,8 @@ void MetricCollector::Collect(const std::vector<double>& samples) {
   double max_value = samples.front();
   for (double v : samples) {
     sum += v;
-    if (v > max_value) max_value = v;
+    if (v > max_value)
+      max_value = v;
   }
 
   const double count = static_cast<double>(samples.size());

@@ -105,24 +105,29 @@ bool ExpectRule(const nitr::case021::FilterRule& rule,
                 const std::string& expected_field,
                 const std::string& expected_op,
                 const std::string& expected_kind,
-                const std::string& expected_value,
-                const std::string& context) {
+                const std::string& expected_value, const std::string& context) {
   bool ok = true;
   ok = Check(nitr::case021::ToString(rule.field) == expected_field,
-             context + ": unexpected field") && ok;
+             context + ": unexpected field") &&
+       ok;
   ok = Check(nitr::case021::ToString(rule.op) == expected_op,
-             context + ": unexpected operator") && ok;
+             context + ": unexpected operator") &&
+       ok;
 
   if (expected_kind == "integer") {
     ok = Check(rule.value.kind == nitr::case021::FilterValueKind::kInteger,
-               context + ": expected integer value") && ok;
+               context + ": expected integer value") &&
+         ok;
     ok = Check(std::to_string(rule.value.number) == expected_value,
-               context + ": unexpected integer value") && ok;
+               context + ": unexpected integer value") &&
+         ok;
   } else {
     ok = Check(rule.value.kind == nitr::case021::FilterValueKind::kText,
-               context + ": expected text value") && ok;
+               context + ": expected text value") &&
+         ok;
     ok = Check(rule.value.text == expected_value,
-               context + ": unexpected text value") && ok;
+               context + ": unexpected text value") &&
+         ok;
   }
 
   return ok;
@@ -135,21 +140,22 @@ std::string DataPath(const std::string& file_name) {
 bool RunStructuredValidTests() {
   bool ok = true;
   for (const auto& row : ReadCsvRows(DataPath("structured_valid.csv"))) {
-    StructuredValidCase test_case{row[0], row[1], row[2], row[3], row[4], row[5], row[6]};
+    StructuredValidCase test_case{row[0], row[1], row[2], row[3],
+                                  row[4], row[5], row[6]};
     const nitr::case021::FilterParseResult result =
-        nitr::case021::ParseFilterClause(
-            nitr::case021::FilterClause{test_case.field, test_case.op, test_case.value});
-    ok = Check(result.ok, "structured parse should succeed for " + test_case.field) && ok;
+        nitr::case021::ParseFilterClause(nitr::case021::FilterClause{
+            test_case.field, test_case.op, test_case.value});
+    ok = Check(result.ok,
+               "structured parse should succeed for " + test_case.field) &&
+         ok;
     if (!result.ok) {
       continue;
     }
-    ok = ExpectRule(result.rule,
-                    test_case.expected_field,
-                    test_case.expected_op,
-                    test_case.value_kind,
-                    test_case.expected_value,
-                    "structured case " + test_case.field) &&
-         ok;
+    ok =
+        ExpectRule(result.rule, test_case.expected_field, test_case.expected_op,
+                   test_case.value_kind, test_case.expected_value,
+                   "structured case " + test_case.field) &&
+        ok;
   }
   return ok;
 }
@@ -160,17 +166,17 @@ bool RunInlineValidTests() {
     InlineValidCase test_case{row[0], row[1], row[2], row[3], row[4]};
     const nitr::case021::FilterParseResult result =
         nitr::case021::ParseInlineFilter(test_case.input);
-    ok = Check(result.ok, "inline parse should succeed for " + test_case.input) && ok;
+    ok = Check(result.ok,
+               "inline parse should succeed for " + test_case.input) &&
+         ok;
     if (!result.ok) {
       continue;
     }
-    ok = ExpectRule(result.rule,
-                    test_case.expected_field,
-                    test_case.expected_op,
-                    test_case.value_kind,
-                    test_case.expected_value,
-                    "inline case " + test_case.input) &&
-         ok;
+    ok =
+        ExpectRule(result.rule, test_case.expected_field, test_case.expected_op,
+                   test_case.value_kind, test_case.expected_value,
+                   "inline case " + test_case.input) &&
+        ok;
   }
   return ok;
 }
@@ -181,7 +187,8 @@ bool RunInlineInvalidTests() {
     InlineInvalidCase test_case{row[0], row[1]};
     const nitr::case021::FilterParseResult result =
         nitr::case021::ParseInlineFilter(test_case.input);
-    ok = Check(!result.ok, "inline parse should fail for " + test_case.input) && ok;
+    ok = Check(!result.ok, "inline parse should fail for " + test_case.input) &&
+         ok;
     if (result.ok) {
       continue;
     }
@@ -195,20 +202,12 @@ bool RunInlineInvalidTests() {
 bool RunParityTests() {
   bool ok = true;
   for (const auto& row : ReadCsvRows(DataPath("parity_cases.csv"))) {
-    ParityCase test_case{row[0],
-                         row[1],
-                         row[2],
-                         row[3],
-                         row[4] == "true",
-                         row[5],
-                         row[6],
-                         row[7],
-                         row[8],
-                         row[9]};
+    ParityCase test_case{row[0], row[1], row[2], row[3], row[4] == "true",
+                         row[5], row[6], row[7], row[8], row[9]};
 
     const nitr::case021::FilterParseResult structured =
-        nitr::case021::ParseFilterClause(
-            nitr::case021::FilterClause{test_case.field, test_case.op, test_case.value});
+        nitr::case021::ParseFilterClause(nitr::case021::FilterClause{
+            test_case.field, test_case.op, test_case.value});
     const nitr::case021::FilterParseResult inline_result =
         nitr::case021::ParseInlineFilter(test_case.input);
 
@@ -225,10 +224,8 @@ bool RunParityTests() {
                        nitr::case021::ToString(structured.rule),
                    "inline/structured rule mismatch for " + test_case.input) &&
              ok;
-        ok = ExpectRule(inline_result.rule,
-                        test_case.expected_field,
-                        test_case.expected_op,
-                        test_case.value_kind,
+        ok = ExpectRule(inline_result.rule, test_case.expected_field,
+                        test_case.expected_op, test_case.value_kind,
                         test_case.expected_value,
                         "parity case " + test_case.input) &&
              ok;
@@ -237,7 +234,8 @@ bool RunParityTests() {
     }
 
     if (!structured.ok && !inline_result.ok) {
-      const nitr::case021::FilterErrorCode expected = ParseErrorCodeName(test_case.error_code);
+      const nitr::case021::FilterErrorCode expected =
+          ParseErrorCodeName(test_case.error_code);
       ok = Check(structured.error.code == expected,
                  "structured error mismatch for " + test_case.input) &&
            ok;

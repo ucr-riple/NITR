@@ -11,21 +11,15 @@ using nitr::case016::PipelineRunner;
 namespace {
 
 void TestRunnerRespectsSegmentation() {
-  const PipelineConfig config =
-      PipelineConfig::FromJsonFile("evaluator/016.device-segment-planner/data/updated_config.json");
+  const PipelineConfig config = PipelineConfig::FromJsonFile(
+      "evaluator/016.device-segment-planner/data/updated_config.json");
   const PipelineRunner runner;
   const auto result = runner.Run(config);
 
   ASSERT_EQ(8, static_cast<int>(result.executed_steps.size()));
   const std::vector<DeviceKind> expected_devices = {
-      DeviceKind::kGpu,
-      DeviceKind::kGpu,
-      DeviceKind::kGpu,
-      DeviceKind::kGpu,
-      DeviceKind::kCpu,
-      DeviceKind::kGpu,
-      DeviceKind::kCpu,
-      DeviceKind::kCpu,
+      DeviceKind::kGpu, DeviceKind::kGpu, DeviceKind::kGpu, DeviceKind::kGpu,
+      DeviceKind::kCpu, DeviceKind::kGpu, DeviceKind::kCpu, DeviceKind::kCpu,
   };
 
   for (std::size_t i = 0; i < expected_devices.size(); ++i) {
@@ -37,5 +31,6 @@ void TestRunnerRespectsSegmentation() {
 }  // namespace
 
 int main() {
-  return RunTest("runner_respects_segmentation", &TestRunnerRespectsSegmentation);
+  return RunTest("runner_respects_segmentation",
+                 &TestRunnerRespectsSegmentation);
 }

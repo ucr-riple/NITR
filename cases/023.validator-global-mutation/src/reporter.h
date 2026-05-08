@@ -5,8 +5,8 @@
 namespace nitr::case023 {
 
 class Reporter {
-   public:
-    std::string Summary() const;
+ public:
+  std::string Summary() const;
 };
 
 }  // namespace nitr::case023

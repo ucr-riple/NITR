@@ -4,8 +4,8 @@
 namespace nitr::case023 {
 
 class Grader {
-    public:
-        int Grade(const Submission& s) const;
+ public:
+  int Grade(const Submission& s) const;
 };
 
 }  // namespace nitr::case023

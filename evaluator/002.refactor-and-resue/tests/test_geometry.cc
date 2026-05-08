@@ -1,8 +1,8 @@
-#include <cmath>
-#include <vector>
+#include <gtest/gtest.h>
 
 #include <Eigen/Dense>
-#include <gtest/gtest.h>
+#include <cmath>
+#include <vector>
 
 #include "geometry.h"
 
@@ -17,9 +17,7 @@ struct Vec3 {
 
 Mat3 MakeIntrinsics(double fx, double fy, double cx, double cy) {
   return Mat3{
-      fx, 0.0, cx,
-      0.0, fy, cy,
-      0.0, 0.0, 1.0,
+      fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0,
   };
 }
 
@@ -27,7 +25,8 @@ Vec2 ProjectPointIdentity(const Vec3& point) {
   return Vec2{point.x / point.z, point.y / point.z};
 }
 
-Vec2 ProjectPointTranslated(const Vec3& point, double tx, double ty, double tz) {
+Vec2 ProjectPointTranslated(const Vec3& point, double tx, double ty,
+                            double tz) {
   const double x = point.x + tx;
   const double y = point.y + ty;
   const double z = point.z + tz;
@@ -53,7 +52,8 @@ double FundamentalResidual(const Mat3& f, const Vec2& p1, const Vec2& p2) {
   return std::abs(x2[0] * fx1[0] + x2[1] * fx1[1] + x2[2] * fx1[2]);
 }
 
-double EssentialResidual(const Mat3& e, const Vec2& p1, const Vec2& p2, const Mat3& k1, const Mat3& k2) {
+double EssentialResidual(const Mat3& e, const Vec2& p1, const Vec2& p2,
+                         const Mat3& k1, const Mat3& k2) {
   const double x1[3] = {
       (p1.x - k1[2]) / k1[0],
       (p1.y - k1[5]) / k1[4],
@@ -83,24 +83,15 @@ double Mean(const std::vector<double>& values) {
 
 Eigen::Matrix3d ToEigen(const Mat3& m) {
   Eigen::Matrix3d out;
-  out << m[0], m[1], m[2],
-         m[3], m[4], m[5],
-         m[6], m[7], m[8];
+  out << m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8];
   return out;
 }
 
 std::vector<Vec3> SyntheticPoints() {
   return {
-      {-1.2, -0.4, 4.0},
-      {-0.8,  0.7, 4.4},
-      {-0.1, -0.6, 5.1},
-      { 0.3,  0.5, 5.6},
-      { 0.8, -0.2, 6.0},
-      { 1.0,  0.9, 6.8},
-      {-0.5,  1.1, 5.3},
-      { 0.6, -1.0, 4.7},
-      { 1.3,  0.2, 7.2},
-      {-1.1,  0.4, 6.1},
+      {-1.2, -0.4, 4.0}, {-0.8, 0.7, 4.4}, {-0.1, -0.6, 5.1}, {0.3, 0.5, 5.6},
+      {0.8, -0.2, 6.0},  {1.0, 0.9, 6.8},  {-0.5, 1.1, 5.3},  {0.6, -1.0, 4.7},
+      {1.3, 0.2, 7.2},   {-1.1, 0.4, 6.1},
   };
 }
 
@@ -154,12 +145,14 @@ TEST(GeometryTests, EssentialEstimateProducesLowNormalizedResidual) {
   std::vector<double> residuals;
   residuals.reserve(points.size());
   for (size_t i = 0; i < points.size(); ++i) {
-    residuals.push_back(EssentialResidual(e, data.pts1[i], data.pts2[i], k1, k2));
+    residuals.push_back(
+        EssentialResidual(e, data.pts1[i], data.pts2[i], k1, k2));
   }
 
   EXPECT_LT(Mean(residuals), 1e-3);
 
-  const Eigen::JacobiSVD<Eigen::Matrix3d> svd(ToEigen(e), Eigen::ComputeFullU | Eigen::ComputeFullV);
+  const Eigen::JacobiSVD<Eigen::Matrix3d> svd(
+      ToEigen(e), Eigen::ComputeFullU | Eigen::ComputeFullV);
   const Eigen::Vector3d singular_values = svd.singularValues();
   EXPECT_GT(singular_values(0), 1e-6);
   EXPECT_GT(singular_values(1), 1e-6);
