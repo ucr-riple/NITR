@@ -17,12 +17,20 @@ FORBIDDEN_SRC_PATTERNS = [
     r"\bstd::time\s*\(",
     r"\bsleep_for\s*\(",
     r"\bsleep_until\s*\(",
+    r"\bgettimeofday\s*\(",
+    r"\bclock_gettime\s*\(",
+    r"\bgmtime\s*\(",
+    r"\blocaltime\s*\(",
+    r"\bmktime\s*\(",
 ]
 
 FORBIDDEN_TEST_PATTERNS = [
     r"\bsleep_for\s*\(",
     r"\bsleep_until\s*\(",
     r"\bthis_thread::sleep_for\s*\(",
+    r"\busleep\s*\(",
+    r"\bnanosleep\s*\(",
+    r"(?<!_)\bsleep\s*\(",
 ]
 
 SUSPICIOUS_API_PATTERNS = [
@@ -64,7 +72,25 @@ for path in scan_files(TEST_DIR):
     text = path.read_text()
     forbidden = contains_any(FORBIDDEN_TEST_PATTERNS, text)
     if forbidden:
-        failures.append(f"sleep-based test detected in {path.relative_to(ROOT)}: {forbidden}")
+        failures.append(f"sleep-based test detected in {path.relative_to(REPO_ROOT)}: {forbidden}")
+
+# Positive structural check: the time-injection seam must remain on the
+# public SessionManager API. Without it, the seam can disappear silently and
+# the only failure signal is a confusing test link error.
+header_path = SRC_DIR / "session_manager.h"
+if not header_path.exists():
+    failures.append("session_manager.h is missing from cases/009.session-expiry-testability/src/")
+else:
+    header_text = header_path.read_text()
+    seam_ctor = re.search(
+        r"SessionManager\s*\([^)]*TimeSource[^)]*\)",
+        header_text,
+    )
+    if seam_ctor is None:
+        failures.append(
+            "session_manager.h must keep a SessionManager constructor that "
+            "accepts a TimeSource (the test seam)."
+        )
 
 if failures:
     for failure in failures:
