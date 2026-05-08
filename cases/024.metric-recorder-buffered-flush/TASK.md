@@ -18,9 +18,8 @@ implementation is wired in.
 - Add a `BufferedMetricRecorder` that buffers up to a configurable capacity
   of metrics and writes them in one batch to the underlying stream when
   capacity is reached or when visibility is explicitly requested.
-- Add a `Flush()` operation to make any queued metrics visible immediately.
-  The consumer must be able to invoke this operation through the same
-  recorder reference it already uses for `Record()`.
+- Add an explicit visibility trigger that can be invoked to make any queued
+  metrics visible immediately, supporting the checkpoint scenario below.
 - Add a `Checkpoint()` method to `MetricCollector` that the consumer can
   call at the checkpoint boundary to guarantee visibility of all queued
   metrics, regardless of which recorder implementation is wired in.
