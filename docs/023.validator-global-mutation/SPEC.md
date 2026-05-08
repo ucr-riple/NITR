@@ -90,10 +90,10 @@ The evaluator penalizes:
 - `total_processed` reflects the correct count after all submissions are processed
 
 ### Structural
-- enforced by `evaluator/023.validator-global-mutation/checks/check_sideeffect.py`
+- enforced by `evaluator/023.validator-global-mutation/checks/check_side_effect.py`
 - `validator.h` / `validator.cc` must not reference `total_processed`
 - `validator.h` / `validator.cc` must not include `stats.h`
-- `reporter.cc` and `grader.cc` must not be modified 
+- `app/main.cc`, `reporter.cc`, and `grader.cc` must not be modified
 
 ### Maintainability
 - validation logic is side-effect free
@@ -103,8 +103,8 @@ The evaluator penalizes:
 ## Oracle Signals
 - C++ functional tests verify `validate()` return values
 - Python functional tests verify the processed count
-- structural check catches any reference to `total_processed` or `stats.h` inside validator files
-- `reporter.cc` and `grader.cc` are not modified by the agent 
+- structural check catches any forbidden `total_processed` / `stats.h` usage outside the allowed ownership files
+- `app/main.cc`, `reporter.cc`, and `grader.cc` are not modified by the agent 
 - `total_processed` is only incremented in `main.cc`
 
 ## Common Failure Modes (Non-Scoring)
