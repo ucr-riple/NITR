@@ -65,11 +65,15 @@ TEST(BufferedMetricRecorderTest, ExplicitFlushMakesQueuedMetricsVisible) {
   std::ostringstream out;
   BufferedMetricRecorder recorder(out, /*capacity=*/100);
 
-  recorder.Record({"queued1", 10.0});
-  recorder.Record({"queued2", 20.0});
+  // Call through abstract base reference to verify the polymorphic
+  // visibility-trigger works correctly. This ensures Flush is not a
+  // subclass-only method but properly declared on the abstract base.
+  MetricRecorder& base = recorder;
+  base.Record({"queued1", 10.0});
+  base.Record({"queued2", 20.0});
   ASSERT_TRUE(out.str().empty());
 
-  recorder.Flush();
+  base.Flush();
 
   const std::string output = out.str();
   EXPECT_NE(output.find("queued1"), std::string::npos);
