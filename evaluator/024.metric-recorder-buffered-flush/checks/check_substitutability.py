@@ -53,6 +53,29 @@ def count_pure_virtual_methods(class_body: str) -> int:
     return count
 
 
+def has_virtual_method_matching(class_body: str, name_pattern: str) -> bool:
+    """Check if class body contains a virtual method matching the given name pattern.
+
+    Matches both pure virtual (= 0) and virtual with default implementation.
+    Excludes destructors.
+    """
+    # Match virtual methods: virtual ... MethodName(...) ... [= 0] ; or { ... }
+    # This covers:
+    # - virtual void Flush() = 0;  (pure virtual)
+    # - virtual void Flush();      (declaration, impl in .cc)
+    # - virtual void Flush() {}    (inline default implementation)
+    pattern = re.compile(
+        rf"virtual\s+[^;{{}}]*?\b({name_pattern})\s*\([^;{{}}]*\)\s*(?:const\s*)?(?:noexcept\s*)?(?:=\s*0\s*)?(?:;|\s*\{{)",
+        re.S,
+    )
+    for m in pattern.finditer(class_body):
+        name = m.group(1)
+        if name.startswith("~"):
+            continue
+        return True
+    return False
+
+
 def find_class_body(source: str, class_name: str) -> str | None:
     """Return the body of a class declaration, or None if not found."""
     # Match class declaration up through the matching brace.
@@ -92,18 +115,41 @@ def main() -> int:
             "metric_recorder.h: class MetricRecorder declaration not found."
         )
     else:
-        # Assertion 1: the abstract base must declare AT LEAST 2 pure-virtual
-        # methods (Record + a polymorphic visibility-trigger). If the agent
-        # added the visibility-trigger only on the buffered subclass, the
-        # base will have only 1 pure-virtual and consumers must downcast.
-        pure_virtual_count = count_pure_virtual_methods(recorder_body)
-        if pure_virtual_count < 2:
+        # Assertion 1: the abstract base must admit a polymorphic visibility-trigger
+        # (e.g. Flush) alongside Record. This can be pure virtual (= 0) or virtual
+        # with a default implementation (e.g. empty body for immediate-write recorders).
+        # The key is that it must be callable through the base class reference.
+        #
+        # If the agent added the visibility-trigger only on the buffered subclass,
+        # consumers would be forced to downcast, breaking substitutability.
+
+        # Check for Record (must exist)
+        has_record = has_virtual_method_matching(recorder_body, r"Record")
+        if not has_record:
             failures.append(
-                "metric_recorder.h: the abstract MetricRecorder base has fewer "
-                "than 2 pure-virtual methods (found "
-                f"{pure_virtual_count}). The base must admit a polymorphic "
-                "visibility-trigger (e.g. Flush) alongside Record so consumers "
-                "can flush any recorder through the abstract reference."
+                "metric_recorder.h: MetricRecorder must declare Record as a "
+                "virtual member."
+            )
+
+        # Check for visibility-trigger (Flush, Commit, Sync, etc.)
+        # Common names for visibility triggers
+        visibility_trigger_names = [
+            r"Flush", r"Commit", r"Sync", r"MakeVisible",
+            r"Publish", r"Drain", r"Write"
+        ]
+        has_visibility_trigger = any(
+            has_virtual_method_matching(recorder_body, name)
+            for name in visibility_trigger_names
+        )
+
+        if not has_visibility_trigger:
+            failures.append(
+                "metric_recorder.h: the abstract MetricRecorder base must admit "
+                "a polymorphic visibility-trigger (e.g. Flush, Commit, Sync) "
+                "alongside Record. This can be pure virtual or virtual with default "
+                "implementation, but must be callable through the base class "
+                "reference so consumers can trigger visibility on any recorder "
+                "without downcasting."
             )
 
         # Sanity: Record must still be a virtual member of the base.
@@ -138,38 +184,47 @@ def main() -> int:
             "is substitutable wherever the console recorder is used today."
         )
 
-    # Assertion 3: the buffered recorder must override BOTH Record and the
-    # polymorphic visibility-trigger (i.e. the class body must contain at
-    # least 2 'override' tokens on member functions).
+    # Assertion 3: the buffered recorder must override Record and provide
+    # a real flush implementation. At minimum, Record must be overridden.
+    # If the base visibility-trigger is pure virtual, it must also be overridden.
+    # If the base visibility-trigger has a default implementation, the buffered
+    # recorder should still override it to provide actual flush logic (but this
+    # is verified by functional tests, not structural checks).
     if buffered_class_match is not None:
         bpath, bname = buffered_class_match
         btext = strip_comments(bpath.read_text(encoding="utf-8"))
         bbody = find_class_body(btext, bname) or ""
-        override_count = len(re.findall(r"\boverride\b", bbody))
-        if override_count < 2:
+
+        # Check that Record is overridden
+        has_record_override = re.search(r"\bRecord\s*\([^)]*\)[^;{]*\boverride\b", bbody)
+        if not has_record_override:
             failures.append(
-                f"{bpath.name}: {bname} declares {override_count} 'override' "
-                "method(s); it must override BOTH Record AND the polymorphic "
-                "visibility-trigger declared on the abstract base. If only "
-                "one is overridden, the abstraction is incomplete."
+                f"{bpath.name}: {bname} must override Record to provide "
+                "buffered recording logic."
             )
 
-    # Assertion 4: the existing immediate-write recorder must also override
-    # the polymorphic visibility-trigger. A no-op body is fine. Without
-    # this, the agent has likely added the visibility-trigger only on the
-    # buffered impl, breaking substitutability.
+    # Assertion 4: the existing immediate-write recorder must override Record.
+    # The visibility-trigger can be inherited from the base if the base provides
+    # a default implementation (e.g. virtual void Flush() {}), or must be
+    # overridden if the base declares it pure virtual.
+    #
+    # We already verified in Assertion 1 that the base declares a polymorphic
+    # visibility-trigger, so we just need to ensure ConsoleMetricRecorder can
+    # call it (either by overriding or inheriting). Since C++ inheritance
+    # provides this automatically, we only verify that Record is overridden.
     console_h = read("console_metric_recorder.h")
     console_cc = read("console_metric_recorder.cc")
     console_combined = strip_comments(console_h + "\n" + console_cc)
     console_body = find_class_body(strip_comments(console_h), "ConsoleMetricRecorder") or ""
-    console_override_count = len(re.findall(r"\boverride\b", console_body))
-    if console_override_count < 2:
+
+    # Check that Record is overridden
+    has_console_record_override = re.search(
+        r"\bRecord\s*\([^)]*\)[^;{]*\boverride\b", console_body
+    )
+    if not has_console_record_override:
         failures.append(
-            "console_metric_recorder.h: ConsoleMetricRecorder declares "
-            f"{console_override_count} 'override' method(s); it must override "
-            "BOTH the abstract base's pure-virtual methods. If the polymorphic "
-            "visibility-trigger lives only on the buffered subclass, "
-            "consumers are forced to downcast and substitutability is lost."
+            "console_metric_recorder.h: ConsoleMetricRecorder must override "
+            "Record to provide immediate-write recording logic."
         )
 
     # Assertion 5: MetricCollector must operate through the abstract
@@ -207,6 +262,32 @@ def main() -> int:
             "the abstract MetricRecorder reference, without runtime type "
             "discovery."
         )
+
+    # Assertion 7: MetricCollector must not use capability branching
+    # (e.g. if (recorder_.IsBuffered()) { ... }). The SPEC explicitly
+    # lists this as an undesirable direction. The visibility-trigger
+    # should be unconditionally callable on any recorder implementation.
+    capability_patterns = [
+        r"\bIsBuffered\s*\(",
+        r"\bSupportsFlush\s*\(",
+        r"\bCanFlush\s*\(",
+        r"\bHasBuffer\s*\(",
+        r"\bNeedsFlush\s*\(",
+        r"\bRequiresFlush\s*\(",
+        # Also catch conditional calls to flush-like methods
+        r"if\s*\([^)]*\.(Flush|Commit|Sync|MakeVisible|Publish|Drain)\s*\(",
+    ]
+    for pattern in capability_patterns:
+        if re.search(pattern, collector_combined, re.IGNORECASE):
+            failures.append(
+                "metric_collector contains capability branching "
+                f"(pattern: {pattern!r}). The checkpoint operation must "
+                "unconditionally invoke the polymorphic visibility-trigger "
+                "on the abstract recorder reference. Capability predicates "
+                "(e.g. IsBuffered, SupportsFlush) break substitutability "
+                "by making the caller aware of implementation details."
+            )
+            break  # Report once
 
     if failures:
         print("Substitutability check failed:")

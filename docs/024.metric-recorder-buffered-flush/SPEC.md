@@ -134,10 +134,12 @@ Undesirable directions:
 ### 6.2 Structural
 
 - The abstract base must admit the visibility-trigger as a polymorphic
-  member, not a subclass-only method.
-- All existing concrete recorders must implement the polymorphic
-  visibility-trigger (an empty body is acceptable for immediate-write
-  impls).
+  member, not a subclass-only method. This can be a pure virtual method
+  or a virtual method with a default implementation (e.g., a no-op body
+  for immediate-write recorders).
+- All concrete recorders must be callable through the abstract base's
+  visibility-trigger, either by overriding it or by inheriting a default
+  implementation from the base.
 - The new buffered recorder must derive from the same abstract base as the
   existing recorder.
 - `MetricCollector` must operate through the abstract recorder reference
@@ -168,14 +170,20 @@ The evaluator uses the following concrete signals:
      reference when wired with a buffered recorder
 2. Structural Python check (`check_substitutability.py`):
    - the abstract base declares at least one polymorphic visibility-trigger
-     in addition to `Record`
+     in addition to `Record` (can be pure virtual or virtual with default
+     implementation)
    - a new buffered recorder header exists and derives from the abstract base
-   - the buffered recorder overrides both `Record` and the
-     visibility-trigger
-   - the existing immediate-write recorder also overrides the
-     visibility-trigger
+   - the buffered recorder overrides `Record` (the visibility-trigger
+     override is verified functionally, not structurally, since it may be
+     inherited from the base if the base provides a default implementation)
+   - the existing immediate-write recorder overrides `Record` and can either
+     override or inherit the visibility-trigger depending on whether the
+     base declares it as pure virtual or provides a default implementation
    - `MetricCollector` does not reference any concrete recorder type
    - `MetricCollector` does not use `dynamic_cast`
+   - `MetricCollector` does not use capability branching (e.g.,
+     `if (recorder.IsBuffered())`) to conditionally invoke the
+     visibility-trigger
 
 ## 8. Failure Modes (Non-scoring)
 
