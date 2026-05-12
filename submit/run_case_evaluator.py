@@ -110,7 +110,16 @@ def copy_repo_workspace(repo_root: Path, workspace_root: Path):
     shutil.copytree(
         repo_root,
         workspace_root,
-        ignore=shutil.ignore_patterns(".git", "build", "bin", "obj", "__pycache__", ".DS_Store"),
+        ignore=shutil.ignore_patterns(
+            ".git",
+            "build",
+            "bin",
+            "obj",
+            "__pycache__",
+            ".DS_Store",
+            ".submit-output",
+            "submit-output",
+        ),
     )
 
 

@@ -12,16 +12,25 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 FILE_LIST="$(mktemp)"
 trap 'rm -f "${FILE_LIST}"' EXIT HUP INT TERM
 
-(
-  cd "${ROOT_DIR}" &&
-    git ls-files -- '*.h' '*.hh' '*.hpp' '*.hxx' '*.c' '*.cc' '*.cpp' '*.cxx' \
-      ':(exclude)third_party/**'
-) >"${FILE_LIST}"
+list_cpp_files() {
+  (
+    cd "${ROOT_DIR}" &&
+      find . \
+        \( -path './.git' -o -path './third_party' -o -path './build' -o -path './bin' -o -path './obj' \
+           -o -path './__pycache__' -o -path './.submit-output' -o -path './submit-output' \) -prune \
+        -o -type f \
+        \( -name '*.h' -o -name '*.hh' -o -name '*.hpp' -o -name '*.hxx' \
+           -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) \
+        -print | sed 's#^\./##' | LC_ALL=C sort
+  )
+}
+
+list_cpp_files >"${FILE_LIST}"
 
 FILE_COUNT="$(wc -l <"${FILE_LIST}" | tr -d ' ')"
 
 if [ "${FILE_COUNT}" -eq 0 ]; then
-  echo "No tracked C/C++ files found."
+  echo "No C/C++ files found."
   exit 0
 fi
 
