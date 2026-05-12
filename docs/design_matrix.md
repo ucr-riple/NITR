@@ -193,12 +193,14 @@ Typical failures:
 Current cases:
 - `010 logging-side-effects`
 - `019 ranking-explainability-boundary` (**multi-step**)
+- `023 validator-global-mutation` (**micro**)
 
-Current count: **2**
+Current count: **3**
 
 Notes:
 - `010` remains the micro side-effect probe.
 - `019` is the D9 multi-step case focused on explainability / inspection pressure without collapsing into a logging-only task.
+- `023` is the second D9 micro case focused on preventing global-state mutation from leaking into core validation logic.
 
 ---
 
@@ -228,6 +230,7 @@ Notes:
 | 020 handover-packet-ownership-boundary | D3 Responsibility Decomposition | micro |
 | 021 inline-filter-entrypoint-reuse | D2 Reuse and Repo Awareness | micro |
 | 022 thermostat-sensor-decoupling | D6 Dependency Control | micro |
+| 023 validator-global-mutation | D9 Side-Effect Isolation | micro |
 | 024 metric-recorder-buffered-flush | D5 Interface and Substitutability Discipline | micro |
 
 ---
@@ -244,11 +247,10 @@ Notes:
 | D6 Dependency Control | 3 |
 | D7 Testability and Determinism | 3 |
 | D8 State Ownership and Lifecycle | 2 |
-| D9 Side-Effect Isolation | 2 |
+| D9 Side-Effect Isolation | 3 |
 
-Total cases recorded: **23**
+Total cases recorded: **24**
 
 Notes:
-- Current matrix contents cover cases `001`-`022` and `024`.
-- (Case `023 validator-global-mutation` is registered separately under D9.)
-- With `021`, `016`, and `024` included, D1, D2, D5, and D7 each have three cases; D3, D4, D8, and D9 each have two.
+- Current matrix contents cover cases `001`-`024`.
+- With `021`, `016`, `023`, and `024` included, D1, D2, D5, D7, and D9 each have three cases; D3, D4, and D8 each have two.
