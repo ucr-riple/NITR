@@ -219,12 +219,19 @@ def discover_ctest_names(build_dir: Path):
     return result, names
 
 
+def is_case_relevant_ctest(test_name: str) -> bool:
+    """Filter out repo-level tests that should not affect one-case evaluation."""
+    return test_name != "nitr_format_check"
+
+
 def run_ctest_per_test(build_dir: Path, timeout_seconds: int):
     """Run each discovered CTest test separately to keep logs and timeouts isolated."""
     discover_result, test_names = discover_ctest_names(build_dir)
+    relevant_test_names = [name for name in test_names if is_case_relevant_ctest(name)]
     summary = {
         "discover": discover_result,
         "tests": [],
+        "skipped_tests": [name for name in test_names if not is_case_relevant_ctest(name)],
         "exit_code": 0,
         "timed_out": False,
     }
@@ -232,7 +239,7 @@ def run_ctest_per_test(build_dir: Path, timeout_seconds: int):
         summary["exit_code"] = discover_result["exit_code"]
         return summary
 
-    for test_name in test_names:
+    for test_name in relevant_test_names:
         cmd = [
             "ctest",
             "--test-dir",
