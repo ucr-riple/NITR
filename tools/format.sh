@@ -15,10 +15,8 @@ trap 'rm -f "${FILE_LIST}"' EXIT HUP INT TERM
 list_cpp_files() {
   (
     cd "${ROOT_DIR}" &&
-      find . \
-        \( -path './.git' -o -path './third_party' -o -path './build' -o -path './bin' -o -path './obj' \
-           -o -path './__pycache__' -o -path './.submit-output' -o -path './submit-output' \) -prune \
-        -o -type f \
+      find ./cases ./evaluator \
+        -type f \
         \( -name '*.h' -o -name '*.hh' -o -name '*.hpp' -o -name '*.hxx' \
            -o -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.cxx' \) \
         -print | sed 's#^\./##' | LC_ALL=C sort
