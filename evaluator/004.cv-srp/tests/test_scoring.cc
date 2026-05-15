@@ -7,6 +7,7 @@ namespace nitr::case004 {
 
 TEST(Scoring, InlierRatioBasic) {
   PairInput in;
+  in.matches = {{0, 0}, {1, 1}, {2, 2}, {3, 3}};
   EstimationOutput est;
   est.inliers = {true, false, true, true};  // 3/4
 
