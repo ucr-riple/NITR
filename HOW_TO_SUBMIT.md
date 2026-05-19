@@ -36,7 +36,7 @@ python3 submit/submit_case.py \
   --model_name gemini-2.5-pro \
   -i . \
   -o .submit-output/gemini-2.5-pro \
-  -c 021
+  -c 024
 ```
 
 Note:
@@ -127,7 +127,7 @@ python3 submit/submit_case.py \
   --backend chatgpt-codex \
   -i . \
   -o .submit-output/chatgpt-codex \
-  -c 021
+  -c 024
 ```
 
 Example with a model override:
@@ -138,7 +138,7 @@ python3 submit/submit_case.py \
   --model_name gpt-5-mini \
   -i . \
   -o .submit-output/chatgpt-api \
-  -c 021
+  -c 024
 ```
 
 You can use the same override pattern with other model-driven backends such as
@@ -165,7 +165,7 @@ Example:
 ```bash
 python3 submit/run_case_evaluator.py \
   -g .submit-output/chatgpt-codex \
-  -c 021 \
+  -c 024 \
   -r . \
   --refresh_evaluator
 ```
@@ -195,7 +195,7 @@ Example with an explicit case list:
 bash submit/run_batch.sh \
   --mode submit \
   --backend qwen-openapi \
-  --cases 001,002,021
+  --cases 001,002,024
 ```
 
 If `--cases all` is used, the script expands to all case ids currently present under `cases/`.
@@ -227,7 +227,7 @@ bash submit/run_batch.sh \
 
 For a typical local run:
 
-1. pick a case such as `021`
+1. pick a case such as `024`
 2. run `submit_case.py` for that backend
 3. inspect files under `.submit-output/<backend>/responses/`
 4. run `run_case_evaluator.py` for the generated case

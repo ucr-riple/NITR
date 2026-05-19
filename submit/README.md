@@ -77,7 +77,7 @@ python3 submit/submit_case.py \
   --backend chatgpt-codex \
   -i . \
   -o .submit-output/chatgpt-codex \
-  -c 021
+  -c 024
 ```
 
 Most model-driven backends expose a default `model_name`, but you can override
@@ -91,7 +91,7 @@ python3 submit/submit_case.py \
   --model_name gpt-5-mini \
   -i . \
   -o .submit-output/chatgpt-api \
-  -c 021
+  -c 024
 ```
 
 This applies to backends such as `chatgpt-codex`, `chatgpt-api`,
@@ -104,7 +104,7 @@ This applies to backends such as `chatgpt-codex`, `chatgpt-api`,
 Evaluate one generated case:
 
 ```bash
-python3 submit/run_case_evaluator.py -g .submit-output/chatgpt-codex -c 021 -r . --refresh_evaluator
+python3 submit/run_case_evaluator.py -g .submit-output/chatgpt-codex -c 024 -r . --refresh_evaluator
 ```
 
 Run the evaluator over all generated cases in one output root:
@@ -129,7 +129,7 @@ Run batch submit with an explicit case list:
 bash submit/run_batch.sh \
   --mode submit \
   --backend qwen-openapi \
-  --cases 001,002,021
+  --cases 001,002,024
 ```
 
 ## Notes
