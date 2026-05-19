@@ -1,0 +1,24 @@
+model,001,002,003,004,005,006,007,008,009,010,011,012,013,014,015,016,017,018,019,020,021,022,023,024,pass_count,total_count,pass_rate
+GPT-5.3-Cx (Agt),fail,fail,pass,fail,fail,fail,pass,pass,pass,pass,pass,pass,pass,pass,fail,pass,pass,fail,fail,pass,fail,fail,fail,pass,13,24,0.5417
+GPT-5.3-Cx (API),fail,fail,pass,fail,fail,fail,pass,fail,pass,pass,fail,pass,fail,pass,fail,fail,fail,fail,fail,fail,fail,fail,fail,pass,7,24,0.2917
+GPT-5.4 (Agt),fail,fail,pass,fail,fail,fail,pass,fail,pass,pass,pass,pass,pass,pass,fail,pass,fail,fail,fail,pass,fail,fail,fail,pass,11,24,0.4583
+GPT-5.4 (API),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,pass,pass,fail,fail,pass,fail,fail,fail,fail,fail,fail,pass,8,24,0.3333
+GPT-5.2-Cx (Agt),pass,fail,pass,fail,fail,fail,pass,pass,pass,pass,pass,pass,pass,pass,fail,pass,fail,fail,fail,fail,fail,N/A,N/A,N/A,11,21,0.5238
+GPT-5 (Agt),fail,fail,pass,fail,fail,fail,pass,fail,pass,pass,pass,pass,pass,pass,fail,pass,fail,pass,fail,pass,fail,N/A,N/A,N/A,11,21,0.5238
+GPT-5-Mini (API),fail,fail,pass,fail,fail,fail,pass,fail,pass,pass,fail,pass,fail,pass,fail,fail,fail,fail,fail,fail,fail,N/A,N/A,N/A,6,21,0.2857
+Claude Opus 4.5 (Agt),fail,fail,pass,fail,fail,fail,pass,fail,pass,pass,pass,pass,pass,pass,fail,pass,fail,fail,fail,pass,fail,N/A,N/A,N/A,10,21,0.4762
+Claude Opus 4.5 (API),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,pass,pass,fail,fail,fail,fail,fail,fail,fail,N/A,N/A,N/A,6,21,0.2857
+Claude Opus 4.6 (Agt),pass,fail,pass,fail,fail,pass,pass,fail,pass,pass,pass,pass,pass,pass,fail,pass,fail,fail,fail,pass,fail,pass,fail,pass,14,24,0.5833
+Claude Opus 4.6 (API),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,pass,pass,fail,fail,fail,fail,fail,fail,fail,pass,fail,pass,8,24,0.3333
+Claude Sonnet 4.5 (Agt),fail,fail,pass,fail,fail,fail,pass,fail,pass,fail,pass,pass,pass,fail,fail,pass,fail,fail,fail,pass,fail,N/A,N/A,N/A,8,21,0.3810
+Claude Sonnet 4.5 (API),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,pass,pass,fail,fail,fail,fail,fail,fail,fail,N/A,N/A,N/A,6,21,0.2857
+Claude Sonnet 4.6 (Agt),fail,fail,pass,fail,fail,pass,fail,fail,pass,pass,pass,pass,pass,pass,fail,pass,fail,fail,fail,fail,fail,fail,fail,fail,9,24,0.3750
+Claude Sonnet 4.6 (API),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,fail,pass,fail,fail,fail,fail,fail,fail,fail,pass,fail,fail,6,24,0.2500
+Gemini 3.1 Pro (Agt),pass,fail,fail,fail,fail,fail,pass,fail,fail,pass,pass,pass,pass,pass,fail,fail,pass,pass,pass,fail,fail,N/A,N/A,N/A,10,21,0.4762
+Gemini 3.1 Pro (API),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,pass,pass,pass,pass,fail,fail,fail,fail,fail,pass,fail,N/A,N/A,N/A,8,21,0.3810
+Gemini 3.1 Flash (Agt),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,pass,pass,fail,fail,fail,fail,fail,fail,fail,N/A,N/A,N/A,6,21,0.2857
+Gemini 3.1 Flash (API),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,pass,fail,fail,fail,fail,fail,fail,fail,fail,N/A,N/A,N/A,5,21,0.2381
+Gemini 2.5 Pro (Agt),fail,fail,pass,fail,fail,fail,fail,fail,pass,fail,fail,pass,pass,pass,fail,fail,fail,fail,fail,fail,fail,N/A,N/A,N/A,5,21,0.2381
+Gemini 2.5 Pro (API),pass,fail,pass,fail,fail,fail,fail,fail,fail,pass,fail,pass,pass,fail,fail,fail,pass,fail,fail,fail,fail,N/A,N/A,N/A,6,21,0.2857
+Qwen3-Coder (API),pass,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,fail,fail,fail,fail,fail,fail,fail,fail,fail,N/A,N/A,N/A,5,21,0.2381
+Qwen3-80B (API),fail,fail,pass,fail,fail,fail,fail,fail,pass,pass,fail,pass,fail,pass,fail,fail,fail,fail,fail,fail,fail,N/A,N/A,N/A,5,21,0.2381
