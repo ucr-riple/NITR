@@ -117,13 +117,13 @@ For local development, manual debugging, or quick validation of one case, you ca
 configure and build a single case with:
 
 ```bash
-python3 tools/run_case.py 002.refactor-and-resue
+python3 tools/run_case.py 002.refactor-and-reuse
 ```
 
 To build a single case and run its public evaluator checks locally:
 
 ```bash
-python3 tools/run_case.py 002.refactor-and-resue --with-evaluator
+python3 tools/run_case.py 002.refactor-and-reuse --with-evaluator
 ```
 
 Use `tools/run_case.py` when you want to work on one case directly inside the
@@ -144,8 +144,8 @@ Typical workflow:
 # 1. Pick a case and read its task file(s).
 # 2. Ask your coding system to edit files under cases/<case_slug>/.
 # 3. Run the public evaluator locally.
-python3 tools/run_case.py 002.refactor-and-resue
-python3 tools/run_case.py 002.refactor-and-resue --with-evaluator
+python3 tools/run_case.py 002.refactor-and-reuse
+python3 tools/run_case.py 002.refactor-and-reuse --with-evaluator
 ```
 
 You can use the benchmark through several interfaces:
@@ -168,7 +168,7 @@ on before running the evaluator.
 ## Cases
 
 - `001.add-no-callsite-spread`
-- `002.refactor-and-resue`
+- `002.refactor-and-reuse`
 - `003.reuse-existing-code`
 - `004.cv-srp`
 - `005.pricing-ocp`

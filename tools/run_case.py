@@ -22,7 +22,7 @@ def main():
     )
     parser.add_argument(
         "case",
-        help="Case directory name under cases/, e.g. 002.refactor-and-resue",
+        help="Case directory name under cases/, e.g. 002.refactor-and-reuse",
     )
     parser.add_argument(
         "--build-dir",

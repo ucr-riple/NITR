@@ -90,7 +90,7 @@ Implement `EstimateEssential8Point`:
 ### File restrictions
 
 - You may modify: `src/geometry.cc`
-- You must not modify: `src/geometry.h`, `app/main.cc`, anything under `evaluator/002.refactor-and-resue/`
+- You must not modify: `src/geometry.h`, `app/main.cc`, anything under `evaluator/002.refactor-and-reuse/`
 - Do not add new source files for this case.
 
 ---
@@ -117,7 +117,7 @@ Correctness is measured by **epipolar residuals**, not exact matrix equality (sc
 - Fundamental: for homogeneous pixel points `x1, x2`, residual `|x2^T F x1|` must be small on average.
 - Essential: using normalized camera coordinates `x1n = K1^{-1} x1`, `x2n = K2^{-1} x2`, residual `|x2n^T E x1n|` must be small on average.
 
-Thresholds are deterministic and fixed in `evaluator/002.refactor-and-resue/tests/`.
+Thresholds are deterministic and fixed in `evaluator/002.refactor-and-reuse/tests/`.
 
 ### 6.2 Structural (Maintainability)
 
