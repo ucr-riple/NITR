@@ -15,7 +15,7 @@ endfunction()
 
 if(NITR_BUILD_ALL_CASES)
   nitr_add_case(001.add-no-callsite-spread)
-  nitr_add_case(002.refactor-and-resue)
+  nitr_add_case(002.refactor-and-reuse)
   nitr_add_case(003.reuse-existing-code)
   nitr_add_case(004.cv-srp)
   nitr_add_case(005.pricing-ocp)
