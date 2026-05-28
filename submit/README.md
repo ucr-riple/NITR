@@ -68,6 +68,11 @@ Typical generated structure:
 `-- staging/
 ```
 
+Response sidecars may also appear under `responses/`, for example:
+
+- `*.usage.json`: token usage metadata when the backend exposes it
+- `*.api_response.json`: raw OpenAI Responses API payloads for `chatgpt-api`
+
 ## Common usage
 
 Run one case through the unified submit entrypoint:
@@ -97,6 +102,11 @@ python3 submit/submit_case.py \
 This applies to backends such as `chatgpt-codex`, `chatgpt-api`,
 `claude-vertex`, `claude-cli`, `gemini-vertex`, `gemini-cli`, and
 `qwen-openapi`.
+
+For usage accounting:
+
+- `chatgpt-api` writes the API `usage` object to `responses/*.usage.json`
+- `chatgpt-codex` writes best-effort usage metadata from `codex exec --json` to `responses/*.usage.json`
 
 `qwen-vertex` is the main exception because it is configured through
 `endpoint_id` and `endpoint_location` instead of `model_name`.
