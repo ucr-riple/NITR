@@ -156,6 +156,11 @@ The generated output root will typically contain:
 `-- staging/
 ```
 
+The `responses/` directory may also include sidecar metadata files such as:
+
+- `*.usage.json` for token usage when the backend exposes it
+- `*.api_response.json` for raw OpenAI Responses API payloads from `chatgpt-api`
+
 ## 4. Evaluate One Generated Case
 
 Use [`submit/run_case_evaluator.py`](submit/run_case_evaluator.py) to evaluate one generated case.

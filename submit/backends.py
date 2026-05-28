@@ -110,6 +110,13 @@ def transcript_output_path(response_output_path):
     return response_output_path + ".transcript.txt"
 
 
+def usage_output_path(response_output_path):
+    """Derive the sidecar usage filename for a saved backend response."""
+    if response_output_path.endswith(".txt"):
+        return response_output_path[:-4] + ".usage.json"
+    return response_output_path + ".usage.json"
+
+
 def require_openai_api_key(env_var):
     """Load the configured OpenAI API key or fail with a clear environment error."""
     api_key = os.environ.get(env_var)
@@ -158,6 +165,54 @@ def extract_openai_response_text(payload):
                 if isinstance(text_value, str):
                     chunks.append(text_value)
     return "\n".join(chunk for chunk in chunks if chunk).strip()
+
+
+def extract_codex_usage_from_events(stdout_text):
+    """Best-effort extraction of usage details from Codex JSONL event output."""
+    usage = None
+    usage_event_type = None
+
+    for raw_line in stdout_text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        if not isinstance(event, dict):
+            continue
+
+        candidate = None
+        if isinstance(event.get("usage"), dict):
+            candidate = event.get("usage")
+        elif isinstance(event.get("token_usage"), dict):
+            candidate = event.get("token_usage")
+        elif isinstance(event.get("result"), dict):
+            result = event["result"]
+            if isinstance(result.get("usage"), dict):
+                candidate = result.get("usage")
+            elif isinstance(result.get("token_usage"), dict):
+                candidate = result.get("token_usage")
+
+        if isinstance(candidate, dict):
+            usage = candidate
+            usage_event_type = event.get("type")
+
+    if usage is None:
+        return {
+            "available": False,
+            "backend": "chatgpt-codex",
+            "reason": "codex exec JSON event stream did not include a usage payload",
+        }
+
+    return {
+        "available": True,
+        "backend": "chatgpt-codex",
+        "event_type": usage_event_type,
+        "usage": usage,
+    }
 
 
 def run_chatgpt_api(args):
@@ -235,7 +290,7 @@ def run_chatgpt_api(args):
             )
             save_json_payload(
                 response_payload.get("usage", {}),
-                response_output_path.replace(".txt", ".usage.json"),
+                usage_output_path(response_output_path),
             )
             return response_text
 
@@ -268,7 +323,7 @@ def run_chatgpt_codex(args):
         config["model_name"] = args.model_name
 
     def call_codex(project_dir, prompt, temp_output_path):
-        """Invoke codex exec and read the final assistant message from disk."""
+        """Invoke codex exec and read the final assistant message plus usage metadata."""
         last_error = None
         for attempt in range(1, config["request_retry_attempts"] + 1):
             started = time.time()
@@ -290,6 +345,7 @@ def run_chatgpt_codex(args):
                         "--skip-git-repo-check",
                         "-C",
                         project_dir,
+                        "--json",
                         "--output-last-message",
                         temp_output_path,
                         "-",
@@ -316,7 +372,7 @@ def run_chatgpt_codex(args):
                     f"[*] Request attempt {attempt}/{config['request_retry_attempts']} "
                     f"succeeded in {time.time() - started:.1f}s"
                 )
-                return response_text
+                return response_text, extract_codex_usage_from_events(completed.stdout)
             except Exception as e:
                 last_error = e
                 print(
@@ -333,11 +389,16 @@ def run_chatgpt_codex(args):
         """Execute one task through Codex and apply the returned JSON patch."""
         def fetch_response(project_dir, prompt, _response_output_path):
             """Provide run_json_task with a backend-specific response fetcher."""
-            return call_codex(
+            response_text, usage_payload = call_codex(
                 project_dir,
                 prompt,
                 os.path.join(project_dir, ".codex_last_message.txt"),
             )
+            save_json_payload(
+                usage_payload,
+                usage_output_path(response_output_path),
+            )
+            return response_text
 
         return run_json_task(
             input_project_dir,
