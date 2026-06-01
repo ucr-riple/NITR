@@ -11,38 +11,42 @@ Rule enforced:
     No single function may produce more than one of the three alert families.
 
 A function "produces" a family if its body either names that family's alert
-type (e.g. ``RangeAlert``) or appends to that family's report vector (e.g.
-``range_alerts.push_back(...)`` / ``.emplace_back(...)``).  A clean solution
-gives each family its own producing function (free function, method, or
-lambda-free helper) and a thin orchestrator that only routes the results, so
-every function touches at most one family.  A tangled solution computes two or
-three families in one function and is flagged.
+type (e.g. ``RangeAlert``), appends to that family's report vector directly
+(e.g. ``range_alerts.push_back(...)`` / ``.emplace_back(...)``), or appends
+through a reference alias bound to that vector (e.g.
+``auto& r = report.range_alerts; r.emplace_back(...)`` or
+``std::vector<RangeAlert>& r = ...; r.push_back(...)``).  Whole-vector
+assignment (``report.range_alerts = ...``) is deliberately NOT a signal, so a
+thin orchestrator that only routes returned vectors is never flagged.
 
-Positive arm: all three families must be produced somewhere, so the check is
-not vacuously satisfied by an unfinished solution.
+Positive arm: each family must be produced by a function REACHABLE from
+``analyze()`` (directly or transitively), so an unfinished solution cannot
+vacuously pass and dead one-family helpers cannot pad the check.
 """
 
 import pathlib
 import re
 import sys
 
-# A family is "produced" by either naming its alert type or appending to its
-# report vector.  Member reads/assignments (``report.range_alerts = ...``) are
-# deliberately NOT signals: the orchestrator legitimately routes every vector.
-_FAMILY_SIGNALS = {
-    "range": re.compile(
-        r"\bRangeAlert\b"
-        r"|\brange_alerts\s*\.\s*(?:push_back|emplace_back)\b"
-    ),
-    "drift": re.compile(
-        r"\bDriftAlert\b"
-        r"|\bdrift_alerts\s*\.\s*(?:push_back|emplace_back)\b"
-    ),
-    "leak": re.compile(
-        r"\bLeakAlert\b"
-        r"|\bleak_alerts\s*\.\s*(?:push_back|emplace_back)\b"
-    ),
-}
+_FAMILIES = ("range", "drift", "leak")
+_ALERT_TYPE = {"range": "RangeAlert", "drift": "DriftAlert", "leak": "LeakAlert"}
+
+# Reference-binding to a per-family alerts vector.  Catches:
+#   auto& X = report.range_alerts;
+#   const auto&& X = ....range_alerts;
+#   auto* X = &something.drift_alerts;
+#   Foo& X = ...leak_alerts;
+_ALIAS_MEMBER_RE = re.compile(
+    r"(?:const\s+)?"
+    r"(?:auto\s*&{1,2}|auto\s*\*+|[A-Za-z_][\w:<>,]*\s*[&*]+)"
+    r"\s+(\w+)\s*=\s*[^=;]*?\.(range|drift|leak)_alerts\b"
+)
+
+# Typed-vector reference also binds an alias to its family by element type:
+#   std::vector<RangeAlert>& X = some_call();
+_TYPED_ALIAS_RE = re.compile(
+    r"std::vector\s*<\s*(Range|Drift|Leak)Alert\s*>\s*[&*]+\s*(\w+)\s*="
+)
 
 _CONTROL_KEYWORDS = {
     "if",
@@ -56,8 +60,8 @@ _CONTROL_KEYWORDS = {
 }
 
 # A function definition opening: an identifier, a parenthesised parameter list
-# that contains no ``;`` `{` `}` (so for-loops and statements are excluded),
-# optional trailing qualifiers, then the opening brace of the body.
+# that contains no ``;`` `{` `}` (so control statements and most non-function
+# constructs are excluded), optional trailing qualifiers, then the body brace.
 _FUNC_OPEN = re.compile(
     r"\b([A-Za-z_]\w*)\s*\([^;{}]*\)\s*"
     r"(?:const|noexcept|override|final|->|[\w:<>,&*\s])*\{"
@@ -74,12 +78,7 @@ def strip_comments_and_strings(text: str) -> str:
 
 
 def function_bodies(text: str):
-    """Yield (name, body) for every function/method body in ``text``.
-
-    Bodies are located by brace-matching from a function-definition opening.
-    Control-flow blocks (if/for/while/...) are skipped by name.  Nested control
-    blocks inside a captured body stay attributed to that enclosing function.
-    """
+    """Yield (name, body) for every function/method body in ``text``."""
     for match in _FUNC_OPEN.finditer(text):
         name = match.group(1)
         if name in _CONTROL_KEYWORDS:
@@ -100,9 +99,60 @@ def function_bodies(text: str):
         yield name, text[open_brace : i + 1]
 
 
+def _aliases_in(body: str):
+    """Return {family: set(alias names)} for reference aliases inside one body."""
+    aliases = {fam: set() for fam in _FAMILIES}
+    for m in _ALIAS_MEMBER_RE.finditer(body):
+        aliases[m.group(2)].add(m.group(1))
+    for m in _TYPED_ALIAS_RE.finditer(body):
+        aliases[m.group(1).lower()].add(m.group(2))
+    return aliases
+
+
 def families_in(body: str) -> set:
-    """Return the set of alert families produced inside one function body."""
-    return {fam for fam, rx in _FAMILY_SIGNALS.items() if rx.search(body)}
+    """Alert families produced inside one function body, alias-aware."""
+    aliases = _aliases_in(body)
+    push = r"(?:push_back|emplace_back)"
+    produced = set()
+    for fam in _FAMILIES:
+        alert = _ALERT_TYPE[fam]
+        member = f"{fam}_alerts"
+        if re.search(rf"\b{alert}\b", body):
+            produced.add(fam)
+            continue
+        if re.search(rf"\b{member}\s*(?:\.|->)\s*{push}\b", body):
+            produced.add(fam)
+            continue
+        if aliases[fam]:
+            alt = "|".join(re.escape(a) for a in aliases[fam])
+            if re.search(rf"\b(?:{alt})\s*(?:\.|->)\s*{push}\b", body):
+                produced.add(fam)
+    return produced
+
+
+def _callees(body: str, known: set) -> set:
+    """Function names called inside ``body`` that are defined in this case."""
+    out = set()
+    for m in re.finditer(r"\b([A-Za-z_]\w*)\s*\(", body):
+        cand = m.group(1)
+        if cand in known and cand not in _CONTROL_KEYWORDS:
+            out.add(cand)
+    return out
+
+
+def _reachable_from(entry: str, calls_map: dict) -> set:
+    """Closure of names reachable from ``entry`` through the call graph."""
+    seen = set()
+    stack = [entry]
+    while stack:
+        n = stack.pop()
+        if n in seen:
+            continue
+        seen.add(n)
+        for c in calls_map.get(n, ()):
+            if c not in seen:
+                stack.append(c)
+    return seen
 
 
 def main() -> int:
@@ -120,9 +170,8 @@ def main() -> int:
         print(f"No source files found under {src_dir}")
         return 1
 
-    violations: list[str] = []
-    produced_anywhere: set = set()
-
+    funcs: dict[str, list[str]] = {}
+    all_bodies: list[tuple[pathlib.Path, str, str]] = []
     for path in src_files:
         try:
             text = strip_comments_and_strings(path.read_text())
@@ -131,23 +180,50 @@ def main() -> int:
             return 1
         rel = path.relative_to(case_dir)
         for name, body in function_bodies(text):
-            fams = families_in(body)
-            produced_anywhere |= fams
-            if len(fams) >= 2:
-                violations.append(
-                    f"{rel}: function '{name}' produces multiple alert families "
-                    f"({', '.join(sorted(fams))}). Each anomaly family should be "
-                    "owned by its own unit; one function should not assemble more "
-                    "than one."
-                )
+            funcs.setdefault(name, []).append(body)
+            all_bodies.append((rel, name, body))
 
-    # Positive arm: the three families must each be produced somewhere.
-    missing = {"range", "drift", "leak"} - produced_anywhere
+    known_names = set(funcs.keys())
+    violations: list[str] = []
+
+    # ---- Negative arm: no function may produce two or more families. ----
+    for rel, name, body in all_bodies:
+        fams = families_in(body)
+        if len(fams) >= 2:
+            violations.append(
+                f"{rel}: function '{name}' produces multiple alert families "
+                f"({', '.join(sorted(fams))}). Each anomaly family should be "
+                "owned by its own unit; one function should not assemble more "
+                "than one."
+            )
+
+    # ---- Positive arm: every family must be produced by a reachable fn. ----
+    calls_map = {
+        name: set().union(*(_callees(body, known_names) for body in bodies))
+        for name, bodies in funcs.items()
+    }
+
+    if "analyze" not in known_names:
+        violations.append(
+            "Public entry analyze() is missing. It must remain defined and "
+            "callable by the functional tests."
+        )
+        reachable: set = set()
+    else:
+        reachable = _reachable_from("analyze", calls_map)
+
+    produced_reachable: set = set()
+    for name in reachable:
+        for body in funcs[name]:
+            produced_reachable |= families_in(body)
+
+    missing = set(_FAMILIES) - produced_reachable
     if missing:
         violations.append(
-            "No producer found for alert families: "
-            f"{', '.join(sorted(missing))}. The monitor must report range, drift, "
-            "and leak alerts."
+            "No reachable producer found for alert families: "
+            f"{', '.join(sorted(missing))}. Each anomaly family must be "
+            "produced by code that analyze() actually invokes (directly or "
+            "transitively); unused helpers do not count."
         )
 
     if violations:
