@@ -391,6 +391,25 @@ function(nitr_register_case_024)
   )
 endfunction()
 
+function(nitr_register_case_025)
+
+  nitr_case_source_dir(CASE_DIR 025.session-alert-responsibilities)
+  nitr_case_evaluator_dir(EVAL_DIR 025.session-alert-responsibilities)
+
+  # Functional tests: range / drift / leak detection, ordering, determinism.
+  nitr_add_plain_test(
+    case025_monitor_tests
+    case_025_lib
+    ${EVAL_DIR}/tests/test_monitor.cpp
+  )
+
+  # Structural check: each alert family must be owned by its own unit (D3).
+  add_test(
+    NAME case025_decomposition_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_decomposition.py ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -440,6 +459,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_023()
   elseif(case_dir STREQUAL "024.metric-recorder-buffered-flush")
     nitr_register_case_024()
+  elseif(case_dir STREQUAL "025.session-alert-responsibilities")
+    nitr_register_case_025()
   endif()
 endfunction()
 
@@ -468,6 +489,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(022.thermostat-sensor-decoupling)
   nitr_add_evaluator(023.validator-global-mutation)
   nitr_add_evaluator(024.metric-recorder-buffered-flush)
+  nitr_add_evaluator(025.session-alert-responsibilities)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()
