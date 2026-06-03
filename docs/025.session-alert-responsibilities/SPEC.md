@@ -141,18 +141,30 @@ structural check is the oracle for the dimension.
 
 The check parses each function/method body (brace-matched; control blocks are
 skipped by keyword) and computes which alert families it *produces*. A family is
-produced if the body names that family's alert type (e.g. `RangeAlert`) or
-appends to its report vector (`range_alerts.push_back(...)` /
-`.emplace_back(...)`). Reads/assignments of a whole vector
-(`report.range_alerts = ...`) are deliberately **not** signals, so a thin
-orchestrator that only routes results is never flagged.
+produced if the body:
+
+1. Names that family's alert type (e.g. `RangeAlert`), or
+2. Appends to its report vector directly (`range_alerts.push_back(...)` /
+   `.emplace_back(...)`), or
+3. Appends through a **reference alias** bound to that vector:
+   - Member-binding aliases: `auto& r = report.range_alerts; r.push_back(...)`
+   - Typed vector aliases: `std::vector<RangeAlert>& r = ...; r.push_back(...)`
+
+Reads/assignments of a whole vector (`report.range_alerts = ...`) are
+deliberately **not** signals, so a thin orchestrator that only routes results is
+never flagged.
+
+The checker also builds a **call graph** from `analyze()` and only counts
+families produced by functions **reachable** from the entry point. Dead helper
+functions that are never called do not satisfy the positive requirement.
 
 * **Negative — one function, multiple families forbidden**: any function whose
   body produces ≥2 of {range, drift, leak} is a responsibility tangle. This
   catches the full monolith (everything in `analyze`), the moved monolith
   (a single `detect_all` helper), and partial tangles (e.g. range+drift fused).
-* **Positive — every family must be produced somewhere**: guards against an
-  unfinished solution vacuously passing.
+* **Positive — every family must be produced by reachable code**: each family
+  must be produced by at least one function reachable from `analyze()` (directly
+  or transitively). Guards against unfinished solutions and dead-code padding.
 
 ### Why the tangle passes all functional tests
 
@@ -180,6 +192,33 @@ by producers), the orchestrator would be flagged even though the per-family
 computation lives in helpers. This loop-and-copy orchestration style is uncommon
 and should be treated by human reviewers as an acceptable near-miss when the
 real per-family logic is in separate units.
+
+### Oracle limitations
+
+The structural checker uses regex-based pattern matching with alias tracking and
+reachability analysis. While it catches common responsibility tangles and
+prevents straightforward bypass attempts (direct aliasing, dead-code padding),
+some edge cases may still evade detection:
+
+1. **Other container mutation APIs**: using `insert()`, `assign()`, `resize()`,
+   or other non-`push_back` / non-`emplace_back` append paths.
+2. **Helper-return aliasing**: a monolithic function can obtain a family's alert
+   vector through a helper return value, for example `auto& r = get_ranges(report);
+   r.emplace_back(...)`. The checker tracks aliases bound directly from
+   `report.range_alerts` / `drift_alerts` / `leak_alerts` and explicit typed
+   vector aliases, but does not prove that an arbitrary helper return value is
+   one of those vectors.
+3. **Multi-level aliasing**: `auto& r1 = report.range_alerts; auto& r2 = r1;
+   r2.push_back(...)` (only one level of aliasing is tracked).
+4. **Lambda or function-pointer indirection**: capturing alert vectors in
+   lambdas and invoking them within a monolithic function.
+
+These patterns are outside the checker’s intended coverage. The oracle is meant
+to distinguish typical well-decomposed solutions from typical responsibility
+tangles, not to provide perfect adversarial robustness against every possible
+C++ indirection style.
+
+---
 
 This case specifically exercises **D3 (responsibility decomposition)** by
 hiding the pressure inside a plain "add two more outputs" request, where the
