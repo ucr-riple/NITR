@@ -70,8 +70,9 @@ Typical failures:
 Current cases:
 - `004 cv-srp`
 - `020 handover-packet-ownership-boundary` (**micro**)
+- `025 session-alert-responsibilities` (**micro**)
 
-Current count: **2**
+Current count: **3**
 
 Notes:
 - `020` is the newly added D3 micro case.
@@ -232,6 +233,8 @@ Notes:
 | 022 thermostat-sensor-decoupling | D6 Dependency Control | micro |
 | 023 validator-global-mutation | D9 Side-Effect Isolation | micro |
 | 024 metric-recorder-buffered-flush | D5 Interface and Substitutability Discipline | micro |
+| 025 session-alert-responsibilities | D3 Responsibility Decomposition | micro |
+
 
 ---
 
@@ -241,7 +244,7 @@ Notes:
 |---|---:|
 | D1 Change Locality | 3 |
 | D2 Reuse and Repo Awareness | 3 |
-| D3 Responsibility Decomposition | 2 |
+| D3 Responsibility Decomposition | 3 |
 | D4 Extension Structure | 2 |
 | D5 Interface and Substitutability Discipline | 3 |
 | D6 Dependency Control | 3 |
@@ -249,7 +252,7 @@ Notes:
 | D8 State Ownership and Lifecycle | 2 |
 | D9 Side-Effect Isolation | 3 |
 
-Total cases recorded: **24**
+Total cases recorded: **25**
 
 Notes:
 - Current matrix contents cover cases `001`-`024`.

@@ -38,6 +38,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(022.thermostat-sensor-decoupling)
   nitr_add_case(023.validator-global-mutation)
   nitr_add_case(024.metric-recorder-buffered-flush)
+  nitr_add_case(025.session-alert-responsibilities)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR
