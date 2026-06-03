@@ -255,5 +255,5 @@ Notes:
 Total cases recorded: **25**
 
 Notes:
-- Current matrix contents cover cases `001`-`024`.
-- With `021`, `016`, `023`, and `024` included, D1, D2, D5, D7, and D9 each have three cases; D3, D4, and D8 each have two.
+- Current matrix contents cover cases `001`-`025`.
+- With `016`, `021`, `023`, `024`, and `025` included, D1, D2, D3, D5, D7, and D9 each have three cases; D4 and D8 each have two.
