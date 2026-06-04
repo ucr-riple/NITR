@@ -22,6 +22,7 @@ from typing import Dict, List
 
 
 GOLDEN_APP_MAIN = """#include <iostream>
+
 #include "add.h"
 
 int main(int argc, char** argv) {
