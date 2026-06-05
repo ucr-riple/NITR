@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(case024_lib
+    src/buffered_metric_recorder.cc
     src/console_metric_recorder.cc
     src/metric_collector.cc)
 

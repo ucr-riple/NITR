@@ -12,6 +12,7 @@ class ConsoleMetricRecorder : public MetricRecorder {
   explicit ConsoleMetricRecorder(std::ostream& out);
 
   void Record(const Metric& metric) override;
+  void Flush() override;
 
  private:
   std::ostream& out_;

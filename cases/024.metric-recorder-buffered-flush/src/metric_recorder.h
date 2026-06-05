@@ -15,6 +15,7 @@ class MetricRecorder {
   virtual ~MetricRecorder() = default;
 
   virtual void Record(const Metric& metric) = 0;
+  virtual void Flush() {}
 };
 
 }  // namespace nitr::case024

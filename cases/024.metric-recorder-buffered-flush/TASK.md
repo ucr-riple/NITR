@@ -18,6 +18,9 @@ implementation is wired in.
 - Add a `BufferedMetricRecorder` that buffers up to a configurable capacity
   of metrics and writes them in one batch to the underlying stream when
   capacity is reached or when visibility is explicitly requested.
+- The new `BufferedMetricRecorder` should be constructible from the target
+  output stream plus a buffer capacity, matching the shape
+  `BufferedMetricRecorder(std::ostream& out, std::size_t capacity)`.
 - Add an explicit visibility trigger that can be invoked to make any queued
   metrics visible immediately, supporting the checkpoint scenario below.
 - Add a `Checkpoint()` method to `MetricCollector` that the consumer can

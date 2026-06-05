@@ -8,4 +8,6 @@ void ConsoleMetricRecorder::Record(const Metric& metric) {
   out_ << metric.name << '=' << metric.value << '\n';
 }
 
+void ConsoleMetricRecorder::Flush() { out_.flush(); }
+
 }  // namespace nitr::case024

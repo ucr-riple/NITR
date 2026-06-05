@@ -14,6 +14,7 @@ class MetricCollector {
   explicit MetricCollector(MetricRecorder& recorder);
 
   void Collect(const std::vector<double>& samples);
+  void Checkpoint();
 
  private:
   MetricRecorder& recorder_;
