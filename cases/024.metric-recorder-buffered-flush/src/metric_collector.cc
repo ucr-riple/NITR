@@ -25,4 +25,6 @@ void MetricCollector::Collect(const std::vector<double>& samples) {
   recorder_.Record({"samples.max", max_value});
 }
 
+void MetricCollector::Checkpoint() { recorder_.Flush(); }
+
 }  // namespace nitr::case024
