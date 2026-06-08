@@ -33,8 +33,13 @@ function(nitr_add_plain_test test_name case_target test_source)
 endfunction()
 
 function(nitr_register_case_001)
+  nitr_case_source_dir(CASE_DIR 001.add-no-callsite-spread)
   nitr_case_evaluator_dir(EVAL_DIR 001.add-no-callsite-spread)
   nitr_add_gtest(add_tests add_lib ${EVAL_DIR}/tests/test_add.cc)
+  add_test(
+    NAME case001_structural_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check.py --case_root ${CASE_DIR}
+  )
 endfunction()
 
 function(nitr_register_case_002)
@@ -82,6 +87,10 @@ function(nitr_register_case_004)
   )
   target_link_libraries(cv_srp_tests PRIVATE cv_srp_lib gtest_main)
   add_test(NAME cv_srp_tests COMMAND cv_srp_tests)
+  add_test(
+    NAME cv_srp_structural_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check.py
+  )
 endfunction()
 
 function(nitr_register_case_005)
@@ -100,6 +109,10 @@ endfunction()
 function(nitr_register_case_006)
   nitr_case_evaluator_dir(EVAL_DIR 006.gs-isp)
   nitr_add_plain_test(public_smoke_test case006_lib ${EVAL_DIR}/tests/public_smoke_test.cc)
+  add_test(
+    NAME case006_structural_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_data_isp.py
+  )
 endfunction()
 
 function(nitr_register_case_007)
@@ -149,6 +162,10 @@ endfunction()
 function(nitr_register_case_011)
   nitr_case_evaluator_dir(EVAL_DIR 011.config-sprawl)
   nitr_add_plain_test(case011_tests case011_lib ${EVAL_DIR}/tests/test_config_sprawl.cc)
+  add_test(
+    NAME case011_structural_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_no_compact_parameter_sprawl.py
+  )
 endfunction()
 
 function(nitr_register_case_012)
@@ -163,11 +180,19 @@ endfunction()
 function(nitr_register_case_013)
   nitr_case_evaluator_dir(EVAL_DIR 013.stable-public-api)
   nitr_add_plain_test(test_catalog case013_lib ${EVAL_DIR}/tests/test_catalog.cc)
+  add_test(
+    NAME case013_api_stability_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_api_stability.py
+  )
 endfunction()
 
 function(nitr_register_case_014)
   nitr_case_evaluator_dir(EVAL_DIR 014.report-export-ocp)
   nitr_add_plain_test(test_report_export case014_lib ${EVAL_DIR}/tests/test_report_export.cc)
+  add_test(
+    NAME case014_structural_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_structure.py
+  )
 endfunction()
 
 function(nitr_add_case015_test test_name test_source)
@@ -350,6 +375,16 @@ function(nitr_register_case_021)
   target_link_libraries(case021_evaluator_tests PRIVATE case021_lib)
 
   add_test(NAME case021_functional_tests COMMAND case021_evaluator_tests)
+  add_test(
+    NAME case021_no_duplicate_value_validation
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_no_duplicate_value_validation.py
+  )
+  set_tests_properties(case021_no_duplicate_value_validation PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  add_test(
+    NAME case021_no_shadow_tables
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check_no_shadow_tables.py
+  )
+  set_tests_properties(case021_no_shadow_tables PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
 
 function(nitr_register_case_022)
