@@ -162,7 +162,7 @@ m4 includes m3 behavior and additionally loads rules at runtime.
 Rules loading:
 - Path is resolved in this order:
   1) `--rules <path>` if provided
-  2) env var `SOLIDBENCH_RULES` if set
+  2) env var `NITR_RULES` if set
   3) `rules.json` in current working directory if exists
   If none found, proceed with built-in rules only.
 
@@ -239,7 +239,6 @@ On error, exit code != 0 and print ONE line to stderr:
 
 - `ERR_INVALID_JSON`
 - `ERR_INVALID_SCHEMA`
-- `ERR_INVALID_RULES_JSON`
 - `ERR_UNSUPPORTED_MILESTONE`
 - `ERR_IO`
 
