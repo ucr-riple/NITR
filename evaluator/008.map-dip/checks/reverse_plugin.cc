@@ -7,16 +7,6 @@
 
 namespace nitr::case008 {
 
-// Expected in refactored solution:
-class LayerRegistry {
- public:
-  using CreatorFn =
-      std::unique_ptr<ILayerProvider> (*)(const nlohmann::json& layer_json);
-  void Register(const std::string& type, CreatorFn fn);
-};
-
-LayerRegistry& GlobalLayerRegistry();
-
 class ReversePayloadProvider final : public ILayerProvider {
  public:
   std::string Name() const override {
