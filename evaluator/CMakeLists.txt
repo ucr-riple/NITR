@@ -85,10 +85,15 @@ function(nitr_register_case_004)
 endfunction()
 
 function(nitr_register_case_005)
+  nitr_case_source_dir(CASE_DIR 005.pricing-ocp)
   nitr_case_evaluator_dir(EVAL_DIR 005.pricing-ocp)
   nitr_add_gtest(pricing_ocp_tests pricing_ocp_lib ${EVAL_DIR}/tests/test_pricing.cc)
   target_sources(pricing_ocp_tests PRIVATE
     ${EVAL_DIR}/checks/inject/injected_rule.cc
+  )
+  add_test(
+    NAME pricing_ocp_structural_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/check.py --case_dir ${CASE_DIR}
   )
 endfunction()
 
