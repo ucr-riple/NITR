@@ -87,6 +87,9 @@ endfunction()
 function(nitr_register_case_005)
   nitr_case_evaluator_dir(EVAL_DIR 005.pricing-ocp)
   nitr_add_gtest(pricing_ocp_tests pricing_ocp_lib ${EVAL_DIR}/tests/test_pricing.cc)
+  target_sources(pricing_ocp_tests PRIVATE
+    ${EVAL_DIR}/checks/inject/injected_rule.cc
+  )
 endfunction()
 
 function(nitr_register_case_006)
