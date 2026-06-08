@@ -113,9 +113,19 @@ function(nitr_register_case_007)
 endfunction()
 
 function(nitr_register_case_008)
+  nitr_case_source_dir(CASE_DIR 008.map-dip)
   nitr_case_evaluator_dir(EVAL_DIR 008.map-dip)
   nitr_add_plain_test(test_basic case008_lib ${EVAL_DIR}/tests/test_basic.cc)
-  add_test(NAME case008_basic COMMAND test_basic)
+  add_executable(case008_plugin_reverse_test
+    ${EVAL_DIR}/tests/test_plugin_reverse.cc
+    ${EVAL_DIR}/checks/reverse_plugin.cc
+  )
+  target_link_libraries(case008_plugin_reverse_test PRIVATE case008_lib)
+  add_test(NAME case008_plugin_reverse_test COMMAND case008_plugin_reverse_test)
+  add_test(
+    NAME case008_structural_check
+    COMMAND ${Python3_EXECUTABLE} ${EVAL_DIR}/checks/structural_check.py ${CASE_DIR}
+  )
 endfunction()
 
 function(nitr_register_case_009)
