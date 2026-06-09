@@ -161,9 +161,22 @@ You can use the benchmark through several interfaces:
   relevant case files and task statement, copy the generated edits back into the
   repository, and then run the local evaluator command here.
 
-For multi-step cases, apply the task files in order. That is, complete
-`TASK1.md` first, continue from the resulting code state to `TASK2.md`, and so
-on before running the evaluator.
+For the submit workflow used by this repository and by the paper-aligned
+reproduction setup, the agent-visible context is intentionally limited:
+
+- the agent is given the case directory under `cases/<case-slug>/`
+- `docs/<case-slug>/SPEC.md` is not part of the agent-visible input
+- for multi-step cases, each step receives only the current `TASK*.md`
+- later steps continue from the previous step's code state, but do not receive
+  earlier `TASK*.md` files again
+
+For multi-step cases, apply the task files in order under that protocol. That
+is, complete `TASK1.md` first, continue from the resulting code state to
+`TASK2.md`, and so on before running the evaluator.
+
+This repository does not attempt to document every possible external experiment
+setup. The notes above describe the submit protocol used here for local
+submission tooling and paper-aligned reproduction.
 
 ## Cases
 
