@@ -3,6 +3,7 @@ import subprocess
 import sys
 import os
 
+
 def main() -> int:
     if len(sys.argv) < 2:
         print("Usage: test_functional.py <path_to_app_executable>")
@@ -13,20 +14,27 @@ def main() -> int:
     def run_test(target_temp: float, sim_temp: float, expected_output: str) -> bool:
         env = os.environ.copy()
         env["TMP26_SIMULATOR_TEMP"] = str(sim_temp)
-        
+
         try:
             result = subprocess.run(
-                [app_exec, str(target_temp)], 
-                env=env, capture_output=True, text=True, check=True
+                [app_exec, str(target_temp)],
+                env=env,
+                capture_output=True,
+                text=True,
+                check=True,
             )
             output = result.stdout.strip()
             if output == expected_output:
                 return True
             else:
-                print(f"FAIL: Target {target_temp}, Sensor {sim_temp}. Expected '{expected_output}', got '{output}'")
+                print(
+                    f"FAIL: Target {target_temp}, Sensor {sim_temp}. Expected '{expected_output}', got '{output}'"
+                )
                 return False
         except subprocess.CalledProcessError as e:
-            print(f"FAIL: Command failed with exit code {e.returncode}. Output: {e.stdout.strip()} {e.stderr.strip()}")
+            print(
+                f"FAIL: Command failed with exit code {e.returncode}. Output: {e.stdout.strip()} {e.stderr.strip()}"
+            )
             return False
 
     cases = [
@@ -50,6 +58,7 @@ def main() -> int:
         print("PASS: Functional test passed.")
         return 0
     return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

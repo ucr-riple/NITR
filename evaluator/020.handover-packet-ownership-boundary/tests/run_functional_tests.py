@@ -86,8 +86,12 @@ def main() -> int:
             tmp_path / "sequence_b.txt",
         )
 
-    expected_with_in_progress = (DATA_DIR / "expected_packet_with_in_progress.txt").read_text()
-    expected_without_in_progress = (DATA_DIR / "expected_packet_without_in_progress.txt").read_text()
+    expected_with_in_progress = (
+        DATA_DIR / "expected_packet_with_in_progress.txt"
+    ).read_text()
+    expected_without_in_progress = (
+        DATA_DIR / "expected_packet_without_in_progress.txt"
+    ).read_text()
 
     expect_equal(
         "preview/save with in-progress tote",
@@ -131,13 +135,29 @@ def main() -> int:
     )
     expect_true(
         "without-in-progress summary mismatch",
-        without_in_progress["tote_count"] == 3 and without_in_progress["package_count"] == 8,
+        without_in_progress["tote_count"] == 3
+        and without_in_progress["package_count"] == 8,
         failures,
     )
 
-    expect_equal("preview sequence stability", sequence["preview_first"], sequence["preview_second"], failures)
-    expect_equal("save sequence stability", sequence["saved_first"], sequence["saved_second"], failures)
-    expect_equal("preview/save order consistency", sequence["preview_first"], sequence["saved_first"], failures)
+    expect_equal(
+        "preview sequence stability",
+        sequence["preview_first"],
+        sequence["preview_second"],
+        failures,
+    )
+    expect_equal(
+        "save sequence stability",
+        sequence["saved_first"],
+        sequence["saved_second"],
+        failures,
+    )
+    expect_equal(
+        "preview/save order consistency",
+        sequence["preview_first"],
+        sequence["saved_first"],
+        failures,
+    )
     expect_true(
         "sequence row count changed",
         sequence["row_count_first"] == sequence["row_count_second"] == 3,

@@ -34,10 +34,14 @@ def main() -> int:
     app_main = root_dir / "app/main.cc"
 
     global_state_hits = list(
-        search(r"\b(g_active|global_active|g_active_snapshot|g_active_version)\b", src_dir)
+        search(
+            r"\b(g_active|global_active|g_active_snapshot|g_active_version)\b", src_dir
+        )
     )
     if global_state_hits:
-        failures.append("Detected global mutable active-state variable naming pattern in src/.")
+        failures.append(
+            "Detected global mutable active-state variable naming pattern in src/."
+        )
 
     tracker_files = {
         str(path)
@@ -48,11 +52,16 @@ def main() -> int:
         if path.suffix == ".h"
     }
     if len(tracker_files) > 1:
-        failures.append("Multiple headers contain writable active-state tracker fields.")
+        failures.append(
+            "Multiple headers contain writable active-state tracker fields."
+        )
 
     # Check for value-type Snapshot members or data structure ownership (not just pointer caching)
     query_state_hits = list(
-        search(r"(Snapshot\s+\w+_;|std::unordered_map<.*>\s+\w+_;)", root_dir / "src/query_service.h")
+        search(
+            r"(Snapshot\s+\w+_;|std::unordered_map<.*>\s+\w+_;)",
+            root_dir / "src/query_service.h",
+        )
     )
     if query_state_hits:
         failures.append(
@@ -60,10 +69,15 @@ def main() -> int:
         )
 
     lifecycle_control_hits = list(
-        search(r"(if|for|while)\s*\(.*(RegisterSnapshot|ActivateSnapshot|ResetActiveSnapshot)", app_main)
+        search(
+            r"(if|for|while)\s*\(.*(RegisterSnapshot|ActivateSnapshot|ResetActiveSnapshot)",
+            app_main,
+        )
     )
     if lifecycle_control_hits:
-        failures.append("Lifecycle control flow appears in app/main.cc; keep it in core src owner.")
+        failures.append(
+            "Lifecycle control flow appears in app/main.cc; keep it in core src owner."
+        )
 
     reset_mentions = {
         str(path)

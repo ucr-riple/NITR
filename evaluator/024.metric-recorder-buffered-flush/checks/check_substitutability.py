@@ -8,6 +8,7 @@ existing console implementation.
 These are semantic, type-relationship-level assertions. There is no
 function-name blacklist; the check verifies the architecture, not syntax.
 """
+
 from __future__ import annotations
 
 import re
@@ -134,8 +135,13 @@ def main() -> int:
         # Check for visibility-trigger (Flush, Commit, Sync, etc.)
         # Common names for visibility triggers
         visibility_trigger_names = [
-            r"Flush", r"Commit", r"Sync", r"MakeVisible",
-            r"Publish", r"Drain", r"Write"
+            r"Flush",
+            r"Commit",
+            r"Sync",
+            r"MakeVisible",
+            r"Publish",
+            r"Drain",
+            r"Write",
         ]
         has_visibility_trigger = any(
             has_virtual_method_matching(recorder_body, name)
@@ -196,7 +202,9 @@ def main() -> int:
         bbody = find_class_body(btext, bname) or ""
 
         # Check that Record is overridden
-        has_record_override = re.search(r"\bRecord\s*\([^)]*\)[^;{]*\boverride\b", bbody)
+        has_record_override = re.search(
+            r"\bRecord\s*\([^)]*\)[^;{]*\boverride\b", bbody
+        )
         if not has_record_override:
             failures.append(
                 f"{bpath.name}: {bname} must override Record to provide "
@@ -215,7 +223,9 @@ def main() -> int:
     console_h = read("console_metric_recorder.h")
     console_cc = read("console_metric_recorder.cc")
     console_combined = strip_comments(console_h + "\n" + console_cc)
-    console_body = find_class_body(strip_comments(console_h), "ConsoleMetricRecorder") or ""
+    console_body = (
+        find_class_body(strip_comments(console_h), "ConsoleMetricRecorder") or ""
+    )
 
     # Check that Record is overridden
     has_console_record_override = re.search(

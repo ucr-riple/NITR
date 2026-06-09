@@ -2,7 +2,11 @@ from pathlib import Path
 import re
 import sys
 
-ROOT = Path(__file__).resolve().parents[3] / "cases" / Path(__file__).resolve().parents[1].name
+ROOT = (
+    Path(__file__).resolve().parents[3]
+    / "cases"
+    / Path(__file__).resolve().parents[1].name
+)
 SRC = ROOT / "src"
 service_h = (SRC / "inventory_report_service.h").read_text()
 service_cc = (SRC / "inventory_report_service.cc").read_text()
@@ -14,7 +18,9 @@ errors = []
 engine_all = engine_h + "\n" + engine_cc
 for banned in ["cache", "cached", "last_summary", "last_products"]:
     if banned in engine_all.lower():
-        errors.append("SummaryEngine should remain a pure computation dependency and must not own cache state")
+        errors.append(
+            "SummaryEngine should remain a pure computation dependency and must not own cache state"
+        )
         break
 
 static_patterns = [

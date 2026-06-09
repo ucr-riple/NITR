@@ -16,7 +16,10 @@ def main() -> int:
     """Reject concrete provider references from the pipeline runner core surface."""
     repo_root = Path(__file__).resolve().parents[3]
     case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
-    for path in [case_root / "src/pipeline_runner.h", case_root / "src/pipeline_runner.cc"]:
+    for path in [
+        case_root / "src/pipeline_runner.h",
+        case_root / "src/pipeline_runner.cc",
+    ]:
         text = path.read_text(encoding="utf-8")
         for token in FORBIDDEN:
             if token in text:

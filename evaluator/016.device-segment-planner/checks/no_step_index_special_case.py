@@ -12,9 +12,15 @@ FORBIDDEN_PATTERNS = [
 ]
 
 ALLOWLIST = {
-    pathlib.Path("evaluator/016.device-segment-planner/tests/execution_plan_legacy_test.cc"),
-    pathlib.Path("evaluator/016.device-segment-planner/tests/execution_plan_updated_test.cc"),
-    pathlib.Path("evaluator/016.device-segment-planner/tests/runner_respects_segmentation_test.cc"),
+    pathlib.Path(
+        "evaluator/016.device-segment-planner/tests/execution_plan_legacy_test.cc"
+    ),
+    pathlib.Path(
+        "evaluator/016.device-segment-planner/tests/execution_plan_updated_test.cc"
+    ),
+    pathlib.Path(
+        "evaluator/016.device-segment-planner/tests/runner_respects_segmentation_test.cc"
+    ),
 }
 
 

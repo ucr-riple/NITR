@@ -25,7 +25,9 @@ def strip_comments(text: str) -> str:
 
 def remove_include_lines(text: str) -> str:
     """Drop include directives before scanning for display-oriented tokens."""
-    return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#include"))
+    return "\n".join(
+        line for line in text.splitlines() if not line.lstrip().startswith("#include")
+    )
 
 
 def string_literals(text: str) -> List[str]:
@@ -57,7 +59,11 @@ def count_field_lines(body: str) -> int:
 
 failures: List[str] = []
 
-ranker_text = strip_comments(remove_include_lines(read_text(SRC / "ranker.cc") + "\n" + read_text(SRC / "ranker.h")))
+ranker_text = strip_comments(
+    remove_include_lines(
+        read_text(SRC / "ranker.cc") + "\n" + read_text(SRC / "ranker.h")
+    )
+)
 ranker_literals = string_literals(ranker_text)
 if ranker_literals:
     failures.append("ranker core should not contain display-oriented string literals")
@@ -68,11 +74,21 @@ for header in forbidden_ranker_includes:
     if header in ranker_sources:
         failures.append(f"ranker core should not include {header}")
 
-suspicious_ranker_tokens = ["debug", "diagnostic", "trace", "message", "label", "render", "format"]
+suspicious_ranker_tokens = [
+    "debug",
+    "diagnostic",
+    "trace",
+    "message",
+    "label",
+    "render",
+    "format",
+]
 ranker_lower = ranker_text.lower()
 for token in suspicious_ranker_tokens:
     if token in ranker_lower:
-        failures.append(f"ranker core contains suspicious consumer-oriented token: {token}")
+        failures.append(
+            f"ranker core contains suspicious consumer-oriented token: {token}"
+        )
 
 ranking_result_text = strip_comments(read_text(SRC / "ranking_result.h"))
 ranked_body = struct_body(ranking_result_text, "RankedItem")
@@ -92,7 +108,9 @@ if "std::vector" in ranking_result_text:
 item_text = strip_comments(read_text(SRC / "item.h")).lower()
 for token in ["reason", "inspection", "diagnostic", "debug", "trace", "comparison"]:
     if token in item_text:
-        failures.append(f"item domain type should not absorb observer-oriented token: {token}")
+        failures.append(
+            f"item domain type should not absorb observer-oriented token: {token}"
+        )
 
 if failures:
     for failure in failures:

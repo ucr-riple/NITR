@@ -19,7 +19,8 @@ def find_case_dir(cases_root, case_id):
     """Resolve a case id to the single matching case directory under the cases root."""
     prefix = f"{case_id}."
     matches = [
-        entry for entry in os.listdir(cases_root)
+        entry
+        for entry in os.listdir(cases_root)
         if entry.startswith(prefix) and os.path.isdir(os.path.join(cases_root, entry))
     ]
     if len(matches) != 1:
@@ -96,7 +97,8 @@ def collect_project_data(project_dir, task_file):
             if file.endswith(".md"):
                 is_selected_task = os.path.normpath(rel_path) == selected_task_relpath
                 is_other_task = (
-                    re.fullmatch(r"TASK\d*\.md", file) is not None and not is_selected_task
+                    re.fullmatch(r"TASK\d*\.md", file) is not None
+                    and not is_selected_task
                 )
                 should_include = is_selected_task or (
                     not is_other_task and file == "README.md"
@@ -314,9 +316,7 @@ def run_json_task(
     try:
         response_text = fetch_response(output_project_dir, prompt, response_output_path)
         total_elapsed_seconds = time.time() - request_started_at
-        print(
-            f"[*] {request_label} response received in {total_elapsed_seconds:.1f}s"
-        )
+        print(f"[*] {request_label} response received in {total_elapsed_seconds:.1f}s")
         save_response_text(response_text, response_output_path)
 
         payload = extract_json_payload(response_text)

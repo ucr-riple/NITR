@@ -12,6 +12,10 @@ if(BUILD_TESTING)
     NAME nitr_format_check
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_format.sh
   )
+  add_test(
+    NAME nitr_python_format_check
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_python_format.sh
+  )
 endif()
 
 add_subdirectory(cases)
