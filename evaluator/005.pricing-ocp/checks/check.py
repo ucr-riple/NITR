@@ -4,12 +4,14 @@ import re
 import sys
 from pathlib import Path
 
+
 def read_text(path: Path) -> str:
     """Read a source file and surface a descriptive error on failure."""
     try:
         return path.read_text(encoding="utf-8", errors="replace")
     except Exception as e:
         raise RuntimeError(f"Failed to read {path}: {e}")
+
 
 def strip_comments_and_strings(code: str) -> str:
     """
@@ -24,6 +26,7 @@ def strip_comments_and_strings(code: str) -> str:
     # Remove /* */ comments
     code = re.sub(r"/\*.*?\*/", "", code, flags=re.DOTALL)
     return code
+
 
 def find_violations(code: str) -> list[tuple[str, str]]:
     """
@@ -66,6 +69,7 @@ def find_violations(code: str) -> list[tuple[str, str]]:
 
     return violations
 
+
 def main() -> int:
     """Reject coupon-dispatch branching in the configured core files."""
     ap = argparse.ArgumentParser()
@@ -74,7 +78,7 @@ def main() -> int:
         "--core_files",
         nargs="+",
         default=["src/pricing.cc"],
-        help="Files (relative to case_dir) to enforce OCP coupon dispatch ban."
+        help="Files (relative to case_dir) to enforce OCP coupon dispatch ban.",
     )
     args = ap.parse_args()
 
@@ -87,7 +91,9 @@ def main() -> int:
     for rel in args.core_files:
         p = case_dir / rel
         if not p.exists():
-            print(f"[gate2] core file missing (treated as failure): {p}", file=sys.stderr)
+            print(
+                f"[gate2] core file missing (treated as failure): {p}", file=sys.stderr
+            )
             any_violation = True
             continue
 
@@ -95,7 +101,9 @@ def main() -> int:
         vios = find_violations(code)
         if vios:
             any_violation = True
-            print(f"[gate2] FAIL: coupon dispatch branching found in {p}", file=sys.stderr)
+            print(
+                f"[gate2] FAIL: coupon dispatch branching found in {p}", file=sys.stderr
+            )
             for rule_id, snippet in vios[:20]:
                 print(f"  - {rule_id}: {snippet}", file=sys.stderr)
 
@@ -105,6 +113,7 @@ def main() -> int:
 
     print("[gate2] PASS: no coupon dispatch branching in core files.")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

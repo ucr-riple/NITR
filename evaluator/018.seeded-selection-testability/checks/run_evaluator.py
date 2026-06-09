@@ -39,7 +39,12 @@ def main() -> int:
     if list(grep(r"test_mode|ForceNextPick|force_next_pick|debug_only", src_dir)):
         return fail("Forbidden test-only control hook found in src/")
 
-    if list(grep(r"static\s+std::(mt19937|default_random_engine)|global.*rng|singleton.*rng", src_dir)):
+    if list(
+        grep(
+            r"static\s+std::(mt19937|default_random_engine)|global.*rng|singleton.*rng",
+            src_dir,
+        )
+    ):
         return fail("Potential global mutable RNG pattern found")
 
     if list(grep(r"sleep_for|sleep_until|std::chrono|time\(|clock\(", src_dir)):
@@ -48,7 +53,9 @@ def main() -> int:
     if list(grep(r"seed|sampler|replay", src_dir / "candidate.h")):
         return fail("Seed/replay control leaked into candidate model header")
 
-    selector_text = (src_dir / "selector.cc").read_text(encoding="utf-8", errors="replace")
+    selector_text = (src_dir / "selector.cc").read_text(
+        encoding="utf-8", errors="replace"
+    )
     if "SamplerV1" not in selector_text:
         return fail("Replay path does not appear to use SamplerV1 contract")
 

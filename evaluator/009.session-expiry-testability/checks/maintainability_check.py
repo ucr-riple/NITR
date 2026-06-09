@@ -43,7 +43,9 @@ SUSPICIOUS_API_PATTERNS = [
 
 def scan_files(directory: pathlib.Path):
     """Collect source-like files under a directory for pattern scanning."""
-    return [path for path in directory.rglob("*") if path.suffix in {".h", ".cc", ".cpp"}]
+    return [
+        path for path in directory.rglob("*") if path.suffix in {".h", ".cc", ".cpp"}
+    ]
 
 
 def contains_any(patterns, text):
@@ -64,22 +66,30 @@ for path in scan_files(SRC_DIR):
     forbidden = contains_any(FORBIDDEN_SRC_PATTERNS, text)
     suspicious = contains_any(SUSPICIOUS_API_PATTERNS, text)
     if forbidden:
-        failures.append(f"forbidden time coupling in {path.relative_to(ROOT)}: {forbidden}")
+        failures.append(
+            f"forbidden time coupling in {path.relative_to(ROOT)}: {forbidden}"
+        )
     if suspicious:
-        failures.append(f"evaluation-only API smell in {path.relative_to(ROOT)}: {suspicious}")
+        failures.append(
+            f"evaluation-only API smell in {path.relative_to(ROOT)}: {suspicious}"
+        )
 
 for path in scan_files(TEST_DIR):
     text = path.read_text()
     forbidden = contains_any(FORBIDDEN_TEST_PATTERNS, text)
     if forbidden:
-        failures.append(f"sleep-based test detected in {path.relative_to(REPO_ROOT)}: {forbidden}")
+        failures.append(
+            f"sleep-based test detected in {path.relative_to(REPO_ROOT)}: {forbidden}"
+        )
 
 # Positive structural check: the time-injection seam must remain on the
 # public SessionManager API. Without it, the seam can disappear silently and
 # the only failure signal is a confusing test link error.
 header_path = SRC_DIR / "session_manager.h"
 if not header_path.exists():
-    failures.append("session_manager.h is missing from cases/009.session-expiry-testability/src/")
+    failures.append(
+        "session_manager.h is missing from cases/009.session-expiry-testability/src/"
+    )
 else:
     header_text = header_path.read_text()
     seam_ctor = re.search(

@@ -90,11 +90,15 @@ essential_constraint_patterns = [
 
 essential_hits = count_hits(essential_constraint_patterns, code)
 if essential_hits == 0:
-    print("Expected essential-matrix singular value constraint handling in src/geometry.cc")
+    print(
+        "Expected essential-matrix singular value constraint handling in src/geometry.cc"
+    )
     sys.exit(1)
 
 if "return Solve8Point" in essential_body and essential_hits == 0:
-    print("Essential path appears to reuse the fundamental solve without essential-specific post-processing")
+    print(
+        "Essential path appears to reuse the fundamental solve without essential-specific post-processing"
+    )
     sys.exit(1)
 
 print("geometry structure checks passed")

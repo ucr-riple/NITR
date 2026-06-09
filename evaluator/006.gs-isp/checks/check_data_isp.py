@@ -5,7 +5,11 @@ import pathlib
 import re
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[3] / "cases" / pathlib.Path(__file__).resolve().parents[1].name
+ROOT = (
+    pathlib.Path(__file__).resolve().parents[3]
+    / "cases"
+    / pathlib.Path(__file__).resolve().parents[1].name
+)
 SRC = ROOT / "src"
 
 REQUIRED_HEADERS = [
@@ -17,9 +21,30 @@ REQUIRED_HEADERS = [
 FORBIDDEN_INCLUDE = '#include "hit_buffer.h"'
 FORBIDDEN_IN_SORT_HEADER = ["HitBuffer", "Hit "]
 VIEW_TOKEN_FAMILIES = {
-    "sort": ["SortView", "SortHitView", "SortableHitView", "MutableHitView", "HitSortView", "IHitSorting"],
-    "shade": ["ShadeView", "ShadingView", "ShadeHitView", "ShadingHitView", "MutableHitView", "IHitShading"],
-    "composite": ["CompositeView", "CompositeHitView", "CompositingView", "ReadonlyHitView", "ConstHitView", "IHitComposite"],
+    "sort": [
+        "SortView",
+        "SortHitView",
+        "SortableHitView",
+        "MutableHitView",
+        "HitSortView",
+        "IHitSorting",
+    ],
+    "shade": [
+        "ShadeView",
+        "ShadingView",
+        "ShadeHitView",
+        "ShadingHitView",
+        "MutableHitView",
+        "IHitShading",
+    ],
+    "composite": [
+        "CompositeView",
+        "CompositeHitView",
+        "CompositingView",
+        "ReadonlyHitView",
+        "ConstHitView",
+        "IHitComposite",
+    ],
 }
 
 
@@ -41,8 +66,14 @@ for token in FORBIDDEN_IN_SORT_HEADER:
     if token in sort_text:
         fail("sort_hits.h still exposes legacy HitBuffer/Hit types.")
 
-for path in [SRC / "sort_hits.h", SRC / "eval_shading.h", SRC / "composite.h",
-             SRC / "sort_hits.cc", SRC / "eval_shading.cc", SRC / "composite.cc"]:
+for path in [
+    SRC / "sort_hits.h",
+    SRC / "eval_shading.h",
+    SRC / "composite.h",
+    SRC / "sort_hits.cc",
+    SRC / "eval_shading.cc",
+    SRC / "composite.cc",
+]:
     text = path.read_text()
     if FORBIDDEN_INCLUDE in text:
         fail(f"{path.name} still includes hit_buffer.h directly.")

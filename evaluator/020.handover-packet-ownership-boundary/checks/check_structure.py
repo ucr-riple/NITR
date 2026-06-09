@@ -7,7 +7,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[3] / "cases" / Path(__file__).resolve().parents[1].name
+ROOT = (
+    Path(__file__).resolve().parents[3]
+    / "cases"
+    / Path(__file__).resolve().parents[1].name
+)
 SRC_DIR = ROOT / "src"
 APP_FILE = ROOT / "app" / "main.cc"
 
@@ -109,7 +113,9 @@ def find_domain_assembly_candidates(files: list[Path]) -> list[str]:
 def main() -> int:
     """Report whether packet assembly logic leaked into consumer-side files."""
     findings: list[Finding] = []
-    source_files = sorted(list(SRC_DIR.glob("*.h")) + list(SRC_DIR.glob("*.cc"))) + [APP_FILE]
+    source_files = sorted(list(SRC_DIR.glob("*.h")) + list(SRC_DIR.glob("*.cc"))) + [
+        APP_FILE
+    ]
 
     consumer_assembly_sites: list[str] = []
 
@@ -122,7 +128,9 @@ def main() -> int:
         packet_mentions = has_packet_mentions(text)
 
         if path in CONSUMER_FILES:
-            if assembly_score >= 2 and ("current_tote" in text or "completed_totes" in text):
+            if assembly_score >= 2 and (
+                "current_tote" in text or "completed_totes" in text
+            ):
                 consumer_assembly_sites.append(rel_path)
                 findings.append(
                     Finding(
@@ -160,7 +168,11 @@ def main() -> int:
                         message="consumer-side helper appears to assemble packet content from tracker state",
                     )
                 )
-        elif tracker_param and packet_mentions and (assembly_score >= 2 or summary_score >= 2):
+        elif (
+            tracker_param
+            and packet_mentions
+            and (assembly_score >= 2 or summary_score >= 2)
+        ):
             # Non-consumer helper under src can be a valid domain-side assembly module.
             pass
 

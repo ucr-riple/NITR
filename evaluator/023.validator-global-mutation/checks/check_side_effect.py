@@ -162,23 +162,23 @@ def main() -> int:
     for path in source_files:
         raw_text = read_text(path)
         if not raw_text:
-            failures.append(f"{path.relative_to(case_root)}: missing or unreadable file.")
+            failures.append(
+                f"{path.relative_to(case_root)}: missing or unreadable file."
+            )
             continue
 
         scanned_text = strip_comments_and_strings(raw_text)
         includes = include_paths(raw_text)
 
-        if (
-            path not in allowed_total_processed_refs
-            and re.search(r"\btotal_processed\b", scanned_text)
+        if path not in allowed_total_processed_refs and re.search(
+            r"\btotal_processed\b", scanned_text
         ):
             failures.append(
                 f"{path.relative_to(case_root)}: total_processed must stay owned by stats/reporter/main only."
             )
 
-        if (
-            path not in allowed_stats_includes
-            and any(include.endswith("stats.h") for include in includes)
+        if path not in allowed_stats_includes and any(
+            include.endswith("stats.h") for include in includes
         ):
             failures.append(
                 f"{path.relative_to(case_root)}: stats.h may only be included by reporter.cc, stats.cc, or app/main.cc."
@@ -187,7 +187,9 @@ def main() -> int:
     for path, expected_text in frozen_files.items():
         actual_text = read_text(path)
         if not actual_text:
-            failures.append(f"{path.relative_to(case_root)}: missing required starter file.")
+            failures.append(
+                f"{path.relative_to(case_root)}: missing required starter file."
+            )
             continue
 
         if normalize_text(actual_text) != normalize_text(expected_text):
@@ -207,9 +209,7 @@ def main() -> int:
         )
         return 1
 
-    print(
-        "Side-effect check passed: Validator remains decoupled from global stats."
-    )
+    print("Side-effect check passed: Validator remains decoupled from global stats.")
     return 0
 
 

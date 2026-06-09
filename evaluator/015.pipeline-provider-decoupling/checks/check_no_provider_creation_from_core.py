@@ -24,12 +24,17 @@ def main() -> int:
     """Reject provider selection or construction logic inside core pipeline files."""
     repo_root = Path(__file__).resolve().parents[3]
     case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
-    core_files = [case_root / "src/pipeline_runner.h", case_root / "src/pipeline_runner.cc"]
+    core_files = [
+        case_root / "src/pipeline_runner.h",
+        case_root / "src/pipeline_runner.cc",
+    ]
     for path in core_files:
         text = path.read_text(encoding="utf-8")
         for pattern in FORBIDDEN_PATTERNS:
             if re.search(pattern, text):
-                print(f"Forbidden provider creation/selection hint in core file {path}: {pattern}")
+                print(
+                    f"Forbidden provider creation/selection hint in core file {path}: {pattern}"
+                )
                 return 1
     return 0
 

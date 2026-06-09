@@ -125,13 +125,18 @@ def discover_local_files(case_dir: Path) -> list[Path]:
     return files
 
 
-def build_transitive_python_coverage(case_dir: Path, initially_covered: set[str]) -> set[str]:
+def build_transitive_python_coverage(
+    case_dir: Path, initially_covered: set[str]
+) -> set[str]:
     """Follow same-case references from covered Python entrypoints to local helper files."""
     all_files = {
-        relative_to_case(case_dir, path): path for path in discover_local_files(case_dir)
+        relative_to_case(case_dir, path): path
+        for path in discover_local_files(case_dir)
     }
     covered = set(initially_covered)
-    queue = [rel for rel in initially_covered if all_files.get(rel, Path()).suffix == ".py"]
+    queue = [
+        rel for rel in initially_covered if all_files.get(rel, Path()).suffix == ".py"
+    ]
 
     while queue:
         rel = queue.pop()
@@ -151,7 +156,9 @@ def build_transitive_python_coverage(case_dir: Path, initially_covered: set[str]
     return covered
 
 
-def find_duplicate_manual_test_commands(case_slug: str, case_body: str) -> list[Finding]:
+def find_duplicate_manual_test_commands(
+    case_slug: str, case_body: str
+) -> list[Finding]:
     """Report manually duplicated add_test command aliases within one case registration."""
 
     command_to_names: dict[str, list[str]] = {}

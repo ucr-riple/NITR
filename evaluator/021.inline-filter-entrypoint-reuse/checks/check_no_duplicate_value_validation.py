@@ -23,7 +23,9 @@ def main() -> int:
         has_inline_parser = "ParseInlineFilter" in content
 
         if has_stoi or has_isdigit:
-            print(f"Suspicious duplicate numeric validation outside filter_validation: {source_file}")
+            print(
+                f"Suspicious duplicate numeric validation outside filter_validation: {source_file}"
+            )
             return 1
 
         if has_integer_value and has_inline_parser:

@@ -148,12 +148,16 @@ def main() -> int:
         build_root = Path(temp_dir.name)
 
     try:
-        results = [check_case(case_slug, build_root) for case_slug in discover_case_slugs()]
+        results = [
+            check_case(case_slug, build_root) for case_slug in discover_case_slugs()
+        ]
     finally:
         if temp_dir is not None:
             temp_dir.cleanup()
 
-    failed = [result for result in results if not (result.configure_ok and result.discover_ok)]
+    failed = [
+        result for result in results if not (result.configure_ok and result.discover_ok)
+    ]
 
     if args.json:
         print(

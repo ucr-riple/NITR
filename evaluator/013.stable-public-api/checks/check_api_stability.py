@@ -11,7 +11,12 @@ HEADER = (
 )
 text = HEADER.read_text()
 
-for forbidden in ["include_archived", "show_archived", "archived_mode", "includeArchived"]:
+for forbidden in [
+    "include_archived",
+    "show_archived",
+    "archived_mode",
+    "includeArchived",
+]:
     if forbidden in text:
         print(f"Forbidden public API control flag detected: {forbidden}")
         sys.exit(1)

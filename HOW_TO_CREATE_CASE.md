@@ -133,6 +133,8 @@ python3 tools/run_case.py <case-slug>
 python3 tools/run_case.py <case-slug> --with-evaluator
 python3 tools/check_benchmark_consistency.py
 python3 tools/check_evaluator_entrypoints.py
+tools/check_format.sh
+tools/check_python_format.sh
 ```
 
 Recommended checks before submission:
@@ -141,6 +143,8 @@ Recommended checks before submission:
 - the evaluator runs successfully
 - the repository-wide consistency checker does not report missing evaluator wiring
 - the evaluator entrypoint checker does not report missing case-level CTest registration
+- C/C++ files under `cases/` and `evaluator/` pass `clang-format` checks
+- Python files under `evaluator/`, `submit/`, and `tools/` pass `ruff format --check`
 - `TASK.md` does not leak the benchmark intent
 - the case still isolates one primary maintainability pressure
 - the naming and directory layout match existing cases

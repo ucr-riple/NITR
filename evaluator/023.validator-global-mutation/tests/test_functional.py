@@ -42,9 +42,7 @@ def main() -> int:
         failures.append("late submission for carol should not be graded")
 
     if "Processed 2 submissions" not in lines:
-        failures.append(
-            "expected reporter summary to say: Processed 2 submissions"
-        )
+        failures.append("expected reporter summary to say: Processed 2 submissions")
 
     if failures:
         print("FAIL: Functional app test failed:")

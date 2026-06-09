@@ -29,7 +29,9 @@ DEFAULTS = {
     # OpenAI official API workflow. Requires OPENAI_API_KEY.
     "chatgpt-api": {
         "model_name": "gpt-5-mini",
-        "openai_api_base": os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1"),
+        "openai_api_base": os.environ.get(
+            "OPENAI_API_BASE", "https://api.openai.com/v1"
+        ),
         "openai_api_key_env_var": "OPENAI_API_KEY",
         "response_delay_seconds": 15.0,
         "request_timeout_seconds": 1800.0,
@@ -254,7 +256,9 @@ def run_chatgpt_api(args):
                     response_payload = json.loads(response.read().decode("utf-8"))
                 response_text = extract_openai_response_text(response_payload)
                 if not response_text.strip():
-                    raise ValueError("OpenAI Responses API returned an empty output text")
+                    raise ValueError(
+                        "OpenAI Responses API returned an empty output text"
+                    )
                 print(
                     f"[*] Request attempt {attempt}/{config['request_retry_attempts']} "
                     f"succeeded in {time.time() - started:.1f}s"
@@ -274,13 +278,18 @@ def run_chatgpt_api(args):
             )
             if attempt == config["request_retry_attempts"]:
                 raise last_error
-            print(f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry...")
+            print(
+                f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry..."
+            )
             time.sleep(config["request_retry_delay_seconds"])
 
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
-    def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+    def run_single_task(
+        input_project_dir, output_project_dir, task_file, response_output_path
+    ):
         """Execute one case task and persist both raw text and API metadata."""
+
         def fetch_response(_project_dir, prompt, _response_output_path):
             """Wrap the API call so run_json_task can stay backend-agnostic."""
             response_text, response_payload = call_openai(prompt)
@@ -359,10 +368,16 @@ def run_chatgpt_codex(args):
                 if completed.returncode != 0:
                     stderr = completed.stderr.strip()
                     stdout = completed.stdout.strip()
-                    details = stderr or stdout or f"codex exec exited with {completed.returncode}"
+                    details = (
+                        stderr
+                        or stdout
+                        or f"codex exec exited with {completed.returncode}"
+                    )
                     raise RuntimeError(details)
                 if not os.path.isfile(temp_output_path):
-                    raise ValueError("codex exec did not produce an output-last-message file")
+                    raise ValueError(
+                        "codex exec did not produce an output-last-message file"
+                    )
                 with open(temp_output_path, "r", encoding="utf-8") as f:
                     response_text = f.read()
                 os.remove(temp_output_path)
@@ -381,12 +396,17 @@ def run_chatgpt_codex(args):
                 )
                 if attempt == config["request_retry_attempts"]:
                     raise
-                print(f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry...")
+                print(
+                    f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry..."
+                )
                 time.sleep(config["request_retry_delay_seconds"])
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
-    def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+    def run_single_task(
+        input_project_dir, output_project_dir, task_file, response_output_path
+    ):
         """Execute one task through Codex and apply the returned JSON patch."""
+
         def fetch_response(project_dir, prompt, _response_output_path):
             """Provide run_json_task with a backend-specific response fetcher."""
             response_text, usage_payload = call_codex(
@@ -483,18 +503,24 @@ def run_claude_vertex(args):
                 )
                 if attempt == config["request_retry_attempts"]:
                     raise
-                print(f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry...")
+                print(
+                    f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry..."
+                )
                 time.sleep(config["request_retry_delay_seconds"])
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
-    def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+    def run_single_task(
+        input_project_dir, output_project_dir, task_file, response_output_path
+    ):
         """Execute one task through Claude Vertex using the shared JSON workflow."""
         return run_json_task(
             input_project_dir,
             output_project_dir,
             task_file,
             response_output_path,
-            fetch_response=lambda _project_dir, prompt, _response_output_path: call_claude(prompt),
+            fetch_response=lambda _project_dir, prompt, _response_output_path: (
+                call_claude(prompt)
+            ),
             request_label="Claude",
             error_label="Claude Error",
             response_delay_seconds=config["response_delay_seconds"],
@@ -606,7 +632,9 @@ Focus only on the implementation requested in {task_file}."""
                 )
         raise RuntimeError(f"All CLI attempts failed. Last error: {last_error}")
 
-    def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+    def run_single_task(
+        input_project_dir, output_project_dir, task_file, response_output_path
+    ):
         """Execute one task via Claude CLI and materialize the returned file set."""
         prepare_output_dir(input_project_dir, output_project_dir)
         prompt = build_cli_prompt(task_file)
@@ -688,20 +716,26 @@ def run_gemini_vertex(args):
                 )
                 if attempt == config["request_retry_attempts"]:
                     raise
-                print(f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry...")
+                print(
+                    f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry..."
+                )
                 time.sleep(config["request_retry_delay_seconds"])
         if response is None:
             raise RuntimeError(f"Request failed without a response: {last_error}")
         return response.text
 
-    def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+    def run_single_task(
+        input_project_dir, output_project_dir, task_file, response_output_path
+    ):
         """Execute one task through Gemini Vertex using the shared JSON workflow."""
         return run_json_task(
             input_project_dir,
             output_project_dir,
             task_file,
             response_output_path,
-            fetch_response=lambda _project_dir, prompt, _response_output_path: call_gemini(prompt),
+            fetch_response=lambda _project_dir, prompt, _response_output_path: (
+                call_gemini(prompt)
+            ),
             request_label=config["model_name"],
             error_label="API Error",
             response_delay_seconds=config["response_delay_seconds"],
@@ -753,7 +787,9 @@ def run_gemini_cli(args):
     Do not return partial patches or diffs.
     """
 
-    def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+    def run_single_task(
+        input_project_dir, output_project_dir, task_file, response_output_path
+    ):
         """Execute one task via Gemini CLI and apply the emitted JSON patch."""
         prepare_output_dir(input_project_dir, output_project_dir)
         try:
@@ -878,7 +914,8 @@ def run_qwen_vertex(args):
                         texts = [
                             part.get("text")
                             for part in parts
-                            if isinstance(part, dict) and isinstance(part.get("text"), str)
+                            if isinstance(part, dict)
+                            and isinstance(part.get("text"), str)
                         ]
                         if texts:
                             return "".join(texts)
@@ -935,18 +972,24 @@ def run_qwen_vertex(args):
                 )
                 if attempt == config["request_retry_attempts"]:
                     raise
-                print(f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry...")
+                print(
+                    f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry..."
+                )
                 time.sleep(config["request_retry_delay_seconds"])
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
-    def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+    def run_single_task(
+        input_project_dir, output_project_dir, task_file, response_output_path
+    ):
         """Execute one task through the Qwen Vertex endpoint."""
         return run_json_task(
             input_project_dir,
             output_project_dir,
             task_file,
             response_output_path,
-            fetch_response=lambda _project_dir, prompt, _response_output_path: call_endpoint(prompt),
+            fetch_response=lambda _project_dir, prompt, _response_output_path: (
+                call_endpoint(prompt)
+            ),
             request_label="Qwen endpoint",
             error_label="Endpoint Error",
             response_delay_seconds=config["response_delay_seconds"],
@@ -1065,18 +1108,24 @@ def run_qwen_openapi(args):
             )
             if attempt == config["request_retry_attempts"]:
                 raise last_error
-            print(f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry...")
+            print(
+                f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry..."
+            )
             time.sleep(config["request_retry_delay_seconds"])
         raise RuntimeError(f"Request failed without a response: {last_error}")
 
-    def run_single_task(input_project_dir, output_project_dir, task_file, response_output_path):
+    def run_single_task(
+        input_project_dir, output_project_dir, task_file, response_output_path
+    ):
         """Execute one task through the Qwen OpenAPI backend."""
         return run_json_task(
             input_project_dir,
             output_project_dir,
             task_file,
             response_output_path,
-            fetch_response=lambda _project_dir, prompt, _response_output_path: call_openapi_chat(prompt),
+            fetch_response=lambda _project_dir, prompt, _response_output_path: (
+                call_openapi_chat(prompt)
+            ),
             request_label="Qwen3 Next 80B",
             error_label="OpenAPI Error",
             response_delay_seconds=config["response_delay_seconds"],

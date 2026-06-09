@@ -3,7 +3,11 @@ import hashlib
 import pathlib
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[3] / "cases" / pathlib.Path(__file__).resolve().parents[1].name
+ROOT = (
+    pathlib.Path(__file__).resolve().parents[3]
+    / "cases"
+    / pathlib.Path(__file__).resolve().parents[1].name
+)
 
 EXPECTED_HASHES = {
     "src/feature_transform.h": "73f6067d946fafff153d1ff9fc72f10bd6f7934efbe0fc0ee90ef4213dea4570",
