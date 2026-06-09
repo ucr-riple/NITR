@@ -131,12 +131,16 @@ ctest --test-dir build --output-on-failure
 
 python3 tools/run_case.py <case-slug>
 python3 tools/run_case.py <case-slug> --with-evaluator
+python3 tools/check_benchmark_consistency.py
+python3 tools/check_evaluator_entrypoints.py
 ```
 
 Recommended checks before submission:
 
 - the new case configures successfully
 - the evaluator runs successfully
+- the repository-wide consistency checker does not report missing evaluator wiring
+- the evaluator entrypoint checker does not report missing case-level CTest registration
 - `TASK.md` does not leak the benchmark intent
 - the case still isolates one primary maintainability pressure
 - the naming and directory layout match existing cases
