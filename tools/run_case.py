@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
-import subprocess
 import sys
 from pathlib import Path
 
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
+from benchmark_check_utils import REPO_ROOT, run_streaming_command
 
 
 def run(cmd, cwd):
-    print(f"[*] Running: {' '.join(cmd)}")
-    completed = subprocess.run(cmd, cwd=cwd, check=False)
-    if completed.returncode != 0:
-        raise SystemExit(completed.returncode)
+    """Run one command for the local case workflow and stop on the first failure."""
+
+    exit_code = run_streaming_command(cmd, Path(cwd))
+    if exit_code != 0:
+        raise SystemExit(exit_code)
 
 
 def main():

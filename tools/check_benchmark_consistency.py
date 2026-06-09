@@ -9,9 +9,9 @@ from dataclasses import asdict, dataclass
 from enum import StrEnum
 from pathlib import Path
 
+from benchmark_check_utils import EVALUATOR_ROOT, REPO_ROOT, discover_case_slugs, read_text
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-EVALUATOR_ROOT = REPO_ROOT / "evaluator"
+
 CMAKE_FILE = EVALUATOR_ROOT / "CMakeLists.txt"
 
 SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx"}
@@ -48,13 +48,6 @@ class Finding:
     path: str
     # Human-readable explanation of what is wrong.
     message: str
-
-
-def read_text(path: Path) -> str:
-    """Read a text file with forgiving UTF-8 decoding for repo metadata scans."""
-
-    return path.read_text(encoding="utf-8", errors="replace")
-
 
 def load_case_function_bodies(cmake_text: str) -> dict[str, str]:
     """Map zero-padded case ids to the body text of nitr_register_case_* functions."""
@@ -271,14 +264,17 @@ def main() -> int:
     case_bodies = load_case_function_bodies(cmake_text)
 
     findings: list[Finding] = []
-    for case_dir in sorted(path for path in EVALUATOR_ROOT.iterdir() if path.is_dir()):
-        case_id = case_id_from_slug(case_dir.name)
+    for case_slug in discover_case_slugs():
+        case_dir = EVALUATOR_ROOT / case_slug
+        if not case_dir.is_dir():
+            continue
+        case_id = case_id_from_slug(case_slug)
         case_body = case_bodies.get(case_id)
         if case_body is None:
             findings.append(
                 Finding(
                     finding_type=FindingType.MISSING_CASE_REGISTRATION,
-                    case=case_dir.name,
+                    case=case_slug,
                     path=str(case_dir.relative_to(REPO_ROOT)),
                     message="evaluator case directory exists but no nitr_register_case_* function was found",
                 )

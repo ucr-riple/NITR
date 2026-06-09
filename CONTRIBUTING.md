@@ -51,11 +51,16 @@ If you add or modify evaluator files under `evaluator/`, also run:
 
 ```bash
 python3 tools/check_benchmark_consistency.py
+python3 tools/check_evaluator_entrypoints.py
 ```
 
 This script catches common public-evaluator wiring mistakes such as tests or
 Python check scripts that exist on disk but are not covered by the repo-local
 CTest path.
+
+The evaluator entrypoint checker confirms that each case can configure with
+`-DNITR_BUILD_EVALUATOR=ON` and still registers at least one case-specific
+CTest entrypoint.
 
 ## Pull Requests
 
