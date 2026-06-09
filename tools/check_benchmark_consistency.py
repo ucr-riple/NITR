@@ -1,4 +1,23 @@
 #!/usr/bin/env python3
+"""Validate evaluator wiring consistency across the public NITR repository.
+
+This checker performs a repo-wide static scan over evaluator case directories and
+their corresponding registration logic in ``evaluator/CMakeLists.txt``.
+
+Its goal is to catch public-evaluator wiring mistakes such as:
+- evaluator-side test or check sources that exist on disk but are not wired into
+  any CMake target or covered wrapper script
+- Python check scripts that are only reachable through one evaluation path
+- wrapper scripts such as ``checks/run_evaluator.py`` that exist but are never
+  registered from CMake
+- duplicate manual ``add_test(...)`` aliases that point to the same command
+
+This script does not try to prove that starter baselines pass functional tests.
+Instead, it focuses on whether the evaluator infrastructure itself is wired
+coherently and whether expected evaluator files are reachable through the
+repo-local public evaluation path.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -9,7 +28,13 @@ from dataclasses import asdict, dataclass
 from enum import StrEnum
 from pathlib import Path
 
-from benchmark_check_utils import EVALUATOR_ROOT, REPO_ROOT, discover_case_slugs, read_text
+from benchmark_check_utils import (
+    EVALUATOR_ROOT,
+    REPO_ROOT,
+    discover_case_slugs,
+    discover_evaluator_case_slugs,
+    read_text,
+)
 
 
 CMAKE_FILE = EVALUATOR_ROOT / "CMakeLists.txt"
@@ -23,6 +48,7 @@ PY_EXTS = {".py"}
 IGNORED_RELATIVE_FILES = {
     "015.pipeline-provider-decoupling/checks/check_allowed_file_touches.py",
 }
+
 
 class FindingType(StrEnum):
     """Stable machine-readable categories for benchmark consistency findings."""
@@ -48,6 +74,7 @@ class Finding:
     path: str
     # Human-readable explanation of what is wrong.
     message: str
+
 
 def load_case_function_bodies(cmake_text: str) -> dict[str, str]:
     """Map zero-padded case ids to the body text of nitr_register_case_* functions."""
@@ -145,15 +172,15 @@ def find_duplicate_manual_test_commands(case_slug: str, case_body: str) -> list[
         if len(unique_names) < 2:
             continue
         findings.append(
-                Finding(
-                    finding_type=FindingType.DUPLICATE_TEST_COMMAND_ALIAS,
-                    case=case_slug,
-                    path=str(CMAKE_FILE.relative_to(REPO_ROOT)),
-                    message=(
+            Finding(
+                finding_type=FindingType.DUPLICATE_TEST_COMMAND_ALIAS,
+                case=case_slug,
+                path=str(CMAKE_FILE.relative_to(REPO_ROOT)),
+                message=(
                     f"manual add_test registers command '{command}' under multiple names: "
                     + ", ".join(unique_names)
                 ),
-            )
+            ),
         )
     return findings
 
@@ -264,6 +291,19 @@ def main() -> int:
     case_bodies = load_case_function_bodies(cmake_text)
 
     findings: list[Finding] = []
+    case_slug_set = set(discover_case_slugs())
+    for case_slug in discover_evaluator_case_slugs():
+        if case_slug in case_slug_set:
+            continue
+        findings.append(
+            Finding(
+                finding_type=FindingType.MISSING_CASE_REGISTRATION,
+                case=case_slug,
+                path=str((EVALUATOR_ROOT / case_slug).relative_to(REPO_ROOT)),
+                message="evaluator case directory exists without a matching cases/ entry",
+            )
+        )
+
     for case_slug in discover_case_slugs():
         case_dir = EVALUATOR_ROOT / case_slug
         if not case_dir.is_dir():

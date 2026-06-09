@@ -1,4 +1,21 @@
 #!/usr/bin/env python3
+"""Validate per-case evaluator entrypoints without requiring green baselines.
+
+This checker iterates over every case under ``cases/`` and verifies that the
+public evaluator path can at least be configured and discovered correctly:
+
+- ``cmake`` must succeed with ``-DNITR_BUILD_EVALUATOR=ON`` for the case
+- ``ctest -N --show-only=json-v1`` must discover at least one case-specific
+  test entrypoint beyond repo-global checks such as ``nitr_format_check``
+
+This script is intentionally lighter than a full batch evaluator run. It does
+not require the case starter implementation to pass functional or structural
+tests. Many NITR cases are intentionally incomplete at baseline, so failures in
+the evaluated behavior are expected. The purpose here is narrower: distinguish
+expected starter-state failures from evaluator infrastructure failures such as
+missing registration or broken configuration paths.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -24,6 +41,7 @@ class CaseResult:
     discover_ok: bool
     discovered_tests: list[str]
     message: str
+
 
 def relevant_test_names(build_dir: Path) -> tuple[bool, list[str], str]:
     """Ask CTest for discovered tests and filter out repo-global checks."""
@@ -56,6 +74,14 @@ def check_case(case_slug: str, build_root: Path) -> CaseResult:
     """Configure one case with evaluator enabled and verify CTest discovers tests."""
 
     build_dir = build_root / case_slug
+    if build_dir.resolve() == REPO_ROOT:
+        return CaseResult(
+            case=case_slug,
+            configure_ok=False,
+            discover_ok=False,
+            discovered_tests=[],
+            message="refusing to delete repository root as a build directory",
+        )
     if build_dir.exists():
         shutil.rmtree(build_dir)
     build_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -100,7 +126,11 @@ def main() -> int:
     )
     parser.add_argument(
         "--build-root",
-        help="Optional directory for per-case configure outputs. Defaults to a temporary directory.",
+        help=(
+            "Optional directory for per-case configure outputs. Existing "
+            "<build-root>/<case-slug> directories may be deleted and recreated. "
+            "Defaults to a temporary directory."
+        ),
     )
     parser.add_argument(
         "--json",

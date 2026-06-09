@@ -21,6 +21,12 @@ def discover_case_slugs() -> list[str]:
     return sorted(path.name for path in CASES_ROOT.iterdir() if path.is_dir())
 
 
+def discover_evaluator_case_slugs() -> list[str]:
+    """List all evaluator case directory names under evaluator/."""
+
+    return sorted(path.name for path in EVALUATOR_ROOT.iterdir() if path.is_dir())
+
+
 def run_command(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     """Run one subprocess and capture text output without raising on failure."""
 
