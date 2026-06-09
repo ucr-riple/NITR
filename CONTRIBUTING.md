@@ -47,6 +47,16 @@ ctest --test-dir build --output-on-failure
 If you change shared tooling or documentation, run the smallest relevant checks
 that prove the change works.
 
+If you add or modify evaluator files under `evaluator/`, also run:
+
+```bash
+python3 tools/check_benchmark_consistency.py
+```
+
+This script catches common public-evaluator wiring mistakes such as tests or
+Python check scripts that exist on disk but are not covered by the repo-local
+CTest path.
+
 ## Pull Requests
 
 - Open a pull request against `main`.
