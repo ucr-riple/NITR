@@ -146,5 +146,15 @@ bash submit/run_batch.sh \
 
 - The submit scripts assume the standard NITR layout with `cases/`, `docs/`, and `evaluator/`.
 - Multi-step cases are driven by `TASK1.md`, `TASK2.md`, and so on based on `docs/design_matrix.md`.
+- In the repository's submit flow, the model context includes the case project
+  files plus only the currently selected `TASK.md` / `TASK*.md` file for that
+  step.
+- `docs/<case>/SPEC.md` is not included in the agent-visible input.
+- For multi-step cases, later steps continue from the previous step's staged
+  code output, but earlier `TASK*.md` files are not re-exposed in later steps.
 - Some backends require external credentials or installed CLIs.
 - No personal project IDs, endpoint IDs, or local interpreter paths are stored in the repository. Pass them with CLI flags or environment variables such as `NITR_GCP_PROJECT`, `NITR_GCP_REGION`, `NITR_VERTEX_ENDPOINT_ID`, and `NITR_VERTEX_ENDPOINT_LOCATION` when needed.
+
+This README documents the submit behavior implemented in this repository and
+used for paper-aligned reproduction. It does not attempt to cover other
+possible external experiment protocols.

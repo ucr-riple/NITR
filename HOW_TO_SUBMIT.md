@@ -242,5 +242,16 @@ For a typical local run:
 
 - The submit tooling assumes the standard NITR repository layout.
 - Multi-step cases are driven automatically from `docs/design_matrix.md`.
+- For the submit workflow implemented in this repository and used for
+  paper-aligned reproduction, the coding agent sees the case directory plus only
+  the TASK file for that step (`TASK.md` for single-step cases,
+  `TASK1.md`/`TASK2.md`/... for multi-step cases).
+- Under that protocol, `docs/<case>/SPEC.md` is not part of the agent-visible
+  input.
+- In multi-step runs, later steps continue from the previous step's generated
+  code snapshot, but do not receive earlier `TASK*.md` files again.
 - Backend-specific credentials are intentionally not stored in this repository.
 - For backend implementation details, see [`submit/README.md`](submit/README.md).
+
+These notes describe the repository's submit/reproduction protocol. Other
+external experiment setups are out of scope for this document.
