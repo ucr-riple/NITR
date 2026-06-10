@@ -14,6 +14,7 @@ Submit mode options:
   --backend <name>            Backend for submit_case.py
   --output-root <path>        Output root for generated artifacts
   --cases <list>              Comma-separated case ids, or "all"
+  --model-name <name>         Optional model override for supported backends
 
 Evaluate mode options:
   --generated-root <path>     Generated root containing cases/<case>
@@ -79,6 +80,7 @@ OUTPUT_ROOT=""
 GENERATED_ROOT=""
 LOG_FILE=""
 CASES=""
+MODEL_NAME=""
 BUILD_TIMEOUT=300
 CTEST_TIMEOUT=120
 CHECK_TIMEOUT=60
@@ -117,6 +119,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --cases)
       CASES="${2:-}"
+      shift 2
+      ;;
+    --model-name)
+      MODEL_NAME="${2:-}"
       shift 2
       ;;
     --build-timeout)
@@ -214,6 +220,9 @@ if [[ "${MODE}" == "submit" ]]; then
       "${DOCKER_ENV_FILE_ARGS[@]}"
       "${DOCKER_MOUNT_ARGS[@]}"
     )
+    if [[ -n "${MODEL_NAME}" ]]; then
+      submit_extra_args+=(--model-name "${MODEL_NAME}")
+    fi
     if [[ "${DOCKER_BUILD}" == "1" && "${SUBMIT_RUNTIME}" == "docker" ]]; then
       submit_extra_args+=(--docker-build)
     fi
@@ -256,6 +265,9 @@ if [[ "${MODE}" == "submit" ]]; then
           "${DOCKER_ENV_FILE_ARGS[@]}"
           "${DOCKER_MOUNT_ARGS[@]}"
         )
+        if [[ -n "${MODEL_NAME}" ]]; then
+          submit_extra_args+=(--model-name "${MODEL_NAME}")
+        fi
       else
         exit_code=$?
         echo "===== CASE ${case_id} EXIT ${exit_code} ====="
