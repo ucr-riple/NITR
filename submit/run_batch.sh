@@ -332,23 +332,34 @@ if [[ "${MODE}" == "evaluate" ]]; then
       case_name="$(basename "${case_dir}")"
       case_id="${case_name%%.*}"
       report_path="${GENERATED_ROOT}/reports/${case_name}.json"
+      evaluator_cmd=(
+        "${PYTHON_BIN}" submit/run_case_evaluator.py
+        -g "${GENERATED_ROOT}"
+        -c "${case_id}"
+        -r .
+        --refresh-evaluator
+        --runtime "${EVALUATE_RUNTIME}"
+        --docker-image "${DOCKER_IMAGE}"
+        --docker-platform "${DOCKER_PLATFORM}"
+        --dockerfile "${DOCKERFILE}"
+        --build-timeout "${BUILD_TIMEOUT}"
+        --ctest-timeout "${CTEST_TIMEOUT}"
+        --check-timeout "${CHECK_TIMEOUT}"
+      )
+      if [[ ${#PASS_ENV_ARGS[@]} -gt 0 ]]; then
+        evaluator_cmd+=("${PASS_ENV_ARGS[@]}")
+      fi
+      if [[ ${#DOCKER_ENV_FILE_ARGS[@]} -gt 0 ]]; then
+        evaluator_cmd+=("${DOCKER_ENV_FILE_ARGS[@]}")
+      fi
+      if [[ ${#DOCKER_MOUNT_ARGS[@]} -gt 0 ]]; then
+        evaluator_cmd+=("${DOCKER_MOUNT_ARGS[@]}")
+      fi
+      if [[ ${#evaluator_extra_args[@]} -gt 0 ]]; then
+        evaluator_cmd+=("${evaluator_extra_args[@]}")
+      fi
       echo "===== CASE ${case_id} (${case_name}) ====="
-      if "${PYTHON_BIN}" submit/run_case_evaluator.py \
-        -g "${GENERATED_ROOT}" \
-        -c "${case_id}" \
-        -r . \
-        --refresh-evaluator \
-        --runtime "${EVALUATE_RUNTIME}" \
-        --docker-image "${DOCKER_IMAGE}" \
-        --docker-platform "${DOCKER_PLATFORM}" \
-        --dockerfile "${DOCKERFILE}" \
-        --build-timeout "${BUILD_TIMEOUT}" \
-        --ctest-timeout "${CTEST_TIMEOUT}" \
-        --check-timeout "${CHECK_TIMEOUT}" \
-        "${PASS_ENV_ARGS[@]}" \
-        "${DOCKER_ENV_FILE_ARGS[@]}" \
-        "${DOCKER_MOUNT_ARGS[@]}" \
-        "${evaluator_extra_args[@]}"; then
+      if "${evaluator_cmd[@]}"; then
         echo "===== CASE ${case_id} EXIT 0 ====="
         evaluator_extra_args=()
       else
