@@ -14,6 +14,7 @@ Submit mode options:
   --backend <name>            Backend for submit_case.py
   --output-root <path>        Output root for generated artifacts
   --cases <list>              Comma-separated case ids, or "all"
+  --model-name <name>         Optional model override for supported backends
 
 Evaluate mode options:
   --generated-root <path>     Generated root containing cases/<case>
@@ -79,6 +80,7 @@ OUTPUT_ROOT=""
 GENERATED_ROOT=""
 LOG_FILE=""
 CASES=""
+MODEL_NAME=""
 BUILD_TIMEOUT=300
 CTEST_TIMEOUT=120
 CHECK_TIMEOUT=60
@@ -117,6 +119,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --cases)
       CASES="${2:-}"
+      shift 2
+      ;;
+    --model-name)
+      MODEL_NAME="${2:-}"
       shift 2
       ;;
     --build-timeout)
@@ -210,10 +216,19 @@ if [[ "${MODE}" == "submit" ]]; then
       --docker-image "${DOCKER_IMAGE}"
       --docker-platform "${DOCKER_PLATFORM}"
       --dockerfile "${DOCKERFILE}"
-      "${PASS_ENV_ARGS[@]}"
-      "${DOCKER_ENV_FILE_ARGS[@]}"
-      "${DOCKER_MOUNT_ARGS[@]}"
     )
+    if [[ ${#PASS_ENV_ARGS[@]} -gt 0 ]]; then
+      submit_extra_args+=("${PASS_ENV_ARGS[@]}")
+    fi
+    if [[ ${#DOCKER_ENV_FILE_ARGS[@]} -gt 0 ]]; then
+      submit_extra_args+=("${DOCKER_ENV_FILE_ARGS[@]}")
+    fi
+    if [[ ${#DOCKER_MOUNT_ARGS[@]} -gt 0 ]]; then
+      submit_extra_args+=("${DOCKER_MOUNT_ARGS[@]}")
+    fi
+    if [[ -n "${MODEL_NAME}" ]]; then
+      submit_extra_args+=(--model-name "${MODEL_NAME}")
+    fi
     if [[ "${DOCKER_BUILD}" == "1" && "${SUBMIT_RUNTIME}" == "docker" ]]; then
       submit_extra_args+=(--docker-build)
     fi
@@ -252,10 +267,19 @@ if [[ "${MODE}" == "submit" ]]; then
           --docker-image "${DOCKER_IMAGE}"
           --docker-platform "${DOCKER_PLATFORM}"
           --dockerfile "${DOCKERFILE}"
-          "${PASS_ENV_ARGS[@]}"
-          "${DOCKER_ENV_FILE_ARGS[@]}"
-          "${DOCKER_MOUNT_ARGS[@]}"
         )
+        if [[ ${#PASS_ENV_ARGS[@]} -gt 0 ]]; then
+          submit_extra_args+=("${PASS_ENV_ARGS[@]}")
+        fi
+        if [[ ${#DOCKER_ENV_FILE_ARGS[@]} -gt 0 ]]; then
+          submit_extra_args+=("${DOCKER_ENV_FILE_ARGS[@]}")
+        fi
+        if [[ ${#DOCKER_MOUNT_ARGS[@]} -gt 0 ]]; then
+          submit_extra_args+=("${DOCKER_MOUNT_ARGS[@]}")
+        fi
+        if [[ -n "${MODEL_NAME}" ]]; then
+          submit_extra_args+=(--model-name "${MODEL_NAME}")
+        fi
       else
         exit_code=$?
         echo "===== CASE ${case_id} EXIT ${exit_code} ====="
@@ -308,23 +332,34 @@ if [[ "${MODE}" == "evaluate" ]]; then
       case_name="$(basename "${case_dir}")"
       case_id="${case_name%%.*}"
       report_path="${GENERATED_ROOT}/reports/${case_name}.json"
+      evaluator_cmd=(
+        "${PYTHON_BIN}" submit/run_case_evaluator.py
+        -g "${GENERATED_ROOT}"
+        -c "${case_id}"
+        -r .
+        --refresh-evaluator
+        --runtime "${EVALUATE_RUNTIME}"
+        --docker-image "${DOCKER_IMAGE}"
+        --docker-platform "${DOCKER_PLATFORM}"
+        --dockerfile "${DOCKERFILE}"
+        --build-timeout "${BUILD_TIMEOUT}"
+        --ctest-timeout "${CTEST_TIMEOUT}"
+        --check-timeout "${CHECK_TIMEOUT}"
+      )
+      if [[ ${#PASS_ENV_ARGS[@]} -gt 0 ]]; then
+        evaluator_cmd+=("${PASS_ENV_ARGS[@]}")
+      fi
+      if [[ ${#DOCKER_ENV_FILE_ARGS[@]} -gt 0 ]]; then
+        evaluator_cmd+=("${DOCKER_ENV_FILE_ARGS[@]}")
+      fi
+      if [[ ${#DOCKER_MOUNT_ARGS[@]} -gt 0 ]]; then
+        evaluator_cmd+=("${DOCKER_MOUNT_ARGS[@]}")
+      fi
+      if [[ ${#evaluator_extra_args[@]} -gt 0 ]]; then
+        evaluator_cmd+=("${evaluator_extra_args[@]}")
+      fi
       echo "===== CASE ${case_id} (${case_name}) ====="
-      if "${PYTHON_BIN}" submit/run_case_evaluator.py \
-        -g "${GENERATED_ROOT}" \
-        -c "${case_id}" \
-        -r . \
-        --refresh-evaluator \
-        --runtime "${EVALUATE_RUNTIME}" \
-        --docker-image "${DOCKER_IMAGE}" \
-        --docker-platform "${DOCKER_PLATFORM}" \
-        --dockerfile "${DOCKERFILE}" \
-        --build-timeout "${BUILD_TIMEOUT}" \
-        --ctest-timeout "${CTEST_TIMEOUT}" \
-        --check-timeout "${CHECK_TIMEOUT}" \
-        "${PASS_ENV_ARGS[@]}" \
-        "${DOCKER_ENV_FILE_ARGS[@]}" \
-        "${DOCKER_MOUNT_ARGS[@]}" \
-        "${evaluator_extra_args[@]}"; then
+      if "${evaluator_cmd[@]}"; then
         echo "===== CASE ${case_id} EXIT 0 ====="
         evaluator_extra_args=()
       else
