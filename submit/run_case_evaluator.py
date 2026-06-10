@@ -9,6 +9,12 @@ import tempfile
 import time
 from pathlib import Path
 
+from docker_runtime import (
+    add_common_runtime_args,
+    current_default_dockerfile,
+    exit_after_docker_run,
+)
+
 
 def run_command(cmd, cwd, stream_output=False, timeout_seconds=None):
     """Run a subprocess and return a normalized result payload for reports."""
@@ -80,7 +86,6 @@ def run_command(cmd, cwd, stream_output=False, timeout_seconds=None):
         "stderr": stderr,
         "timed_out": timed_out,
     }
-
 
 def resolve_cases_root(input_dir: Path) -> Path:
     """Accept either the repo root or a direct cases directory and normalize to cases/."""
@@ -296,48 +301,75 @@ def main():
         description="Build one generated case, run functional tests via CTest, and then run structural checks."
     )
     parser.add_argument(
+        "--generated-root",
         "--generated_root",
         "-g",
+        dest="generated_root",
         required=True,
         help="Generated root containing cases/<case> and optional evaluator/<case>",
     )
     parser.add_argument(
-        "--case_id", "-c", required=True, help="Three-digit case id, e.g. 018"
+        "--case-id",
+        "--case_id",
+        "-c",
+        dest="case_id",
+        required=True,
+        help="Three-digit case id, e.g. 018",
     )
     parser.add_argument(
-        "--repo_root", "-r", default=".", help="Repo root or cases root"
+        "--repo-root",
+        "--repo_root",
+        "-r",
+        dest="repo_root",
+        default=".",
+        help="Repo root or cases root",
     )
     parser.add_argument(
+        "--keep-workspace",
         "--keep_workspace",
+        dest="keep_workspace",
         action="store_true",
         help="Keep the temporary workspace directory",
     )
     parser.add_argument(
+        "--workspace-dir",
         "--workspace_dir",
+        dest="workspace_dir",
         help="Optional workspace directory to use instead of a temp dir",
     )
     parser.add_argument(
+        "--refresh-evaluator",
         "--refresh_evaluator",
+        dest="refresh_evaluator",
         action="store_true",
         help="Overwrite generated_root/evaluator/<case> with the current repo evaluator before running",
     )
     parser.add_argument(
+        "--build-timeout",
         "--build_timeout",
+        dest="build_timeout",
         type=int,
         default=300,
         help="Timeout in seconds for the build step",
     )
     parser.add_argument(
+        "--ctest-timeout",
         "--ctest_timeout",
+        dest="ctest_timeout",
         type=int,
         default=120,
         help="Timeout in seconds for the functional test step",
     )
     parser.add_argument(
+        "--check-timeout",
         "--check_timeout",
+        dest="check_timeout",
         type=int,
         default=60,
         help="Timeout in seconds for each Python structural check",
+    )
+    add_common_runtime_args(
+        parser, default_dockerfile=current_default_dockerfile()
     )
     args = parser.parse_args()
 
@@ -346,6 +378,50 @@ def main():
     input_root = Path(args.repo_root).resolve()
     cases_root = resolve_cases_root(input_root)
     repo_root = cases_root.parent
+
+    if args.runtime == "docker":
+        if args.keep_workspace and not args.workspace_dir:
+            raise ValueError(
+                "--keep_workspace with --runtime docker requires --workspace_dir so the workspace persists on the host."
+            )
+
+        forwarded_args = [
+            "--generated-root",
+            str(generated_root),
+            "--case-id",
+            args.case_id,
+            "--repo-root",
+            str(repo_root),
+            "--build-timeout",
+            str(args.build_timeout),
+            "--ctest-timeout",
+            str(args.ctest_timeout),
+            "--check-timeout",
+            str(args.check_timeout),
+        ]
+        if args.refresh_evaluator:
+            forwarded_args.append("--refresh-evaluator")
+        if args.keep_workspace:
+            forwarded_args.append("--keep-workspace")
+        if args.workspace_dir:
+            workspace_mount_root = Path(args.workspace_dir).resolve()
+            if not workspace_mount_root.exists():
+                workspace_mount_root = workspace_mount_root.parent
+            forwarded_args.extend(
+                ["--workspace-dir", str(Path(args.workspace_dir).resolve())]
+            )
+        extra_mount_roots = [generated_root]
+        if args.workspace_dir:
+            extra_mount_roots.append(workspace_mount_root)
+        exit_after_docker_run(
+            args=args,
+            repo_root=repo_root,
+            script_path="submit/run_case_evaluator.py",
+            forwarded_args=forwarded_args,
+            path_arg_names={"--generated-root", "--repo-root", "--workspace-dir"},
+            extra_mount_roots=extra_mount_roots,
+        )
+
     case_slug = find_case_slug(cases_root, case_id)
     generated_case_dir = generated_root / "cases" / case_slug
     if not generated_case_dir.is_dir():

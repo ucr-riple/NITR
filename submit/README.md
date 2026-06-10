@@ -7,10 +7,32 @@ The submit tooling is organized into these components:
 - `submit_case.py`: unified entrypoint that dispatches to a selected backend
 - `backends.py` and `submit_common.py`: backend adapters and shared submission logic
 - `run_case_evaluator.py`: copy one generated case into a clean NITR workspace, build it, run CTest, and then run structural checks
+- `../docker/nitr-linux-gcc.Dockerfile`: pinned Linux/GCC evaluator image definition
+- `docker.env.example`: sample env-file for Docker-backed submit/evaluate runs
 
 Batch helper:
 
 - `run_batch.sh`: unified shell entrypoint for batch submit and batch evaluate
+
+## Docker Model
+
+The Docker support in this repository is intentionally split into two layers:
+
+- benchmark runtime: a Linux/GCC baseline plus common shell tooling
+- agent image: any container image that also contains the backend-specific CLI or SDK setup you want to use
+
+The repository ships one default benchmark runtime image definition at
+[`../docker/nitr-linux-gcc.Dockerfile`](../docker/nitr-linux-gcc.Dockerfile).
+It is meant to be generic, not provider-specific.
+
+If you want to run a CLI-backed backend such as `chatgpt-codex`,
+`claude-cli`, or `gemini-cli` inside Docker, point `--docker-image` at an
+image that satisfies this contract:
+
+- `python3` is available on `PATH`
+- the NITR baseline tools are available, such as `bash`, `cmake`, `git`, and `rg`
+- the backend-specific CLI is available on `PATH`
+- credentials are injected at runtime through env vars and/or bind mounts, not baked into the image
 
 ## Python Environment
 
@@ -85,6 +107,22 @@ python3 submit/submit_case.py \
   -c 024
 ```
 
+Run one case fully inside Docker:
+
+```bash
+python3 submit/submit_case.py \
+  --backend chatgpt-api \
+  -i . \
+  -o .submit-output/chatgpt-api \
+  -c 024 \
+  --runtime docker \
+  --docker_build \
+  --docker-env-file submit/docker.env.example
+```
+
+You can swap the image with `--docker-image` if a backend needs additional
+tools or authentication helpers beyond the default runtime image.
+
 Most model-driven backends expose a default `model_name`, but you can override
 it with `--model_name`.
 
@@ -117,6 +155,25 @@ Evaluate one generated case:
 python3 submit/run_case_evaluator.py -g .submit-output/chatgpt-codex -c 024 -r . --refresh_evaluator
 ```
 
+Evaluate one generated case inside the pinned Linux/GCC container:
+
+```bash
+python3 submit/run_case_evaluator.py \
+  -g .submit-output/chatgpt-codex \
+  -c 024 \
+  -r . \
+  --refresh_evaluator \
+  --runtime docker \
+  --docker_build
+```
+
+Docker-backed runs automatically pass through the common benchmark credential
+variables when they are set on the host, and you can add more with
+`--pass-env <NAME>` or `--docker-env-file <path>`.
+
+For file-backed credentials or CLI config directories, use
+`--docker-mount host_path:container_path[:options]`.
+
 Run the evaluator over all generated cases in one output root:
 
 ```bash
@@ -125,12 +182,33 @@ bash submit/run_batch.sh \
   --generated-root .submit-output/chatgpt-codex
 ```
 
+Run batch evaluation inside the same Docker image:
+
+```bash
+bash submit/run_batch.sh \
+  --mode evaluate \
+  --generated-root .submit-output/chatgpt-codex \
+  --runtime docker \
+  --docker-build
+```
+
 Run batch submit for one backend:
 
 ```bash
 bash submit/run_batch.sh \
   --mode submit \
   --backend chatgpt-codex
+```
+
+Run batch submit in Docker:
+
+```bash
+bash submit/run_batch.sh \
+  --mode submit \
+  --backend chatgpt-api \
+  --submit-runtime docker \
+  --docker-build \
+  --docker-env-file submit/docker.env.example
 ```
 
 Run batch submit with an explicit case list:
@@ -153,6 +231,9 @@ bash submit/run_batch.sh \
 - For multi-step cases, later steps continue from the previous step's staged
   code output, but earlier `TASK*.md` files are not re-exposed in later steps.
 - Some backends require external credentials or installed CLIs.
+- The default Docker image is a generic benchmark runtime, not a provider-specific agent image.
+- CLI-backed backends can run in Docker when `--docker-image` points at an image that provides the required CLI and runtime auth inputs.
+- Docker-based evaluation currently targets `linux/amd64` with GCC.
 - No personal project IDs, endpoint IDs, or local interpreter paths are stored in the repository. Pass them with CLI flags or environment variables such as `NITR_GCP_PROJECT`, `NITR_GCP_REGION`, `NITR_VERTEX_ENDPOINT_ID`, and `NITR_VERTEX_ENDPOINT_LOCATION` when needed.
 
 This README documents the submit behavior implemented in this repository and

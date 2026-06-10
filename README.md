@@ -69,7 +69,8 @@ prepare the pull request to merge the new case into `main`.
 
 Local submission helpers now live under [`submit/README.md`](submit/README.md).
 They can run cases against supported model backends, materialize generated case
-directories, and evaluate them locally with the public NITR evaluator.
+directories, and run both submit and evaluator workflows locally or in the
+pinned Linux/GCC Docker environment.
 
 For an end-to-end usage guide, including single-case submit, batch submit, and
 local evaluation, see [`HOW_TO_SUBMIT.md`](HOW_TO_SUBMIT.md).
