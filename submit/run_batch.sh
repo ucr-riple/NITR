@@ -216,10 +216,16 @@ if [[ "${MODE}" == "submit" ]]; then
       --docker-image "${DOCKER_IMAGE}"
       --docker-platform "${DOCKER_PLATFORM}"
       --dockerfile "${DOCKERFILE}"
-      "${PASS_ENV_ARGS[@]}"
-      "${DOCKER_ENV_FILE_ARGS[@]}"
-      "${DOCKER_MOUNT_ARGS[@]}"
     )
+    if [[ ${#PASS_ENV_ARGS[@]} -gt 0 ]]; then
+      submit_extra_args+=("${PASS_ENV_ARGS[@]}")
+    fi
+    if [[ ${#DOCKER_ENV_FILE_ARGS[@]} -gt 0 ]]; then
+      submit_extra_args+=("${DOCKER_ENV_FILE_ARGS[@]}")
+    fi
+    if [[ ${#DOCKER_MOUNT_ARGS[@]} -gt 0 ]]; then
+      submit_extra_args+=("${DOCKER_MOUNT_ARGS[@]}")
+    fi
     if [[ -n "${MODEL_NAME}" ]]; then
       submit_extra_args+=(--model-name "${MODEL_NAME}")
     fi
@@ -261,10 +267,16 @@ if [[ "${MODE}" == "submit" ]]; then
           --docker-image "${DOCKER_IMAGE}"
           --docker-platform "${DOCKER_PLATFORM}"
           --dockerfile "${DOCKERFILE}"
-          "${PASS_ENV_ARGS[@]}"
-          "${DOCKER_ENV_FILE_ARGS[@]}"
-          "${DOCKER_MOUNT_ARGS[@]}"
         )
+        if [[ ${#PASS_ENV_ARGS[@]} -gt 0 ]]; then
+          submit_extra_args+=("${PASS_ENV_ARGS[@]}")
+        fi
+        if [[ ${#DOCKER_ENV_FILE_ARGS[@]} -gt 0 ]]; then
+          submit_extra_args+=("${DOCKER_ENV_FILE_ARGS[@]}")
+        fi
+        if [[ ${#DOCKER_MOUNT_ARGS[@]} -gt 0 ]]; then
+          submit_extra_args+=("${DOCKER_MOUNT_ARGS[@]}")
+        fi
         if [[ -n "${MODEL_NAME}" ]]; then
           submit_extra_args+=(--model-name "${MODEL_NAME}")
         fi
