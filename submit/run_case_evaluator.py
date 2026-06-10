@@ -250,7 +250,7 @@ def discover_ctest_names(build_dir: Path):
 
 def is_case_relevant_ctest(test_name: str) -> bool:
     """Filter out repo-level tests that should not affect one-case evaluation."""
-    return test_name != "nitr_format_check"
+    return test_name not in {"nitr_format_check", "nitr_python_format_check"}
 
 
 def run_ctest_per_test(build_dir: Path, timeout_seconds: int):
