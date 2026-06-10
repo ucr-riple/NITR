@@ -237,6 +237,8 @@ def exit_after_docker_run(
     forwarded_args: list[str],
     path_arg_names: set[str] | None = None,
     extra_mount_roots: list[Path] | None = None,
+    extra_mount_specs: list[str] | None = None,
+    pre_exec_shell_commands: list[str] | None = None,
 ):
     """Re-run the current script inside Docker and exit with the container status."""
     ensure_docker_cli()
@@ -268,7 +270,9 @@ def exit_after_docker_run(
         container_root = f"/workspace/mounts/{len(mounts)}"
         append_mount(docker_cmd, mounts, resolved_root, container_root)
 
-    add_custom_mounts(docker_cmd, mounts, args.docker_mount)
+    all_mount_specs = list(args.docker_mount or [])
+    all_mount_specs.extend(extra_mount_specs or [])
+    add_custom_mounts(docker_cmd, mounts, all_mount_specs)
     add_environment_flags(docker_cmd, mounts, args)
 
     mapped_args = []
@@ -283,13 +287,26 @@ def exit_after_docker_run(
         mapped_args.append(value)
         current_flag = value if value.startswith("-") else None
 
-    container_cmd = [
-        docker_python_executable(),
-        script_relpath(script_path),
-        "--runtime",
-        "local",
-        *mapped_args,
-    ]
+    script_cmd = " ".join(
+        [
+            docker_python_executable(),
+            script_relpath(script_path),
+            "--runtime",
+            "local",
+            *(shlex_quote(arg) for arg in mapped_args),
+        ]
+    )
+    if pre_exec_shell_commands:
+        shell_cmd = " && ".join(pre_exec_shell_commands + [f"exec {script_cmd}"])
+        container_cmd = ["bash", "-lc", shell_cmd]
+    else:
+        container_cmd = [
+            docker_python_executable(),
+            script_relpath(script_path),
+            "--runtime",
+            "local",
+            *mapped_args,
+        ]
     docker_cmd.extend([args.docker_image, *container_cmd])
     raise SystemExit(run_streaming_command(docker_cmd, repo_root))
 
@@ -299,3 +316,8 @@ def current_default_dockerfile() -> str:
     return str(
         Path(__file__).resolve().parents[1] / "docker" / "nitr-linux-gcc.Dockerfile"
     )
+
+
+def shlex_quote(value: str) -> str:
+    """Shell-quote one argument for optional bash -lc wrapping."""
+    return "'" + value.replace("'", "'\"'\"'") + "'"

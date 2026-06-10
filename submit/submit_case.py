@@ -8,6 +8,30 @@ from docker_runtime import (
     exit_after_docker_run,
 )
 
+DEFAULT_CODEX_DOCKER_IMAGE = "nitr-linux-gcc-codex:latest"
+
+
+def current_codex_dockerfile() -> str:
+    """Return the repository's default Codex-enabled Dockerfile path."""
+    return str(
+        Path(__file__).resolve().parents[1]
+        / "docker"
+        / "nitr-linux-gcc-codex.Dockerfile"
+    )
+
+
+def codex_auth_mount_specs() -> list[str]:
+    """Build minimal read-only Codex auth mounts when available on the host."""
+    codex_home = Path.home() / ".codex"
+    mount_specs = []
+    for filename in ("auth.json", "config.toml"):
+        host_path = codex_home / filename
+        if host_path.is_file():
+            mount_specs.append(
+                f"{host_path.resolve()}:/root/.codex/{filename}:ro"
+            )
+    return mount_specs
+
 
 def build_parser():
     """Build the shared CLI for dispatching one case to a backend implementation."""
@@ -94,6 +118,19 @@ def main():
     repo_root = Path(__file__).resolve().parents[1]
 
     if args.runtime == "docker":
+        extra_mount_specs = []
+        pre_exec_shell_commands = []
+
+        if args.backend == "chatgpt-codex":
+            if (
+                args.docker_image == "nitr-linux-gcc:latest"
+                and args.dockerfile == current_default_dockerfile()
+            ):
+                args.docker_image = DEFAULT_CODEX_DOCKER_IMAGE
+                args.dockerfile = current_codex_dockerfile()
+            extra_mount_specs = codex_auth_mount_specs()
+            pre_exec_shell_commands = ["mkdir -p /root/.codex"]
+
         input_mount_root = Path(args.input_dir).resolve()
         output_mount_root = Path(args.output_dir).resolve()
         if not output_mount_root.exists():
@@ -135,6 +172,8 @@ def main():
             forwarded_args=forwarded_args,
             path_arg_names={"--input-dir", "--output-dir"},
             extra_mount_roots=extra_mount_roots,
+            extra_mount_specs=extra_mount_specs,
+            pre_exec_shell_commands=pre_exec_shell_commands,
         )
 
     print(f"[*] Dispatching backend '{args.backend}'")
