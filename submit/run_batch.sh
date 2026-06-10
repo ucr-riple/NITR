@@ -23,6 +23,16 @@ Common options:
   --build-timeout <sec>       Evaluator build timeout
   --ctest-timeout <sec>       Evaluator ctest timeout
   --check-timeout <sec>       Evaluator structural check timeout
+  --runtime <local|docker>    Shared default runtime for submit/evaluate
+  --submit-runtime <mode>     Runtime override for submit mode
+  --evaluate-runtime <mode>   Runtime override for evaluate mode
+  --docker-image <image>      Docker image for Docker-backed runs
+  --docker-platform <plat>    Docker platform for Docker-backed runs
+  --dockerfile <path>         Dockerfile used by --docker-build
+  --docker-build              Build the Docker image before the first Docker-backed run
+  --pass-env <name>           Extra env var name to pass into Docker; repeatable
+  --docker-env-file <path>    Docker env-file to pass through; repeatable
+  --docker-mount <spec>       Extra bind mount host:container[:options]; repeatable
 EOF
 }
 
@@ -72,6 +82,16 @@ CASES=""
 BUILD_TIMEOUT=300
 CTEST_TIMEOUT=120
 CHECK_TIMEOUT=60
+RUNTIME="local"
+SUBMIT_RUNTIME=""
+EVALUATE_RUNTIME=""
+DOCKER_IMAGE="nitr-linux-gcc:latest"
+DOCKER_PLATFORM="linux/amd64"
+DOCKERFILE="${REPO_ROOT}/docker/nitr-linux-gcc.Dockerfile"
+DOCKER_BUILD=0
+PASS_ENV_ARGS=()
+DOCKER_ENV_FILE_ARGS=()
+DOCKER_MOUNT_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -111,6 +131,46 @@ while [[ $# -gt 0 ]]; do
       CHECK_TIMEOUT="${2:-}"
       shift 2
       ;;
+    --runtime)
+      RUNTIME="${2:-}"
+      shift 2
+      ;;
+    --submit-runtime)
+      SUBMIT_RUNTIME="${2:-}"
+      shift 2
+      ;;
+    --evaluate-runtime)
+      EVALUATE_RUNTIME="${2:-}"
+      shift 2
+      ;;
+    --docker-image)
+      DOCKER_IMAGE="${2:-}"
+      shift 2
+      ;;
+    --docker-platform)
+      DOCKER_PLATFORM="${2:-}"
+      shift 2
+      ;;
+    --dockerfile)
+      DOCKERFILE="${2:-}"
+      shift 2
+      ;;
+    --docker-build)
+      DOCKER_BUILD=1
+      shift
+      ;;
+    --pass-env)
+      PASS_ENV_ARGS+=("--pass-env" "${2:-}")
+      shift 2
+      ;;
+    --docker-env-file)
+      DOCKER_ENV_FILE_ARGS+=("--docker-env-file" "${2:-}")
+      shift 2
+      ;;
+    --docker-mount)
+      DOCKER_MOUNT_ARGS+=("--docker-mount" "${2:-}")
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -129,6 +189,9 @@ if [[ -z "${MODE}" ]]; then
   exit 1
 fi
 
+SUBMIT_RUNTIME="${SUBMIT_RUNTIME:-${RUNTIME}}"
+EVALUATE_RUNTIME="${EVALUATE_RUNTIME:-${RUNTIME}}"
+
 if [[ "${MODE}" == "submit" ]]; then
   if [[ -z "${BACKEND}" ]]; then
     echo "--backend is required for submit mode" >&2
@@ -142,12 +205,26 @@ if [[ "${MODE}" == "submit" ]]; then
   mkdir -p "$(dirname "${LOG_FILE}")"
 
   {
+    submit_extra_args=(
+      --runtime "${SUBMIT_RUNTIME}"
+      --docker-image "${DOCKER_IMAGE}"
+      --docker-platform "${DOCKER_PLATFORM}"
+      --dockerfile "${DOCKERFILE}"
+      "${PASS_ENV_ARGS[@]}"
+      "${DOCKER_ENV_FILE_ARGS[@]}"
+      "${DOCKER_MOUNT_ARGS[@]}"
+    )
+    if [[ "${DOCKER_BUILD}" == "1" && "${SUBMIT_RUNTIME}" == "docker" ]]; then
+      submit_extra_args+=(--docker-build)
+    fi
+
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting batch submit"
     echo "Repo root: ${REPO_ROOT}"
     echo "Backend: ${BACKEND}"
     echo "Output root: ${OUTPUT_ROOT}"
     echo "Python: ${PYTHON_BIN}"
     echo "Cases: ${CASES}"
+    echo "Runtime: ${SUBMIT_RUNTIME}"
 
     cd "${REPO_ROOT}"
 
@@ -167,8 +244,18 @@ if [[ "${MODE}" == "submit" ]]; then
         --backend "${BACKEND}" \
         -i . \
         -o "${OUTPUT_ROOT}" \
-        -c "${case_id}"; then
+        -c "${case_id}" \
+        "${submit_extra_args[@]}"; then
         echo "===== CASE ${case_id} EXIT 0 ====="
+        submit_extra_args=(
+          --runtime "${SUBMIT_RUNTIME}"
+          --docker-image "${DOCKER_IMAGE}"
+          --docker-platform "${DOCKER_PLATFORM}"
+          --dockerfile "${DOCKERFILE}"
+          "${PASS_ENV_ARGS[@]}"
+          "${DOCKER_ENV_FILE_ARGS[@]}"
+          "${DOCKER_MOUNT_ARGS[@]}"
+        )
       else
         exit_code=$?
         echo "===== CASE ${case_id} EXIT ${exit_code} ====="
@@ -198,10 +285,16 @@ if [[ "${MODE}" == "evaluate" ]]; then
   mkdir -p "$(dirname "${LOG_FILE}")"
 
   {
+    evaluator_extra_args=()
+    if [[ "${DOCKER_BUILD}" == "1" && "${EVALUATE_RUNTIME}" == "docker" ]]; then
+      evaluator_extra_args+=(--docker_build)
+    fi
+
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting evaluator batch run"
     echo "Repo root: ${REPO_ROOT}"
     echo "Generated root: ${GENERATED_ROOT}"
     echo "Python: ${PYTHON_BIN}"
+    echo "Runtime: ${EVALUATE_RUNTIME}"
 
     cd "${REPO_ROOT}"
     if [[ ! -d "${GENERATED_ROOT}/cases" ]]; then
@@ -220,11 +313,20 @@ if [[ "${MODE}" == "evaluate" ]]; then
         -g "${GENERATED_ROOT}" \
         -c "${case_id}" \
         -r . \
-        --refresh_evaluator \
-        --build_timeout "${BUILD_TIMEOUT}" \
-        --ctest_timeout "${CTEST_TIMEOUT}" \
-        --check_timeout "${CHECK_TIMEOUT}"; then
+        --refresh-evaluator \
+        --runtime "${EVALUATE_RUNTIME}" \
+        --docker-image "${DOCKER_IMAGE}" \
+        --docker-platform "${DOCKER_PLATFORM}" \
+        --dockerfile "${DOCKERFILE}" \
+        --build-timeout "${BUILD_TIMEOUT}" \
+        --ctest-timeout "${CTEST_TIMEOUT}" \
+        --check-timeout "${CHECK_TIMEOUT}" \
+        "${PASS_ENV_ARGS[@]}" \
+        "${DOCKER_ENV_FILE_ARGS[@]}" \
+        "${DOCKER_MOUNT_ARGS[@]}" \
+        "${evaluator_extra_args[@]}"; then
         echo "===== CASE ${case_id} EXIT 0 ====="
+        evaluator_extra_args=()
       else
         exit_code=$?
         echo "===== CASE ${case_id} EXIT ${exit_code} ====="

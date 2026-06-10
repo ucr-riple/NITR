@@ -51,6 +51,7 @@ At minimum, you need:
 - Python 3
 - the repository checked out locally
 - whatever CLI tools or SDK credentials your chosen backend requires
+- Docker, if you want the pinned Linux/GCC evaluator runtime
 
 ### Python packages
 
@@ -116,6 +117,33 @@ export NITR_VERTEX_ENDPOINT_ID=...
 export NITR_VERTEX_ENDPOINT_LOCATION=...
 ```
 
+For Docker-backed runs, do not bake credentials into the image. Pass them at
+runtime with host environment variables, `--docker-env-file`, or both.
+
+### Docker image contract
+
+The repository's Docker support is designed around a generic benchmark runtime,
+not a backend-specific image.
+
+The default image definition in `docker/nitr-linux-gcc.Dockerfile` gives you a
+Linux/GCC baseline plus common shell tools. That is enough for API-backed
+submit flows and for evaluator runs, but it does not bundle provider-specific
+CLIs such as `codex`, `claude`, or `gemini`.
+
+When you want a CLI-backed backend to run inside Docker, pass a compatible
+custom image with `--docker-image`. A compatible image should provide:
+
+- `python3` on `PATH`
+- the benchmark baseline tools such as `bash`, `cmake`, `git`, and `rg`
+- the backend-specific CLI on `PATH`
+- runtime-injected credentials through env vars and/or bind mounts
+
+The runtime mount/auth mechanism is generic:
+
+- `--docker-env-file` passes env files through to `docker run`
+- `--pass-env NAME` forwards selected host env vars
+- `--docker-mount host:container[:options]` attaches config directories or credential files
+
 ## 3. Submit One Case
 
 Use [`submit/submit_case.py`](submit/submit_case.py) for a single case.
@@ -129,6 +157,21 @@ python3 submit/submit_case.py \
   -o .submit-output/chatgpt-codex \
   -c 024
 ```
+
+Example running submit inside Docker:
+
+```bash
+python3 submit/submit_case.py \
+  --backend chatgpt-api \
+  -i . \
+  -o .submit-output/chatgpt-api \
+  -c 024 \
+  --runtime docker \
+  --docker_build \
+  --docker-env-file submit/docker.env.example
+```
+
+If your backend needs a custom CLI image, add `--docker-image <image>`.
 
 Example with a model override:
 
@@ -144,6 +187,14 @@ python3 submit/submit_case.py \
 You can use the same override pattern with other model-driven backends such as
 `chatgpt-codex`, `claude-vertex`, `claude-cli`, `gemini-vertex`, `gemini-cli`,
 and `qwen-openapi`.
+
+For Docker-backed submit runs:
+
+- `--runtime docker` moves the whole generation flow into the container
+- known benchmark env vars are passed through automatically when set on the host
+- `--pass-env NAME` adds extra env vars to `docker run`
+- `--docker-env-file path` passes a Docker env-file through to `docker run`
+- `--docker-mount host:container[:options]` attaches extra credential or config mounts
 
 The generated output root will typically contain:
 
@@ -181,6 +232,20 @@ Useful options:
 - `--build_timeout`: build timeout in seconds
 - `--ctest_timeout`: functional test timeout in seconds
 - `--check_timeout`: structural check timeout in seconds
+- `--runtime docker`: run the evaluator inside Docker instead of the host machine
+- `--docker_build`: build the pinned Linux/GCC image before running
+
+Example with Docker:
+
+```bash
+python3 submit/run_case_evaluator.py \
+  -g .submit-output/chatgpt-codex \
+  -c 024 \
+  -r . \
+  --refresh_evaluator \
+  --runtime docker \
+  --docker_build
+```
 
 ## 5. Run Batch Submit
 
@@ -192,6 +257,17 @@ Example:
 bash submit/run_batch.sh \
   --mode submit \
   --backend chatgpt-codex
+```
+
+Example with Docker:
+
+```bash
+bash submit/run_batch.sh \
+  --mode submit \
+  --backend chatgpt-api \
+  --submit-runtime docker \
+  --docker-build \
+  --docker-env-file submit/docker.env.example
 ```
 
 Example with an explicit case list:
@@ -215,6 +291,27 @@ Example:
 bash submit/run_batch.sh \
   --mode evaluate \
   --generated-root .submit-output/chatgpt-codex
+```
+
+Example with Docker:
+
+```bash
+bash submit/run_batch.sh \
+  --mode evaluate \
+  --generated-root .submit-output/chatgpt-codex \
+  --runtime docker \
+  --docker-build
+```
+
+Run both submit and evaluate in Docker:
+
+```bash
+bash submit/run_batch.sh \
+  --mode submit \
+  --backend chatgpt-api \
+  --runtime docker \
+  --docker-build \
+  --docker-env-file submit/docker.env.example
 ```
 
 You can also pass evaluator timeout overrides:
@@ -251,6 +348,8 @@ For a typical local run:
 - In multi-step runs, later steps continue from the previous step's generated
   code snapshot, but do not receive earlier `TASK*.md` files again.
 - Backend-specific credentials are intentionally not stored in this repository.
+- Docker evaluation is currently scoped to the Linux/GCC image shipped in this repo.
+- The default Docker image is a generic runtime; use `--docker-image` when a backend needs a provider-specific CLI layer.
 - For backend implementation details, see [`submit/README.md`](submit/README.md).
 
 These notes describe the repository's submit/reproduction protocol. Other

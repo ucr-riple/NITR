@@ -1,0 +1,7 @@
+.git
+.submit-output
+build
+bin
+obj
+__pycache__
+.DS_Store
