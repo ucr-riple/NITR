@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
+import argparse
 import pathlib
 import re
-import sys
 from typing import List
 
 from evaluator.shared.check_utils import read_text, strip_comments
-
-
-ROOT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path.cwd()
-SRC = ROOT / "src"
 
 
 def remove_include_lines(text: str) -> str:
@@ -46,11 +42,17 @@ def count_field_lines(body: str) -> int:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--case_root", type=pathlib.Path, default=pathlib.Path.cwd())
+    args = parser.parse_args()
+
+    root = args.case_root.resolve()
+    src = root / "src"
     failures: List[str] = []
 
     ranker_text = strip_comments(
         remove_include_lines(
-            read_text(SRC / "ranker.cc") + "\n" + read_text(SRC / "ranker.h")
+            read_text(src / "ranker.cc") + "\n" + read_text(src / "ranker.h")
         )
     )
     ranker_literals = string_literals(ranker_text)
@@ -58,7 +60,7 @@ def main() -> int:
         failures.append("ranker core should not contain display-oriented string literals")
 
     forbidden_ranker_includes = ["<sstream>", "<format>", "<iostream>"]
-    ranker_sources = read_text(SRC / "ranker.cc") + "\n" + read_text(SRC / "ranker.h")
+    ranker_sources = read_text(src / "ranker.cc") + "\n" + read_text(src / "ranker.h")
     for header in forbidden_ranker_includes:
         if header in ranker_sources:
             failures.append(f"ranker core should not include {header}")
@@ -79,7 +81,7 @@ def main() -> int:
                 f"ranker core contains suspicious consumer-oriented token: {token}"
             )
 
-    ranking_result_text = strip_comments(read_text(SRC / "ranking_result.h"))
+    ranking_result_text = strip_comments(read_text(src / "ranking_result.h"))
     ranked_body = struct_body(ranking_result_text, "RankedItem")
     if not ranked_body:
         failures.append("ranking_result.h must define RankedItem")
@@ -94,7 +96,7 @@ def main() -> int:
     if "std::vector" in ranking_result_text:
         failures.append("ranking_result.h should not store bulk diagnostic containers")
 
-    item_text = strip_comments(read_text(SRC / "item.h")).lower()
+    item_text = strip_comments(read_text(src / "item.h")).lower()
     for token in ["reason", "inspection", "diagnostic", "debug", "trace", "comparison"]:
         if token in item_text:
             failures.append(

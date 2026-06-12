@@ -2,7 +2,6 @@
 
 import json
 import re
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -54,6 +53,8 @@ class Finding:
     code: str
     path: str
     message: str
+
+
 def count_matches(patterns: list[re.Pattern], text: str) -> int:
     """Count how many structural signal patterns appear in the text."""
     return sum(1 for pattern in patterns if pattern.search(text))

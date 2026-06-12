@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 
+import argparse
 import pathlib
 import re
-import sys
 
 from evaluator.shared.check_utils import extract_function_body, strip_comments_and_strings
-
-
-ROOT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path.cwd()
-SRC = ROOT / "src" / "geometry.cc"
 
 
 def count_hits(patterns, text: str) -> int:
@@ -21,7 +17,12 @@ def count_hits(patterns, text: str) -> int:
 
 
 def main() -> int:
-    code = strip_comments_and_strings(SRC.read_text(encoding="utf-8"))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--case_root", type=pathlib.Path, default=pathlib.Path.cwd())
+    args = parser.parse_args()
+
+    src = args.case_root.resolve() / "src" / "geometry.cc"
+    code = strip_comments_and_strings(src.read_text(encoding="utf-8"))
     fundamental_body = extract_function_body(code, "EstimateFundamental8Point")
     essential_body = extract_function_body(code, "EstimateEssential8Point")
 

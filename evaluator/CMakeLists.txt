@@ -65,7 +65,7 @@ function(nitr_register_case_002)
   nitr_add_python_test(
     geometry_structure_check
     ${EVAL_DIR}/checks/check_geometry_structure.py
-    ${CASE_DIR}
+    --case_root ${CASE_DIR}
   )
 endfunction()
 
@@ -361,7 +361,7 @@ function(nitr_register_case_019)
   nitr_add_python_test(
     case019_structural_check
     ${EVAL_DIR}/checks/structural_check.py
-    ${CASE_DIR}
+    --case_root ${CASE_DIR}
   )
 endfunction()
 
@@ -412,7 +412,7 @@ function(nitr_register_case_022)
   nitr_add_python_test(
     case022_dependency_check
     ${EVAL_DIR}/checks/check_dependency.py
-    ${CASE_DIR}
+    --case_root ${CASE_DIR}
   )
 endfunction()
 
@@ -435,7 +435,7 @@ function(nitr_register_case_023)
   nitr_add_python_test(
     case023_side_effect_check
     ${EVAL_DIR}/checks/check_side_effect.py
-    ${CASE_DIR}
+    --case_root ${CASE_DIR}
   )
 endfunction()
 
@@ -470,7 +470,7 @@ function(nitr_register_case_025)
   nitr_add_python_test(
     case025_decomposition_check
     ${EVAL_DIR}/checks/check_decomposition.py
-    ${CASE_DIR}
+    --case_root ${CASE_DIR}
   )
 endfunction()
 

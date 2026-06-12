@@ -24,9 +24,9 @@ Positive arm: each family must be produced by a function REACHABLE from
 vacuously pass and dead one-family helpers cannot pad the check.
 """
 
+import argparse
 import pathlib
 import re
-import sys
 
 from evaluator.shared.check_utils import strip_comments_and_strings
 
@@ -147,11 +147,15 @@ def _reachable_from(entry: str, calls_map: dict) -> set:
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        print("Usage: check_decomposition.py <case_dir>")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--case_root", type=pathlib.Path)
+    args = parser.parse_args()
+
+    if args.case_root is None:
+        parser.print_usage()
         return 1
 
-    case_dir = pathlib.Path(sys.argv[1]).resolve()
+    case_dir = args.case_root.resolve()
     src_dir = case_dir / "src"
 
     src_files = sorted(src_dir.rglob("*.h")) + sorted(

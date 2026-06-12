@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import re
-import sys
 from pathlib import Path
 
 from evaluator.shared.check_utils import (
@@ -21,10 +21,11 @@ EXPECTED_HASHES = {
 
 
 def main() -> int:
-    if len(sys.argv) > 1:
-        case_root = Path(sys.argv[1]).resolve()
-    else:
-        case_root = case_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--case_root", type=Path, default=case_root_from_script(__file__))
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
 
     src_root = case_root / "src"
     app_root = case_root / "app"

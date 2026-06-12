@@ -12,7 +12,6 @@ function-name blacklist; the check verifies the architecture, not syntax.
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 
 from evaluator.shared.check_utils import (
@@ -24,6 +23,7 @@ from evaluator.shared.check_utils import (
 )
 
 SRC_DIR = case_root_from_script(__file__) / "src"
+
 
 def read(name: str) -> str:
     p = SRC_DIR / name
