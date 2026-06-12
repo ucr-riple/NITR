@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import re
 from pathlib import Path
 from typing import Iterable
@@ -51,12 +50,6 @@ def read_text(
     if errors is not None:
         kwargs["errors"] = errors
     return path.read_text(**kwargs)
-
-
-def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def scan_files(root: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> list[Path]:
     suffix_set = set(suffixes)
     return sorted(

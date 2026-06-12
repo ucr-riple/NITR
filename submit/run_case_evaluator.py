@@ -194,11 +194,18 @@ def discover_structural_checks(checks_dir: Path):
     return python_scripts
 
 
-def structural_check_args(script_path: Path, case_root: Path):
+def structural_check_args(
+    script_path: Path, case_root: Path, baseline_case_root: Path | None = None
+):
     """Infer the argument shape expected by a structural-check script."""
     text = script_path.read_text(encoding="utf-8", errors="replace")
+    args = []
     if "--case_root" in text:
-        return ["--case_root", str(case_root)]
+        args.extend(["--case_root", str(case_root)])
+    if "--baseline_case_root" in text and baseline_case_root is not None:
+        args.extend(["--baseline_case_root", str(baseline_case_root)])
+    if args:
+        return args
     if "--case_dir" in text:
         return ["--case_dir", str(case_root)]
     if (
@@ -211,7 +218,11 @@ def structural_check_args(script_path: Path, case_root: Path):
 
 
 def run_structural_check(
-    script_path: Path, workspace_root: Path, case_root: Path, timeout_seconds: int
+    script_path: Path,
+    workspace_root: Path,
+    case_root: Path,
+    timeout_seconds: int,
+    baseline_case_root: Path | None = None,
 ):
     """Execute one structural-check script with the best-effort argument convention."""
     if script_path.suffix != ".py":
@@ -225,7 +236,7 @@ def run_structural_check(
     cmd = [
         sys.executable,
         str(script_path),
-        *structural_check_args(script_path, case_root),
+        *structural_check_args(script_path, case_root, baseline_case_root),
     ]
     return run_command(
         cmd,
@@ -478,6 +489,7 @@ def main():
 
         build_dir = workspace_dir / "build"
         case_root = workspace_dir / "cases" / case_slug
+        baseline_case_root = repo_root / "cases" / case_slug
         evaluator_dir = workspace_dir / "evaluator" / case_slug
 
         configure_cmd = [
@@ -489,6 +501,7 @@ def main():
             "-DNITR_BUILD_ALL_CASES=OFF",
             f"-DNITR_CASE={case_slug}",
             "-DNITR_BUILD_EVALUATOR=ON",
+            f"-DNITR_BASELINE_CASES_ROOT={repo_root / 'cases'}",
         ]
         summary["configure"] = run_command(configure_cmd, workspace_dir)
         if summary["configure"]["exit_code"] == 0:
@@ -508,6 +521,7 @@ def main():
                 workspace_dir,
                 case_root,
                 timeout_seconds=args.check_timeout,
+                baseline_case_root=baseline_case_root,
             )
             result["script"] = str(script_path.relative_to(workspace_dir))
             summary["checks"].append(result)

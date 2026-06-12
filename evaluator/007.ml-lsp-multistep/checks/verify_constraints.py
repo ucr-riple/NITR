@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
+import argparse
 import pathlib
 import sys
 
-from evaluator.shared.check_utils import case_root_from_script, read_text, sha256
+from evaluator.shared.check_utils import case_root_from_script, read_text
 
 ROOT = case_root_from_script(__file__)
-
-EXPECTED_HASHES = {
-    "src/feature_transform.h": "73f6067d946fafff153d1ff9fc72f10bd6f7934efbe0fc0ee90ef4213dea4570",
-    "src/feature_pipeline.h": "095c9b09d68ccb459ee2a667cf10073f5b69fe8e22457eaa7105b7f7cefefa41",
-    "src/feature_pipeline.cc": "458fc454940fe878a1c761f73c6074fbd6d3458af4f97c55f63656e8817aec87",
-}
+PROTECTED_FILES = [
+    "src/feature_transform.h",
+    "src/feature_pipeline.h",
+    "src/feature_pipeline.cc",
+]
 
 REQUIRED_FILES = [
     "src/clamp_transform.h",
@@ -40,31 +40,45 @@ CONCRETE_TOKENS = [
 ]
 def main() -> int:
     """Validate protected files, required artifacts, and generic pipeline boundaries."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--case_root", type=pathlib.Path, default=ROOT)
+    parser.add_argument("--baseline_case_root", type=pathlib.Path, default=ROOT)
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    baseline_root = args.baseline_case_root.resolve()
+
     ok = True
     for rel in REQUIRED_FILES:
-        if not (ROOT / rel).exists():
+        if not (case_root / rel).exists():
             print(f"missing required file: {rel}")
             ok = False
-    for rel, expected in EXPECTED_HASHES.items():
-        path = ROOT / rel
+    for rel in PROTECTED_FILES:
+        path = case_root / rel
+        baseline_path = baseline_root / rel
         if not path.exists():
             print(f"missing protected file: {rel}")
             ok = False
             continue
-        actual = sha256(path)
-        if actual != expected:
+        if not baseline_path.exists():
+            print(f"missing baseline protected file: {rel}")
+            ok = False
+            continue
+        if path.read_bytes() != baseline_path.read_bytes():
             print(f"protected file modified: {rel}")
             ok = False
-    for path in ROOT.glob("src/*"):
+    for path in case_root.glob("src/*"):
         if path.suffix not in {".h", ".cc"}:
             continue
         text = read_text(path, missing_ok=False)
         for pattern in FORBIDDEN_PATTERNS:
             if pattern in text:
-                print(f"forbidden pattern {pattern} found in {path.relative_to(ROOT)}")
+                print(
+                    f"forbidden pattern {pattern} found in {path.relative_to(case_root)}"
+                )
                 ok = False
     for rel in GENERIC_FILES:
-        path = ROOT / rel
+        path = case_root / rel
         if not path.exists():
             continue
         text = read_text(path, missing_ok=False)

@@ -18,6 +18,13 @@ else()
   set(NITR_EVALUATOR_PYTHONPATH "${CMAKE_SOURCE_DIR}")
 endif()
 
+set(
+  NITR_BASELINE_CASES_ROOT
+  "${CMAKE_SOURCE_DIR}/cases"
+  CACHE PATH
+  "Path to the baseline cases directory used by structural checks."
+)
+
 function(nitr_case_source_dir out_var case_dir)
   set(${out_var} ${CMAKE_SOURCE_DIR}/cases/${case_dir} PARENT_SCOPE)
 endfunction()
@@ -55,6 +62,7 @@ function(nitr_register_case_001)
     case001_structural_check
     ${EVAL_DIR}/checks/check.py
     --case_root ${CASE_DIR}
+    --baseline_case_root ${NITR_BASELINE_CASES_ROOT}/001.add-no-callsite-spread
   )
 endfunction()
 
@@ -128,12 +136,15 @@ function(nitr_register_case_006)
 endfunction()
 
 function(nitr_register_case_007)
+  nitr_case_source_dir(CASE_DIR 007.ml-lsp-multistep)
   nitr_case_evaluator_dir(EVAL_DIR 007.ml-lsp-multistep)
   nitr_add_plain_test(case007_public_tests case007_core ${EVAL_DIR}/tests/test_public.cc)
   nitr_add_plain_test(case007_hidden_tests case007_core ${EVAL_DIR}/tests/test_hidden.cc)
   nitr_add_python_test(
     case007_constraint_checks
     ${EVAL_DIR}/checks/verify_constraints.py
+    --case_root ${CASE_DIR}
+    --baseline_case_root ${NITR_BASELINE_CASES_ROOT}/007.ml-lsp-multistep
   )
 endfunction()
 
@@ -436,6 +447,7 @@ function(nitr_register_case_023)
     case023_side_effect_check
     ${EVAL_DIR}/checks/check_side_effect.py
     --case_root ${CASE_DIR}
+    --baseline_case_root ${NITR_BASELINE_CASES_ROOT}/023.validator-global-mutation
   )
 endfunction()
 
