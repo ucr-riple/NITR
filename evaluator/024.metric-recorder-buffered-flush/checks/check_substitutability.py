@@ -33,11 +33,11 @@ def read(name: str) -> str:
 
 
 def all_src_headers() -> list[Path]:
-    return scan_files(SRC_DIR, (".h",))
+    return scan_files(SRC_DIR, suffixes=(".h",))
 
 
 def all_src_files() -> list[Path]:
-    return scan_files(SRC_DIR, (".h", ".cc"))
+    return scan_files(SRC_DIR, suffixes=(".h", ".cc"))
 
 
 def count_pure_virtual_methods(class_body: str) -> int:

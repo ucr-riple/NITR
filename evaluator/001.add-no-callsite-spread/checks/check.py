@@ -18,7 +18,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 from evaluator.shared.check_utils import normalize_text, read_text, scan_files
 
@@ -62,15 +62,6 @@ EXPLICIT_DEF_PATTERNS = [
         re.MULTILINE,
     ),
 ]
-def collect_code_files(root: Path) -> List[Path]:
-    """Collect candidate source files under src/ and app/ for structural scanning."""
-    files: List[Path] = []
-    for dname in ["src", "app"]:
-        d = root / dname
-        if not d.exists():
-            continue
-        files.extend(scan_files(d, (".h", ".hpp", ".cc", ".cpp", ".cxx")))
-    return sorted(set(files), key=lambda x: str(x))
 
 
 def fail(msg: str, details: Dict) -> None:
@@ -120,7 +111,11 @@ def main() -> int:
     app_main = root / "app" / "main.cc"
     baseline_app_main = baseline_root / "app" / "main.cc"
 
-    files = collect_code_files(root)
+    files = scan_files(
+        root / "src",
+        root / "app",
+        suffixes=(".h", ".hpp", ".cc", ".cpp", ".cxx"),
+    )
     if not files:
         fail("ERR_NO_CODE_FILES", {"searched": [str(root / "src"), str(root / "app")]})
 

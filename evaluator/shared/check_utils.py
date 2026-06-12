@@ -63,10 +63,17 @@ def die_message(message: str) -> NoReturn:
     raise SystemExit(1)
 
 
-def scan_files(root: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> list[Path]:
+def scan_files(*roots: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> list[Path]:
+    if not roots:
+        return []
     suffix_set = set(suffixes)
     return sorted(
-        path for path in root.rglob("*") if path.is_file() and path.suffix in suffix_set
+        {
+            path
+            for root in roots
+            for path in root.rglob("*")
+            if path.is_file() and path.suffix in suffix_set
+        }
     )
 
 

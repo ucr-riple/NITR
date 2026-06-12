@@ -45,7 +45,7 @@ SUSPICIOUS_API_PATTERNS = [
 def main() -> int:
     failures = []
 
-    for path in scan_files(SRC_DIR, (".h", ".cc", ".cpp")):
+    for path in scan_files(SRC_DIR, suffixes=(".h", ".cc", ".cpp")):
         if path.name == "time_source.cc":
             continue
         text = path.read_text()
@@ -60,7 +60,7 @@ def main() -> int:
                 f"evaluation-only API smell in {path.relative_to(ROOT)}: {suspicious}"
             )
 
-    for path in scan_files(TEST_DIR, (".h", ".cc", ".cpp")):
+    for path in scan_files(TEST_DIR, suffixes=(".h", ".cc", ".cpp")):
         text = path.read_text()
         forbidden = find_matching_patterns(FORBIDDEN_TEST_PATTERNS, text)
         if forbidden:

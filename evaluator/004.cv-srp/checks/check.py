@@ -56,7 +56,7 @@ def read_text(path: Path) -> str:
 
 def list_files(base: Path, exts: Tuple[str, ...]) -> List[Path]:
     """Recursively collect files under a base directory that match the given suffixes."""
-    return scan_files(base, exts)
+    return scan_files(base, suffixes=exts)
 
 
 def run(cmd: List[str]) -> Tuple[int, str, str]:

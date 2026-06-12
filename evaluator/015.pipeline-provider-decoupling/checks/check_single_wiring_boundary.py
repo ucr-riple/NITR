@@ -31,7 +31,7 @@ def main() -> int:
     """Ensure concrete provider construction stays inside the allowed wiring boundary."""
     case_root = case_root_from_script(__file__)
     offenders: list[str] = []
-    for path in scan_files(case_root, (".cc", ".h")):
+    for path in scan_files(case_root, suffixes=(".cc", ".h")):
         text = read_text(path, missing_ok=False)
         if not has_any_pattern(FORBIDDEN_CREATION_PATTERNS, text):
             continue
