@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from pathlib import Path
-import re
-import sys
-
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import case_root_from_script, has_any_pattern, read_text
 
 CREATION_PATTERNS = [
     r"\bstd::make_unique\s*<\s*StaticPolicyProvider\s*>",
@@ -25,7 +21,7 @@ def main() -> int:
 
     for path in boundary_files:
         text = read_text(path, missing_ok=False)
-        if any(re.search(pattern, text) for pattern in CREATION_PATTERNS):
+        if has_any_pattern(CREATION_PATTERNS, text):
             boundary_has_wiring = True
             break
 

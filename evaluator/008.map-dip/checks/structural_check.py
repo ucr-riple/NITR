@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import re
-from pathlib import Path
-
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    find_matching_patterns,
+    read_text,
+)
 
 ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src" / "map_snapshot.cc"
@@ -18,7 +19,7 @@ FORBIDDEN = [
 def main() -> int:
     """Reject provider knowledge and hardcoded type dispatch inside map_snapshot.cc."""
     txt = read_text(SRC, missing_ok=False)
-    violations = [pat for pat in FORBIDDEN if re.search(pat, txt)]
+    violations = find_matching_patterns(FORBIDDEN, txt)
     for pat in violations:
         print(f"FAIL: forbidden pattern in map_snapshot.cc: {pat}")
     if violations:

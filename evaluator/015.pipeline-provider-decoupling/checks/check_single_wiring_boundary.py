@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from pathlib import Path
-import re
-import sys
-
-from evaluator.shared.check_utils import case_root_from_script, read_text, scan_files
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    has_any_pattern,
+    read_text,
+    scan_files,
+)
 
 ALLOWED_FILES = {
     "build_pipeline.cc",
@@ -32,7 +33,7 @@ def main() -> int:
     offenders: list[str] = []
     for path in scan_files(case_root, (".cc", ".h")):
         text = read_text(path, missing_ok=False)
-        if not any(re.search(pattern, text) for pattern in FORBIDDEN_CREATION_PATTERNS):
+        if not has_any_pattern(FORBIDDEN_CREATION_PATTERNS, text):
             continue
         if path.name not in ALLOWED_FILES:
             offenders.append(str(path.relative_to(case_root)))

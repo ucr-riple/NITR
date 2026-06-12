@@ -7,6 +7,7 @@ from typing import Iterable, NoReturn
 
 CPP_LIKE_SUFFIXES = (".h", ".hpp", ".hh", ".cc", ".cpp", ".cxx")
 _INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^">]+)[">]', re.MULTILINE)
+PatternLike = str | re.Pattern[str]
 
 
 def repo_root_from_script(script_path: str | Path) -> Path:
@@ -71,6 +72,38 @@ def scan_files(root: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> list[
 
 def regex_matches(pattern: re.Pattern[str], text: str) -> bool:
     return bool(pattern.search(text))
+
+
+def _compile_pattern(pattern: PatternLike, flags: int = 0) -> re.Pattern[str]:
+    if isinstance(pattern, re.Pattern):
+        if flags != 0:
+            return re.compile(pattern.pattern, pattern.flags | flags)
+        return pattern
+    return re.compile(pattern, flags)
+
+
+def find_matching_patterns(
+    patterns: Iterable[PatternLike], text: str, *, flags: int = 0
+) -> list[PatternLike]:
+    return [pattern for pattern in patterns if _compile_pattern(pattern, flags).search(text)]
+
+
+def find_missing_patterns(
+    patterns: Iterable[PatternLike], text: str, *, flags: int = 0
+) -> list[PatternLike]:
+    return [
+        pattern for pattern in patterns if _compile_pattern(pattern, flags).search(text) is None
+    ]
+
+
+def has_any_pattern(patterns: Iterable[PatternLike], text: str, *, flags: int = 0) -> bool:
+    return any(_compile_pattern(pattern, flags).search(text) for pattern in patterns)
+
+
+def count_matching_patterns(
+    patterns: Iterable[PatternLike], text: str, *, flags: int = 0
+) -> int:
+    return len(find_matching_patterns(patterns, text, flags=flags))
 
 
 def find_matching_paths(

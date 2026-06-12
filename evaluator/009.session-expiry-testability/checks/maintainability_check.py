@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-import pathlib
 import re
-import sys
 
 from evaluator.shared.check_utils import (
     case_root_from_script,
     evaluator_root_from_script,
+    find_matching_patterns,
     scan_files,
 )
 
@@ -43,17 +42,6 @@ SUSPICIOUS_API_PATTERNS = [
     r"SetNowForTest",
     r"InjectNowForTest",
 ]
-
-
-def contains_any(patterns, text):
-    """Return the subset of regex patterns that match the given text."""
-    matches = []
-    for pattern in patterns:
-        if re.search(pattern, text):
-            matches.append(pattern)
-    return matches
-
-
 def main() -> int:
     failures = []
 
@@ -61,8 +49,8 @@ def main() -> int:
         if path.name == "time_source.cc":
             continue
         text = path.read_text()
-        forbidden = contains_any(FORBIDDEN_SRC_PATTERNS, text)
-        suspicious = contains_any(SUSPICIOUS_API_PATTERNS, text)
+        forbidden = find_matching_patterns(FORBIDDEN_SRC_PATTERNS, text)
+        suspicious = find_matching_patterns(SUSPICIOUS_API_PATTERNS, text)
         if forbidden:
             failures.append(
                 f"forbidden time coupling in {path.relative_to(ROOT)}: {forbidden}"
@@ -74,7 +62,7 @@ def main() -> int:
 
     for path in scan_files(TEST_DIR, (".h", ".cc", ".cpp")):
         text = path.read_text()
-        forbidden = contains_any(FORBIDDEN_TEST_PATTERNS, text)
+        forbidden = find_matching_patterns(FORBIDDEN_TEST_PATTERNS, text)
         if forbidden:
             failures.append(
                 f"sleep-based test detected in {path.relative_to(EVALUATOR_ROOT)}: {forbidden}"

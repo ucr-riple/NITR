@@ -17,6 +17,8 @@ from pathlib import Path
 from evaluator.shared.check_utils import (
     case_root_from_script,
     find_class_body,
+    find_matching_patterns,
+    has_any_pattern,
     read_text,
     scan_files,
     strip_comments,
@@ -229,7 +231,7 @@ def main() -> int:
     if buffered_class_match is not None:
         concrete_types.append(buffered_class_match[1])
     for concrete in concrete_types:
-        if re.search(rf"\b{re.escape(concrete)}\b", non_include_lines):
+        if has_any_pattern([rf"\b{re.escape(concrete)}\b"], non_include_lines):
             failures.append(
                 f"metric_collector.{{h,cc}} references concrete recorder type "
                 f"{concrete!r}. MetricCollector must operate through the "
@@ -262,17 +264,18 @@ def main() -> int:
         # Also catch conditional calls to flush-like methods
         r"if\s*\([^)]*\.(Flush|Commit|Sync|MakeVisible|Publish|Drain)\s*\(",
     ]
-    for pattern in capability_patterns:
-        if re.search(pattern, collector_combined, re.IGNORECASE):
-            failures.append(
-                "metric_collector contains capability branching "
-                f"(pattern: {pattern!r}). The checkpoint operation must "
-                "unconditionally invoke the polymorphic visibility-trigger "
-                "on the abstract recorder reference. Capability predicates "
-                "(e.g. IsBuffered, SupportsFlush) break substitutability "
-                "by making the caller aware of implementation details."
-            )
-            break  # Report once
+    matching_capability_patterns = find_matching_patterns(
+        capability_patterns, collector_combined, flags=re.IGNORECASE
+    )
+    if matching_capability_patterns:
+        failures.append(
+            "metric_collector contains capability branching "
+            f"(pattern: {matching_capability_patterns[0]!r}). The checkpoint operation must "
+            "unconditionally invoke the polymorphic visibility-trigger "
+            "on the abstract recorder reference. Capability predicates "
+            "(e.g. IsBuffered, SupportsFlush) break substitutability "
+            "by making the caller aware of implementation details."
+        )
 
     if failures:
         print("Substitutability check failed:")

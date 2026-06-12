@@ -1,11 +1,12 @@
-from pathlib import Path
-import re
-import sys
-
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    has_any_pattern,
+    read_text,
+)
 
 ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"
+
 
 def main() -> int:
     service_h = read_text(SRC / "inventory_report_service.h", missing_ok=False)
@@ -27,10 +28,10 @@ def main() -> int:
         r"static\s+std::vector\s*<\s*Product\s*>",
         r"static\s+auto\s+.*summary",
     ]
-    for pattern in static_patterns:
-        if re.search(pattern, service_cc) or re.search(pattern, engine_cc):
-            errors.append("Do not introduce global or static cached summary state")
-            break
+    if has_any_pattern(static_patterns, service_cc) or has_any_pattern(
+        static_patterns, engine_cc
+    ):
+        errors.append("Do not introduce global or static cached summary state")
 
     for bad_param in ["use_cache", "force_refresh", "cache_key", "bypass_cache"]:
         if bad_param in service_h:

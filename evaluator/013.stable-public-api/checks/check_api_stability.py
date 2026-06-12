@@ -1,6 +1,10 @@
 import re
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    find_missing_patterns,
+    read_text,
+)
 
 FORBIDDEN_FLAGS = [
     "include_archived",
@@ -9,10 +13,10 @@ FORBIDDEN_FLAGS = [
     "includeArchived",
 ]
 
-REQUIRED_SIGNATURES = [
-    r"std::vector<std::string>\s+FindAvailableTitles\s*\(\s*const std::vector<Book>& books,\s*const std::string& prefix\s*\)\s*const;",
-    r"std::string\s+BuildCatalogDigest\s*\(\s*const std::vector<Book>& books\s*\)\s*const;",
-]
+REQUIRED_SIGNATURES = {
+    "FindAvailableTitles signature": r"std::vector<std::string>\s+FindAvailableTitles\s*\(\s*const std::vector<Book>& books,\s*const std::string& prefix\s*\)\s*const;",
+    "BuildCatalogDigest signature": r"std::string\s+BuildCatalogDigest\s*\(\s*const std::vector<Book>& books\s*\)\s*const;",
+}
 
 
 def main() -> int:
@@ -24,9 +28,19 @@ def main() -> int:
         if flag in text:
             violations.append(f"Forbidden public API control flag detected: {flag}")
 
-    for pattern in REQUIRED_SIGNATURES:
-        if re.search(pattern, text, re.MULTILINE) is None:
-            violations.append("Public API signature changed unexpectedly.")
+    missing_signatures = find_missing_patterns(
+        REQUIRED_SIGNATURES.values(), text, flags=re.MULTILINE
+    )
+    if missing_signatures:
+        missing_descriptions = [
+            description
+            for description, pattern in REQUIRED_SIGNATURES.items()
+            if pattern in missing_signatures
+        ]
+        violations.append(
+            "Public API signature changed unexpectedly: "
+            + ", ".join(missing_descriptions)
+        )
 
     for v in violations:
         print(v)

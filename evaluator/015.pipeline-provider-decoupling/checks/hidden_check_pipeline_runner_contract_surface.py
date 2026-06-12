@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from pathlib import Path
-import re
-
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    find_matching_patterns,
+    read_text,
+)
 
 FORBIDDEN = [
     r"\bPolicyMode\b",
@@ -30,11 +31,10 @@ def main() -> int:
         case_root / "src/pipeline_runner.cc",
     ]:
         text = read_text(path, missing_ok=False)
-        for pattern in FORBIDDEN:
-            if re.search(pattern, text):
-                violations.append(
-                    f"PipelineRunner contract leaks provider selection detail in {path}: {pattern}"
-                )
+        for pattern in find_matching_patterns(FORBIDDEN, text):
+            violations.append(
+                f"PipelineRunner contract leaks provider selection detail in {path}: {pattern}"
+            )
     for v in violations:
         print(v)
     return 1 if violations else 0

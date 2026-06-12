@@ -12,6 +12,7 @@ from typing import Iterable, List, Tuple, Optional
 
 from evaluator.shared.check_utils import (
     case_root_from_script,
+    find_matching_patterns,
     regex_matches,
     read_text as shared_read_text,
     repo_root_from_script,
@@ -298,9 +299,8 @@ def check_binary_symbol_isolation(root: Path) -> None:
         r"\blegacy_monolith\b",
     ]
 
-    for pat in forbidden:
-        if re.search(pat, sym):
-            die(f"Binary isolation failed: '{pat}' found in {cv_bin}")
+    for pat in find_matching_patterns(forbidden, sym):
+        die(f"Binary isolation failed: '{pat}' found in {cv_bin}")
 
 
 def run_named_check(name: str, fn, *args) -> None:

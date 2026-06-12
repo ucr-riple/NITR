@@ -2,18 +2,12 @@
 
 import argparse
 import pathlib
-import re
 
-from evaluator.shared.check_utils import extract_function_body, strip_comments_and_strings
-
-
-def count_hits(patterns, text: str) -> int:
-    """Count how many structural evidence patterns appear in the source text."""
-    hits = 0
-    for pattern in patterns:
-        if re.search(pattern, text):
-            hits += 1
-    return hits
+from evaluator.shared.check_utils import (
+    count_matching_patterns,
+    extract_function_body,
+    strip_comments_and_strings,
+)
 
 
 def main() -> int:
@@ -44,7 +38,7 @@ def main() -> int:
         r"transpose\s*\(\s*\)\s*\*.*\*",
     ]
 
-    normalization_hits = count_hits(normalization_patterns, code)
+    normalization_hits = count_matching_patterns(normalization_patterns, code)
     if normalization_hits < 3:
         print("Expected Hartley-style normalization evidence in src/geometry.cc")
         return 1
@@ -61,7 +55,7 @@ def main() -> int:
         r"\b\w+\s*=\s*0\.5\s*\*\s*\(\s*\w+\s*\(\s*0\s*\)\s*\+\s*\w+\s*\(\s*1\s*\)\s*\)",
     ]
 
-    essential_hits = count_hits(essential_constraint_patterns, code)
+    essential_hits = count_matching_patterns(essential_constraint_patterns, code)
     if essential_hits == 0:
         print(
             "Expected essential-matrix singular value constraint handling in src/geometry.cc"

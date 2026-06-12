@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from pathlib import Path
-import re
-
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    find_matching_patterns,
+    read_text,
+)
 
 FORBIDDEN_PATTERNS = [
     r"\bStaticPolicyProvider\b",
@@ -31,11 +32,10 @@ def main() -> int:
     violations = []
     for path in core_files:
         text = read_text(path, missing_ok=False)
-        for pattern in FORBIDDEN_PATTERNS:
-            if re.search(pattern, text):
-                violations.append(
-                    f"Forbidden provider creation/selection hint in core file {path}: {pattern}"
-                )
+        for pattern in find_matching_patterns(FORBIDDEN_PATTERNS, text):
+            violations.append(
+                f"Forbidden provider creation/selection hint in core file {path}: {pattern}"
+            )
     for v in violations:
         print(v)
     return 1 if violations else 0

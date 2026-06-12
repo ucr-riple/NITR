@@ -7,14 +7,11 @@ from pathlib import Path
 
 from evaluator.shared.check_utils import (
     case_root_from_script,
+    has_any_pattern,
     include_paths,
     read_text,
     strip_comments_and_strings,
 )
-
-
-def has_any_pattern(patterns: list[str], text: str) -> bool:
-    return any(re.search(pattern, text) for pattern in patterns)
 
 
 def main() -> int:
