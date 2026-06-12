@@ -86,11 +86,11 @@ function(nitr_register_case_003)
   target_link_libraries(case003_functional_tests PRIVATE case003_lib)
   add_test(NAME case003_functional_tests COMMAND case003_functional_tests)
 
-  add_executable(case003_reuse_check
-    ${EVAL_DIR}/checks/check_reuse_existing_step.cc
+  nitr_add_python_test(
+    maintainbench_reuse_existing_step
+    ${EVAL_DIR}/checks/check_reuse_existing_step.py
+    --case_root ${CASE_DIR}
   )
-  add_test(NAME maintainbench_reuse_existing_step COMMAND case003_reuse_check)
-  set_tests_properties(maintainbench_reuse_existing_step PROPERTIES WORKING_DIRECTORY ${CASE_DIR})
 endfunction()
 
 function(nitr_register_case_004)
