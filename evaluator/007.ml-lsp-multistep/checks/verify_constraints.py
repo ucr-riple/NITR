@@ -6,6 +6,7 @@ import sys
 from evaluator.shared.check_utils import case_root_from_script, read_text
 
 ROOT = case_root_from_script(__file__)
+
 PROTECTED_FILES = [
     "src/feature_transform.h",
     "src/feature_pipeline.h",
@@ -38,6 +39,7 @@ CONCRETE_TOKENS = [
     "IdentityTransform",
     "L2NormalizeTransform",
 ]
+
 def main() -> int:
     """Validate protected files, required artifacts, and generic pipeline boundaries."""
     parser = argparse.ArgumentParser()

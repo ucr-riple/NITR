@@ -87,7 +87,7 @@ function(nitr_register_case_003)
   add_test(NAME case003_functional_tests COMMAND case003_functional_tests)
 
   nitr_add_python_test(
-    maintainbench_reuse_existing_step
+    nitr_reuse_existing_step
     ${EVAL_DIR}/checks/check_reuse_existing_step.py
     --case_root ${CASE_DIR}
   )
