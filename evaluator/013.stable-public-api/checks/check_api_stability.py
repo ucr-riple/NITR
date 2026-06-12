@@ -1,32 +1,37 @@
-from pathlib import Path
 import re
-import sys
 
 from evaluator.shared.check_utils import case_root_from_script, read_text
+
+FORBIDDEN_FLAGS = [
+    "include_archived",
+    "show_archived",
+    "archived_mode",
+    "includeArchived",
+]
+
+REQUIRED_SIGNATURES = [
+    r"std::vector<std::string>\s+FindAvailableTitles\s*\(\s*const std::vector<Book>& books,\s*const std::string& prefix\s*\)\s*const;",
+    r"std::string\s+BuildCatalogDigest\s*\(\s*const std::vector<Book>& books\s*\)\s*const;",
+]
+
 
 def main() -> int:
     header = case_root_from_script(__file__) / "src" / "library_catalog.h"
     text = read_text(header, missing_ok=False)
-    for forbidden in [
-        "include_archived",
-        "show_archived",
-        "archived_mode",
-        "includeArchived",
-    ]:
-        if forbidden in text:
-            print(f"Forbidden public API control flag detected: {forbidden}")
-            return 1
+    violations = []
 
-    patterns = [
-        r"std::vector<std::string>\s+FindAvailableTitles\s*\(\s*const std::vector<Book>& books,\s*const std::string& prefix\s*\)\s*const;",
-        r"std::string\s+BuildCatalogDigest\s*\(\s*const std::vector<Book>& books\s*\)\s*const;",
-    ]
+    for flag in FORBIDDEN_FLAGS:
+        if flag in text:
+            violations.append(f"Forbidden public API control flag detected: {flag}")
 
-    for pattern in patterns:
+    for pattern in REQUIRED_SIGNATURES:
         if re.search(pattern, text, re.MULTILINE) is None:
-            print("Public API signature changed unexpectedly.")
-            return 1
+            violations.append("Public API signature changed unexpectedly.")
 
+    for v in violations:
+        print(v)
+    if violations:
+        return 1
     print("API stability check passed.")
     return 0
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
-import sys
 
 from evaluator.shared.check_utils import case_root_from_script, read_text
 
@@ -25,6 +24,7 @@ FORBIDDEN = [
 def main() -> int:
     """Ensure PipelineRunner does not expose provider-selection concerns in its contract."""
     case_root = case_root_from_script(__file__)
+    violations = []
     for path in [
         case_root / "src/pipeline_runner.h",
         case_root / "src/pipeline_runner.cc",
@@ -32,11 +32,12 @@ def main() -> int:
         text = read_text(path, missing_ok=False)
         for pattern in FORBIDDEN:
             if re.search(pattern, text):
-                print(
+                violations.append(
                     f"PipelineRunner contract leaks provider selection detail in {path}: {pattern}"
                 )
-                return 1
-    return 0
+    for v in violations:
+        print(v)
+    return 1 if violations else 0
 
 
 if __name__ == "__main__":

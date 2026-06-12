@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import pathlib
 import re
-import sys
 
 FORBIDDEN_PATTERNS = [
     re.compile(r"==\s*4"),

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
-import sys
 
 from evaluator.shared.check_utils import case_root_from_script, read_text
 
@@ -29,15 +28,17 @@ def main() -> int:
         case_root / "src/pipeline_runner.h",
         case_root / "src/pipeline_runner.cc",
     ]
+    violations = []
     for path in core_files:
         text = read_text(path, missing_ok=False)
         for pattern in FORBIDDEN_PATTERNS:
             if re.search(pattern, text):
-                print(
+                violations.append(
                     f"Forbidden provider creation/selection hint in core file {path}: {pattern}"
                 )
-                return 1
-    return 0
+    for v in violations:
+        print(v)
+    return 1 if violations else 0
 
 
 if __name__ == "__main__":
