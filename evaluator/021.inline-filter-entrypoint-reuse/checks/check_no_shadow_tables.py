@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
-import sys
+
+from evaluator.shared.check_utils import count_matching_substrings, has_any_substring
 
 
 CASE_REL = Path("cases/021.inline-filter-entrypoint-reuse/src")
@@ -23,9 +24,9 @@ def main() -> int:
             continue
 
         content = source_file.read_text(encoding="utf-8", errors="replace")
-        field_hits = sum(literal in content for literal in FIELD_LITERALS)
-        error_hits = sum(literal in content for literal in ERROR_LITERALS)
-        has_inline_parser = "ParseInlineFilter" in content
+        field_hits = count_matching_substrings(FIELD_LITERALS, content)
+        error_hits = count_matching_substrings(ERROR_LITERALS, content)
+        has_inline_parser = has_any_substring(["ParseInlineFilter"], content)
 
         if field_hits > 1:
             print(

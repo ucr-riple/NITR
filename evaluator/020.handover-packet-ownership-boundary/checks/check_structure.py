@@ -5,7 +5,12 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    count_matching_patterns,
+    read_text,
+    regex_matches,
+)
 
 
 ROOT = case_root_from_script(__file__)
@@ -55,19 +60,14 @@ class Finding:
     message: str
 
 
-def count_matches(patterns: list[re.Pattern], text: str) -> int:
-    """Count how many structural signal patterns appear in the text."""
-    return sum(1 for pattern in patterns if pattern.search(text))
-
-
 def has_tracker_param(text: str) -> bool:
     """Detect APIs that directly accept a ShiftTracker dependency."""
-    return bool(TRACKER_PARAM_PATTERN.search(text))
+    return regex_matches(TRACKER_PARAM_PATTERN, text)
 
 
 def has_packet_mentions(text: str) -> bool:
     """Detect whether a file mentions the HandoverPacket domain type."""
-    return bool(PACKET_RETURN_PATTERN.search(text))
+    return regex_matches(PACKET_RETURN_PATTERN, text)
 
 
 def is_consumer_side(path: Path) -> bool:
@@ -114,8 +114,8 @@ def main() -> int:
     for path in source_files:
         text = read_text(path, missing_ok=False)
         rel_path = str(path.relative_to(ROOT))
-        assembly_score = count_matches(ASSEMBLY_SIGNAL_PATTERNS, text)
-        summary_score = count_matches(SUMMARY_SIGNAL_PATTERNS, text)
+        assembly_score = count_matching_patterns(ASSEMBLY_SIGNAL_PATTERNS, text)
+        summary_score = count_matching_patterns(SUMMARY_SIGNAL_PATTERNS, text)
         tracker_param = has_tracker_param(text)
         packet_mentions = has_packet_mentions(text)
 

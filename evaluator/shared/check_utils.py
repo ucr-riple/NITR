@@ -74,6 +74,18 @@ def regex_matches(pattern: re.Pattern[str], text: str) -> bool:
     return bool(pattern.search(text))
 
 
+def has_any_substring(needles: Iterable[str], text: str) -> bool:
+    return any(needle in text for needle in needles)
+
+
+def has_all_substrings(needles: Iterable[str], text: str) -> bool:
+    return all(needle in text for needle in needles)
+
+
+def count_matching_substrings(needles: Iterable[str], text: str) -> int:
+    return sum(needle in text for needle in needles)
+
+
 def _compile_pattern(pattern: PatternLike, flags: int = 0) -> re.Pattern[str]:
     if isinstance(pattern, re.Pattern):
         if flags != 0:

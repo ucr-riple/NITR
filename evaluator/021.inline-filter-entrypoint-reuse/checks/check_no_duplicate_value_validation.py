@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
-import sys
+
+from evaluator.shared.check_utils import has_all_substrings, has_any_substring
 
 
 CASE_REL = Path("cases/021.inline-filter-entrypoint-reuse/src")
@@ -17,18 +18,16 @@ def main() -> int:
             continue
 
         content = source_file.read_text(encoding="utf-8", errors="replace")
-        has_stoi = "std::stoi" in content
-        has_isdigit = "std::isdigit" in content
-        has_integer_value = "FilterValueKind::kInteger" in content
-        has_inline_parser = "ParseInlineFilter" in content
 
-        if has_stoi or has_isdigit:
+        if has_any_substring(["std::stoi", "std::isdigit"], content):
             print(
                 f"Suspicious duplicate numeric validation outside filter_validation: {source_file}"
             )
             return 1
 
-        if has_integer_value and has_inline_parser:
+        if has_all_substrings(
+            ["FilterValueKind::kInteger", "ParseInlineFilter"], content
+        ):
             print(
                 f"Suspicious inline-only rule construction with integer value handling in {source_file}"
             )
