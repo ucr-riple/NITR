@@ -5,6 +5,10 @@ from pathlib import Path
 import re
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
 FORBIDDEN_PATTERNS = [
     r"\bStaticPolicyProvider\b",
     r"\bFilePolicyProvider\b",
@@ -22,14 +26,13 @@ FORBIDDEN_PATTERNS = [
 
 def main() -> int:
     """Reject provider selection or construction logic inside core pipeline files."""
-    repo_root = Path(__file__).resolve().parents[3]
-    case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
+    case_root = case_root_from_script(__file__)
     core_files = [
         case_root / "src/pipeline_runner.h",
         case_root / "src/pipeline_runner.cc",
     ]
     for path in core_files:
-        text = path.read_text(encoding="utf-8")
+        text = read_text(path, missing_ok=False)
         for pattern in FORBIDDEN_PATTERNS:
             if re.search(pattern, text):
                 print(

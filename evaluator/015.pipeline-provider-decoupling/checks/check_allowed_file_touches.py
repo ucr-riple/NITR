@@ -4,12 +4,16 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import repo_root_from_script
+
 ALLOWED_TOP_LEVEL = {"app", "src", "CMakeLists.txt", "TASK.md", "SPEC.md"}
 
 
 def main() -> int:
     """Limit touched paths to the expected top-level case files and directories."""
-    repo_root = Path(__file__).resolve().parents[3]
+    repo_root = repo_root_from_script(__file__)
     if len(sys.argv) == 1:
         print("No file list provided; starter skeleton check passes by default.")
         return 0

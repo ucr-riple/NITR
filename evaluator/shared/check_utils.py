@@ -1,0 +1,119 @@
+from __future__ import annotations
+
+import hashlib
+import re
+from pathlib import Path
+from typing import Iterable
+
+
+CPP_LIKE_SUFFIXES = (".h", ".hpp", ".hh", ".cc", ".cpp", ".cxx")
+_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^">]+)[">]', re.MULTILINE)
+
+
+def repo_root_from_script(script_path: str | Path) -> Path:
+    return Path(script_path).resolve().parents[3]
+
+
+def case_name_from_script(script_path: str | Path) -> str:
+    return Path(script_path).resolve().parents[1].name
+
+
+def case_root_from_script(script_path: str | Path) -> Path:
+    return repo_root_from_script(script_path) / "cases" / case_name_from_script(
+        script_path
+    )
+
+
+def evaluator_root_from_script(script_path: str | Path) -> Path:
+    return repo_root_from_script(script_path) / "evaluator" / case_name_from_script(
+        script_path
+    )
+
+
+def normalize_text(text: str) -> str:
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    lines = [line.rstrip() for line in text.split("\n")]
+    while lines and lines[-1] == "":
+        lines.pop()
+    return "\n".join(lines) + "\n"
+
+
+def read_text(
+    path: Path,
+    *,
+    encoding: str = "utf-8",
+    errors: str | None = None,
+    missing_ok: bool = True,
+) -> str:
+    if missing_ok and not path.exists():
+        return ""
+    kwargs = {"encoding": encoding}
+    if errors is not None:
+        kwargs["errors"] = errors
+    return path.read_text(**kwargs)
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def scan_files(root: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> list[Path]:
+    suffix_set = set(suffixes)
+    return sorted(
+        path for path in root.rglob("*") if path.is_file() and path.suffix in suffix_set
+    )
+
+
+def strip_comments(text: str) -> str:
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    text = re.sub(r"//.*", "", text)
+    return text
+
+
+def strip_comments_and_strings(text: str) -> str:
+    text = re.sub(r'"(?:\\.|[^"\\])*"', '""', text)
+    text = re.sub(r"'(?:\\.|[^'\\])+'", "''", text)
+    return strip_comments(text)
+
+
+def include_paths(text: str) -> list[str]:
+    return [match.group(1) for match in _INCLUDE_RE.finditer(text)]
+
+
+def find_class_body(text: str, class_name: str) -> str | None:
+    pattern = re.compile(rf"class\s+{re.escape(class_name)}\b[^{{]*\{{", re.S)
+    match = pattern.search(text)
+    if not match:
+        return None
+
+    start = match.end()
+    depth = 1
+    i = start
+    while i < len(text) and depth > 0:
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+        i += 1
+    if depth != 0:
+        return None
+    return text[start : i - 1]
+
+
+def extract_function_body(text: str, function_name: str) -> str:
+    match = re.search(rf"\b{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text)
+    if not match:
+        return ""
+
+    start = match.end()
+    depth = 1
+    i = start
+    while i < len(text):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:i]
+        i += 1
+    return ""

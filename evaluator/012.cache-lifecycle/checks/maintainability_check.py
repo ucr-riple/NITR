@@ -2,11 +2,11 @@ from pathlib import Path
 import re
 import sys
 
-ROOT = (
-    Path(__file__).resolve().parents[3]
-    / "cases"
-    / Path(__file__).resolve().parents[1].name
-)
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import case_root_from_script
+
+ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"
 service_h = (SRC / "inventory_report_service.h").read_text()
 service_cc = (SRC / "inventory_report_service.cc").read_text()

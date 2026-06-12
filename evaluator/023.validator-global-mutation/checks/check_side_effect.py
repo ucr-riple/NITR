@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import hashlib
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    include_paths,
+    read_text,
+    sha256,
+    strip_comments_and_strings,
+)
 
 EXPECTED_HASHES = {
     "app/main.cc": "5455837b4eb544d92bf73a89ee3f77bdb8b8947662a708f5b3ab98c4bc611400",
@@ -13,39 +22,11 @@ EXPECTED_HASHES = {
 }
 
 
-def read_text(path: Path) -> str:
-    if not path.exists():
-        return ""
-    return path.read_text(encoding="utf-8")
-
-
-def strip_comments_and_strings(text: str) -> str:
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    text = re.sub(r"//.*", "", text)
-    text = re.sub(r'"(?:\\.|[^"\\])*"', '""', text)
-    text = re.sub(r"'(?:\\.|[^'\\])+'", "''", text)
-    return text
-
-
-def include_paths(text: str) -> list[str]:
-    includes: list[str] = []
-    for line in text.splitlines():
-        match = re.match(r'^\s*#\s*include\s*[<"]([^">]+)[">]', line)
-        if match:
-            includes.append(match.group(1))
-    return includes
-
-
-def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def main() -> int:
     if len(sys.argv) > 1:
         case_root = Path(sys.argv[1]).resolve()
     else:
-        repo_root = Path(__file__).resolve().parents[3]
-        case_root = repo_root / "cases" / "023.validator-global-mutation"
+        case_root = case_root_from_script(__file__)
 
     src_root = case_root / "src"
     app_root = case_root / "app"

@@ -5,6 +5,10 @@ from pathlib import Path
 import re
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
 FORBIDDEN = [
     r"\bPolicyMode\b",
     r"\bpolicy_mode\b",
@@ -22,13 +26,12 @@ FORBIDDEN = [
 
 def main() -> int:
     """Ensure PipelineRunner does not expose provider-selection concerns in its contract."""
-    repo_root = Path(__file__).resolve().parents[3]
-    case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
+    case_root = case_root_from_script(__file__)
     for path in [
         case_root / "src/pipeline_runner.h",
         case_root / "src/pipeline_runner.cc",
     ]:
-        text = path.read_text(encoding="utf-8")
+        text = read_text(path, missing_ok=False)
         for pattern in FORBIDDEN:
             if re.search(pattern, text):
                 print(

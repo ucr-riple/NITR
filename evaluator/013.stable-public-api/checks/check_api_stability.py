@@ -2,14 +2,12 @@ from pathlib import Path
 import re
 import sys
 
-HEADER = (
-    Path(__file__).resolve().parents[3]
-    / "cases"
-    / Path(__file__).resolve().parents[1].name
-    / "src"
-    / "library_catalog.h"
-)
-text = HEADER.read_text()
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
+HEADER = case_root_from_script(__file__) / "src" / "library_catalog.h"
+text = read_text(HEADER, missing_ok=False)
 
 for forbidden in [
     "include_archived",

@@ -2,11 +2,11 @@ from pathlib import Path
 import re
 import sys
 
-ROOT = (
-    Path(__file__).resolve().parents[3]
-    / "cases"
-    / Path(__file__).resolve().parents[1].name
-)
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import case_root_from_script
+
+ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"
 policy_h = (SRC / "loan_policy.h").read_text()
 policy_cc = (SRC / "loan_policy.cc").read_text()

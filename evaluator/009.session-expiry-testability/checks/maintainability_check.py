@@ -3,10 +3,16 @@ import pathlib
 import re
 import sys
 
-REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
-CASE_NAME = pathlib.Path(__file__).resolve().parents[1].name
-ROOT = REPO_ROOT / "cases" / CASE_NAME
-EVALUATOR_ROOT = REPO_ROOT / "evaluator" / CASE_NAME
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    evaluator_root_from_script,
+    scan_files,
+)
+
+ROOT = case_root_from_script(__file__)
+EVALUATOR_ROOT = evaluator_root_from_script(__file__)
 SRC_DIR = ROOT / "src"
 TEST_DIR = EVALUATOR_ROOT / "tests"
 
@@ -39,15 +45,6 @@ SUSPICIOUS_API_PATTERNS = [
     r"SetNowForTest",
     r"InjectNowForTest",
 ]
-
-
-def scan_files(directory: pathlib.Path):
-    """Collect source-like files under a directory for pattern scanning."""
-    return [
-        path for path in directory.rglob("*") if path.suffix in {".h", ".cc", ".cpp"}
-    ]
-
-
 def contains_any(patterns, text):
     """Return the subset of regex patterns that match the given text."""
     matches = []
@@ -59,7 +56,7 @@ def contains_any(patterns, text):
 
 failures = []
 
-for path in scan_files(SRC_DIR):
+for path in scan_files(SRC_DIR, (".h", ".cc", ".cpp")):
     if path.name == "time_source.cc":
         continue
     text = path.read_text()
@@ -74,7 +71,7 @@ for path in scan_files(SRC_DIR):
             f"evaluation-only API smell in {path.relative_to(ROOT)}: {suspicious}"
         )
 
-for path in scan_files(TEST_DIR):
+for path in scan_files(TEST_DIR, (".h", ".cc", ".cpp")):
     text = path.read_text()
     forbidden = contains_any(FORBIDDEN_TEST_PATTERNS, text)
     if forbidden:

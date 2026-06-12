@@ -4,28 +4,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-def read_text(path: Path) -> str:
-    """Read a source file and surface a descriptive error on failure."""
-    try:
-        return path.read_text(encoding="utf-8", errors="replace")
-    except Exception as e:
-        raise RuntimeError(f"Failed to read {path}: {e}")
-
-
-def strip_comments_and_strings(code: str) -> str:
-    """
-    Best-effort removal of C++ // and /* */ comments and string literals.
-    Not a full parser, but reduces false positives.
-    """
-    # Remove string literals ("" and '')
-    code = re.sub(r'"([^"\\]|\\.)*"', '""', code)
-    code = re.sub(r"'([^'\\]|\\.)*'", "''", code)
-    # Remove // comments
-    code = re.sub(r"//.*", "", code)
-    # Remove /* */ comments
-    code = re.sub(r"/\*.*?\*/", "", code, flags=re.DOTALL)
-    return code
+from evaluator.shared.check_utils import read_text, strip_comments_and_strings
 
 
 def find_violations(code: str) -> list[tuple[str, str]]:

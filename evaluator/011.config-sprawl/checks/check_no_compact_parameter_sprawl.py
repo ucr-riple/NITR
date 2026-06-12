@@ -2,11 +2,11 @@ from pathlib import Path
 import re
 import sys
 
-ROOT = (
-    Path(__file__).resolve().parents[3]
-    / "cases"
-    / Path(__file__).resolve().parents[1].name
-)
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
+ROOT = case_root_from_script(__file__)
 FILES = [
     ROOT / "src" / "report_renderer.h",
     ROOT / "src" / "report_renderer.cc",
@@ -16,7 +16,7 @@ SIGNATURE_RE = re.compile(r"^[^\n;{}]*\([^\n)]*\bcompact_mode\b[^\n)]*\)")
 
 violations = []
 for path in FILES:
-    text = path.read_text()
+    text = read_text(path, missing_ok=False)
     for match in SIGNATURE_RE.finditer(text):
         line_no = text.count("\n", 0, match.start()) + 1
         violations.append(

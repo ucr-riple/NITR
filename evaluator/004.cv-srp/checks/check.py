@@ -10,6 +10,15 @@ import subprocess
 from pathlib import Path
 from typing import Iterable, List, Tuple, Optional
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    read_text as shared_read_text,
+    repo_root_from_script,
+    scan_files,
+)
+
 
 # ----------------------------
 # Utilities
@@ -24,31 +33,30 @@ def die(msg: str, code: int = 1) -> None:
 
 def case_root() -> Path:
     """Resolve the case directory that this evaluator should inspect."""
-    repo_root = Path(__file__).resolve().parents[3]
-    case_name = Path(__file__).resolve().parents[1].name
-    return repo_root / "cases" / case_name
+    return case_root_from_script(__file__)
 
 
 def repo_root() -> Path:
     """Return the repository root inferred from this evaluator's location."""
-    return Path(__file__).resolve().parents[3]
+    return repo_root_from_script(__file__)
 
 
 def read_text(path: Path) -> str:
     """Read a text file or abort with a descriptive error."""
     try:
-        return path.read_text(encoding="utf-8", errors="replace")
+        return shared_read_text(
+            path,
+            encoding="utf-8",
+            errors="replace",
+            missing_ok=False,
+        )
     except Exception as e:
         die(f"Failed to read {path}: {e}")
 
 
 def list_files(base: Path, exts: Tuple[str, ...]) -> List[Path]:
     """Recursively collect files under a base directory that match the given suffixes."""
-    out: List[Path] = []
-    for p in base.rglob("*"):
-        if p.is_file() and p.suffix in exts:
-            out.append(p)
-    return out
+    return scan_files(base, exts)
 
 
 def run(cmd: List[str]) -> Tuple[int, str, str]:

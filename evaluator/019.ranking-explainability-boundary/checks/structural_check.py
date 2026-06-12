@@ -4,23 +4,13 @@ import re
 import sys
 from typing import List
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import read_text, strip_comments
+
 
 ROOT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path.cwd()
 SRC = ROOT / "src"
-
-
-def read_text(path: pathlib.Path) -> str:
-    """Read a text file if present, otherwise treat it as empty."""
-    if not path.exists():
-        return ""
-    return path.read_text(encoding="utf-8")
-
-
-def strip_comments(text: str) -> str:
-    """Remove C/C++ comments so token scans focus on semantic source content."""
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    text = re.sub(r"//.*", "", text)
-    return text
 
 
 def remove_include_lines(text: str) -> str:

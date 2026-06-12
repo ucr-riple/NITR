@@ -28,6 +28,10 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import strip_comments_and_strings
+
 _FAMILIES = ("range", "drift", "leak")
 _ALERT_TYPE = {"range": "RangeAlert", "drift": "DriftAlert", "leak": "LeakAlert"}
 
@@ -66,17 +70,6 @@ _FUNC_OPEN = re.compile(
     r"\b([A-Za-z_]\w*)\s*\([^;{}]*\)\s*"
     r"(?:const|noexcept|override|final|->|[\w:<>,&*\s])*\{"
 )
-
-
-def strip_comments_and_strings(text: str) -> str:
-    """Blank out comments and string/char literals so tokens only match code."""
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    text = re.sub(r"//.*", "", text)
-    text = re.sub(r'"(?:\\.|[^"\\])*"', '""', text)
-    text = re.sub(r"'(?:\\.|[^'\\])+'", "''", text)
-    return text
-
-
 def function_bodies(text: str):
     """Yield (name, body) for every function/method body in ``text``."""
     for match in _FUNC_OPEN.finditer(text):

@@ -5,11 +5,11 @@ import pathlib
 import re
 import sys
 
-ROOT = (
-    pathlib.Path(__file__).resolve().parents[3]
-    / "cases"
-    / pathlib.Path(__file__).resolve().parents[1].name
-)
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
+ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"
 
 REQUIRED_HEADERS = [
@@ -58,9 +58,9 @@ for header in REQUIRED_HEADERS:
     if not header.exists():
         fail(f"Missing required header: {header}")
 
-sort_text = (SRC / "sort_hits.h").read_text()
-shade_text = (SRC / "eval_shading.h").read_text()
-comp_text = (SRC / "composite.h").read_text()
+sort_text = read_text(SRC / "sort_hits.h", missing_ok=False)
+shade_text = read_text(SRC / "eval_shading.h", missing_ok=False)
+comp_text = read_text(SRC / "composite.h", missing_ok=False)
 
 for token in FORBIDDEN_IN_SORT_HEADER:
     if token in sort_text:
@@ -74,7 +74,7 @@ for path in [
     SRC / "eval_shading.cc",
     SRC / "composite.cc",
 ]:
-    text = path.read_text()
+    text = read_text(path, missing_ok=False)
     if FORBIDDEN_INCLUDE in text:
         fail(f"{path.name} still includes hit_buffer.h directly.")
 

@@ -1,18 +1,18 @@
 from pathlib import Path
 import sys
 
-ROOT = (
-    Path(__file__).resolve().parents[3]
-    / "cases"
-    / Path(__file__).resolve().parents[1].name
-)
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
+ROOT = case_root_from_script(__file__)
 SERVICE_CC = ROOT / "src" / "report_export_service.cc"
 SERVICE_H = ROOT / "src" / "report_export_service.h"
 FACTORY_CC = ROOT / "src" / "exporter_factory.cc"
 
-service_text = SERVICE_CC.read_text()
-service_header = SERVICE_H.read_text()
-factory_text = FACTORY_CC.read_text()
+service_text = read_text(SERVICE_CC, missing_ok=False)
+service_header = read_text(SERVICE_H, missing_ok=False)
+factory_text = read_text(FACTORY_CC, missing_ok=False)
 combined_service = service_text + "\n" + service_header
 
 problems = []

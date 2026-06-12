@@ -20,6 +20,10 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import normalize_text, read_text, scan_files
+
 
 GOLDEN_APP_MAIN = """#include <iostream>
 
@@ -73,25 +77,6 @@ EXPLICIT_DEF_PATTERNS = [
         re.MULTILINE,
     ),
 ]
-
-
-def normalize_text(s: str) -> str:
-    """Normalize line endings and trailing whitespace for stable text comparison."""
-    s = s.replace("\r\n", "\n").replace("\r", "\n")
-    lines = [ln.rstrip() for ln in s.split("\n")]
-    while lines and lines[-1] == "":
-        lines.pop()
-    return "\n".join(lines) + "\n"
-
-
-def read_text(p: Path) -> str:
-    """Read a UTF-8 text file, returning an empty string on failure."""
-    try:
-        return p.read_text(encoding="utf-8")
-    except Exception:
-        return ""
-
-
 def collect_code_files(root: Path) -> List[Path]:
     """Collect candidate source files under src/ and app/ for structural scanning."""
     files: List[Path] = []
@@ -99,8 +84,7 @@ def collect_code_files(root: Path) -> List[Path]:
         d = root / dname
         if not d.exists():
             continue
-        for ext in (".h", ".hpp", ".cc", ".cpp", ".cxx"):
-            files.extend(d.rglob(f"*{ext}"))
+        files.extend(scan_files(d, (".h", ".hpp", ".cc", ".cpp", ".cxx")))
     return sorted(set(files), key=lambda x: str(x))
 
 

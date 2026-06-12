@@ -4,38 +4,13 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3]))
+
+from evaluator.shared.check_utils import extract_function_body, strip_comments_and_strings
+
 
 ROOT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path.cwd()
 SRC = ROOT / "src" / "geometry.cc"
-
-
-def strip_comments_and_strings(text: str) -> str:
-    """Remove comments and literals so regex checks focus on structural code tokens."""
-    text = re.sub(r'"([^"\\]|\\.)*"', '""', text)
-    text = re.sub(r"'([^'\\]|\\.)*'", "''", text)
-    text = re.sub(r"//.*", "", text)
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    return text
-
-
-def extract_function_body(text: str, function_name: str) -> str:
-    """Return the body text for a named function using brace matching."""
-    match = re.search(rf"\b{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text)
-    if not match:
-        return ""
-
-    start = match.end()
-    depth = 1
-    i = start
-    while i < len(text):
-        if text[i] == "{":
-            depth += 1
-        elif text[i] == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start:i]
-        i += 1
-    return ""
 
 
 def count_hits(patterns, text: str) -> int:
