@@ -9,23 +9,26 @@ from evaluator.shared.check_utils import (
     case_root_from_script,
     include_paths,
     read_text,
-    sha256,
     strip_comments_and_strings,
 )
 
-EXPECTED_HASHES = {
-    "app/main.cc": "5455837b4eb544d92bf73a89ee3f77bdb8b8947662a708f5b3ab98c4bc611400",
-    "src/grader.cc": "0a67fa3bcbdf01aa8ac46d16e88b7b51d95fbf1affdca916785a844fcdb8a809",
-    "src/reporter.cc": "40b514c9a0728c7fcd261ca3c0f37f9be598a705c7a7a9d0fe164b258f07d734",
-}
+PROTECTED_FILES = [
+    "app/main.cc",
+    "src/grader.cc",
+    "src/reporter.cc",
+]
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--case_root", type=Path, default=case_root_from_script(__file__))
+    parser.add_argument(
+        "--baseline_case_root", type=Path, default=case_root_from_script(__file__)
+    )
     args = parser.parse_args()
 
     case_root = args.case_root.resolve()
+    baseline_root = args.baseline_case_root.resolve()
 
     src_root = case_root / "src"
     app_root = case_root / "app"
@@ -99,15 +102,22 @@ def main() -> int:
                 f"{path.relative_to(case_root)}: stats.h may only be included by reporter.cc, stats.cc, or app/main.cc."
             )
 
-    for relative_path, expected_hash in EXPECTED_HASHES.items():
+    for relative_path in PROTECTED_FILES:
         path = case_root / relative_path
+        baseline_path = baseline_root / relative_path
         if not path.exists():
             failures.append(
                 f"{path.relative_to(case_root)}: missing required starter file."
             )
             continue
 
-        if sha256(path) != expected_hash:
+        if not baseline_path.exists():
+            failures.append(
+                f"{relative_path}: missing required baseline starter file."
+            )
+            continue
+
+        if path.read_bytes() != baseline_path.read_bytes():
             failures.append(
                 f"{path.relative_to(case_root)}: must remain unchanged from the starter code."
             )

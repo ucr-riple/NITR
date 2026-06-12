@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import hashlib
 import re
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, NoReturn
 
 
 CPP_LIKE_SUFFIXES = (".h", ".hpp", ".hh", ".cc", ".cpp", ".cxx")
@@ -53,8 +52,14 @@ def read_text(
     return path.read_text(**kwargs)
 
 
-def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def fail_message(message: str) -> int:
+    print(message)
+    return 1
+
+
+def die_message(message: str) -> NoReturn:
+    print(message)
+    raise SystemExit(1)
 
 
 def scan_files(root: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> list[Path]:
@@ -84,7 +89,9 @@ def find_matching_paths(
             for file_path in sorted(path.rglob("*")):
                 if file_path.suffix not in suffix_set:
                     continue
-                text = read_text(file_path, encoding=encoding, errors=errors, missing_ok=False)
+                text = read_text(
+                    file_path, encoding=encoding, errors=errors, missing_ok=False
+                )
                 if compiled.search(text):
                     matches.append(file_path)
         elif path.is_file():

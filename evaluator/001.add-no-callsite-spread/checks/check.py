@@ -23,19 +23,6 @@ from typing import Dict, List
 from evaluator.shared.check_utils import normalize_text, read_text, scan_files
 
 
-GOLDEN_APP_MAIN = """#include <iostream>
-
-#include "add.h"
-
-int main(int argc, char** argv) {
-  std::cout << nitr::case001::add(3, 4) << "\\n";
-  std::cout << nitr::case001::add(3.5, 4.5) << "\\n";
-  std::cout << nitr::case001::add(100000000.0, 1.0) << "\\n";
-  std::cout << nitr::case001::add(100000000, 100000000) << "\\n";
-  return 0;
-}
-"""
-
 MACRO_ADD_PATTERN = re.compile(r"^\s*#\s*define\s+add\b", re.MULTILINE)
 
 # "Centralized reusable core" detection (generic function patterns).
@@ -97,12 +84,17 @@ def fail(msg: str, details: Dict) -> None:
     )
     sys.exit(1)
 
-
 def main() -> int:
     """Enforce frozen callsites and centralized add implementation structure."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--milestone", type=int, default=None)
     ap.add_argument("--case_root", type=str, default=".")
+    ap.add_argument(
+        "--baseline_case_root",
+        type=str,
+        required=True,
+        help="Path to the original baseline case directory.",
+    )
     ap.add_argument(
         "--freeze_from_milestone",
         type=int,
@@ -124,7 +116,9 @@ def main() -> int:
         fail("ERR_BAD_MILESTONE", {"milestone": ms})
 
     root = Path(args.case_root).resolve()
+    baseline_root = Path(args.baseline_case_root).resolve()
     app_main = root / "app" / "main.cc"
+    baseline_app_main = baseline_root / "app" / "main.cc"
 
     files = collect_code_files(root)
     if not files:
@@ -133,13 +127,15 @@ def main() -> int:
     # (1) Freeze app/main.cc
     if ms >= args.freeze_from_milestone:
         cur = read_text(app_main)
+        baseline = read_text(baseline_app_main, missing_ok=False)
         if not cur:
             fail("ERR_MAIN_MISSING_OR_UNREADABLE", {"path": str(app_main)})
-        if normalize_text(cur) != normalize_text(GOLDEN_APP_MAIN):
+        if normalize_text(cur) != normalize_text(baseline):
             fail(
                 "ERR_MAIN_MODIFIED",
                 {
                     "path": str(app_main),
+                    "baseline_path": str(baseline_app_main),
                     "milestone": ms,
                     "note": "app/main.cc must match golden baseline (ignoring EOL and trailing whitespace).",
                 },
@@ -201,7 +197,10 @@ def main() -> int:
         "milestone": ms,
         "checks": {
             "app_main_frozen": (ms < args.freeze_from_milestone)
-            or (normalize_text(read_text(app_main)) == normalize_text(GOLDEN_APP_MAIN)),
+            or (
+                normalize_text(read_text(app_main))
+                == normalize_text(read_text(baseline_app_main, missing_ok=False))
+            ),
             "no_add_macro": (len(macro_hits) == 0),
             "structure_centralized": generic_present,
             "explicit_overload_def_count": explicit_def_count,
