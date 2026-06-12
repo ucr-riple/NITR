@@ -12,6 +12,7 @@ from typing import Iterable, List, Tuple, Optional
 
 from evaluator.shared.check_utils import (
     case_root_from_script,
+    regex_matches,
     read_text as shared_read_text,
     repo_root_from_script,
     scan_files,
@@ -68,11 +69,6 @@ def run(cmd: List[str]) -> Tuple[int, str, str]:
         return 127, "", f"Command not found: {cmd[0]}"
     except Exception as e:
         return 1, "", f"Failed to run {cmd}: {e}"
-
-
-def grep(pattern: re.Pattern, text: str) -> bool:
-    """Return whether a compiled regex matches the provided text."""
-    return bool(pattern.search(text))
 
 
 def rel(p: Path, root: Path) -> str:
@@ -133,7 +129,7 @@ def check_no_legacy_includes(root: Path) -> None:
         if rp in allowed:
             continue
         txt = read_text(p)
-        if grep(pat, txt):
+        if regex_matches(pat, txt):
             die(f"Forbidden include of legacy_monolith.h in {rp}")
 
 
@@ -153,7 +149,7 @@ def check_no_legacy_symbol_references_in_source(root: Path) -> None:
         if rp in allowed:
             continue
         txt = read_text(p)
-        if grep(pat, txt):
+        if regex_matches(pat, txt):
             die(f"Forbidden reference to RunLegacyMonolith in {rp}")
 
 
@@ -177,9 +173,9 @@ def check_json_restrictions(root: Path) -> None:
         if not p.exists():
             continue
         txt = read_text(p)
-        if grep(forbid_io_include, txt):
+        if regex_matches(forbid_io_include, txt):
             die(f"Forbidden include io_json.h in {rel(p, root)}")
-        if grep(forbid_json_include, txt):
+        if regex_matches(forbid_json_include, txt):
             die(f"Forbidden JSON usage/include in {rel(p, root)}")
 
 
@@ -197,7 +193,7 @@ def check_policy_dependency_restrictions(root: Path) -> None:
         re.compile(r'^\s*#\s*include\s*"estimator\.h"\s*$', re.MULTILINE),
     ]
     for pat in forbid:
-        if grep(pat, txt):
+        if regex_matches(pat, txt):
             die(
                 f"policy.cc must not include estimator/normalize headers: {rel(p, root)}"
             )

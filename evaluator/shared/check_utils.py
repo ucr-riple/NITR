@@ -64,6 +64,37 @@ def scan_files(root: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> list[
     )
 
 
+def regex_matches(pattern: re.Pattern[str], text: str) -> bool:
+    return bool(pattern.search(text))
+
+
+def find_matching_paths(
+    pattern: str,
+    *paths: Path,
+    suffixes: Iterable[str] = (".h", ".cc"),
+    encoding: str = "utf-8",
+    errors: str = "replace",
+) -> list[Path]:
+    compiled = re.compile(pattern, re.MULTILINE)
+    suffix_set = set(suffixes)
+    matches: list[Path] = []
+
+    for path in paths:
+        if path.is_dir():
+            for file_path in sorted(path.rglob("*")):
+                if file_path.suffix not in suffix_set:
+                    continue
+                text = read_text(file_path, encoding=encoding, errors=errors, missing_ok=False)
+                if compiled.search(text):
+                    matches.append(file_path)
+        elif path.is_file():
+            text = read_text(path, encoding=encoding, errors=errors, missing_ok=False)
+            if compiled.search(text):
+                matches.append(path)
+
+    return matches
+
+
 def strip_comments(text: str) -> str:
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
     text = re.sub(r"//.*", "", text)
