@@ -43,6 +43,8 @@ SUSPICIOUS_API_PATTERNS = [
     r"SetNowForTest",
     r"InjectNowForTest",
 ]
+
+
 def contains_any(patterns, text):
     """Return the subset of regex patterns that match the given text."""
     matches = []
@@ -52,54 +54,57 @@ def contains_any(patterns, text):
     return matches
 
 
-failures = []
+def main() -> int:
+    failures = []
 
-for path in scan_files(SRC_DIR, (".h", ".cc", ".cpp")):
-    if path.name == "time_source.cc":
-        continue
-    text = path.read_text()
-    forbidden = contains_any(FORBIDDEN_SRC_PATTERNS, text)
-    suspicious = contains_any(SUSPICIOUS_API_PATTERNS, text)
-    if forbidden:
+    for path in scan_files(SRC_DIR, (".h", ".cc", ".cpp")):
+        if path.name == "time_source.cc":
+            continue
+        text = path.read_text()
+        forbidden = contains_any(FORBIDDEN_SRC_PATTERNS, text)
+        suspicious = contains_any(SUSPICIOUS_API_PATTERNS, text)
+        if forbidden:
+            failures.append(
+                f"forbidden time coupling in {path.relative_to(ROOT)}: {forbidden}"
+            )
+        if suspicious:
+            failures.append(
+                f"evaluation-only API smell in {path.relative_to(ROOT)}: {suspicious}"
+            )
+
+    for path in scan_files(TEST_DIR, (".h", ".cc", ".cpp")):
+        text = path.read_text()
+        forbidden = contains_any(FORBIDDEN_TEST_PATTERNS, text)
+        if forbidden:
+            failures.append(
+                f"sleep-based test detected in {path.relative_to(EVALUATOR_ROOT)}: {forbidden}"
+            )
+
+    header_path = SRC_DIR / "session_manager.h"
+    if not header_path.exists():
         failures.append(
-            f"forbidden time coupling in {path.relative_to(ROOT)}: {forbidden}"
+            "session_manager.h is missing from cases/009.session-expiry-testability/src/"
         )
-    if suspicious:
-        failures.append(
-            f"evaluation-only API smell in {path.relative_to(ROOT)}: {suspicious}"
+    else:
+        header_text = header_path.read_text()
+        seam_ctor = re.search(
+            r"SessionManager\s*\([^)]*TimeSource[^)]*\)",
+            header_text,
         )
+        if seam_ctor is None:
+            failures.append(
+                "session_manager.h must keep a SessionManager constructor that "
+                "accepts a TimeSource (the test seam)."
+            )
 
-for path in scan_files(TEST_DIR, (".h", ".cc", ".cpp")):
-    text = path.read_text()
-    forbidden = contains_any(FORBIDDEN_TEST_PATTERNS, text)
-    if forbidden:
-        failures.append(
-            f"sleep-based test detected in {path.relative_to(REPO_ROOT)}: {forbidden}"
-        )
+    if failures:
+        for failure in failures:
+            print(failure)
+        return 1
 
-# Positive structural check: the time-injection seam must remain on the
-# public SessionManager API. Without it, the seam can disappear silently and
-# the only failure signal is a confusing test link error.
-header_path = SRC_DIR / "session_manager.h"
-if not header_path.exists():
-    failures.append(
-        "session_manager.h is missing from cases/009.session-expiry-testability/src/"
-    )
-else:
-    header_text = header_path.read_text()
-    seam_ctor = re.search(
-        r"SessionManager\s*\([^)]*TimeSource[^)]*\)",
-        header_text,
-    )
-    if seam_ctor is None:
-        failures.append(
-            "session_manager.h must keep a SessionManager constructor that "
-            "accepts a TimeSource (the test seam)."
-        )
+    print("maintainability checks passed")
+    return 0
 
-if failures:
-    for failure in failures:
-        print(failure)
-    sys.exit(1)
 
-print("maintainability checks passed")
+if __name__ == "__main__":
+    raise SystemExit(main())

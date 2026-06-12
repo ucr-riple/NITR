@@ -313,7 +313,7 @@ def run_named_check(name: str, fn, *args) -> None:
     print(f"PASS {name}")
 
 
-def main() -> None:
+def main() -> int:
     """Run source and binary isolation checks for the SRP case."""
     root = case_root()
 
@@ -342,13 +342,14 @@ def main() -> None:
     if cv_bin is None:
         print("SKIP check_binary_symbol_isolation (cv_srp was not built)")
         print("OK")
-        return
+        return 0
     run_named_check(
         "check_binary_symbol_isolation", check_binary_symbol_isolation, root
     )
 
     print("OK")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

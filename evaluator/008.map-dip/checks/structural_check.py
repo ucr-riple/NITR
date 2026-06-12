@@ -10,7 +10,7 @@ ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src" / "map_snapshot.cc"
 
 
-def main():
+def main() -> int:
     """Reject provider knowledge and hardcoded type dispatch inside map_snapshot.cc."""
     txt = read_text(SRC, missing_ok=False)
     forbidden = [

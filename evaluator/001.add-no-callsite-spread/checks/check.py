@@ -98,7 +98,7 @@ def fail(msg: str, details: Dict) -> None:
     sys.exit(1)
 
 
-def main() -> None:
+def main() -> int:
     """Enforce frozen callsites and centralized add implementation structure."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--milestone", type=int, default=None)
@@ -213,8 +213,8 @@ def main() -> None:
         },
     }
     print(json.dumps(out, indent=2, ensure_ascii=False))
-    sys.exit(0)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

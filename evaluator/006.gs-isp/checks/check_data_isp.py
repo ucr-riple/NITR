@@ -52,33 +52,41 @@ def fail(message: str) -> None:
     sys.exit(1)
 
 
-for header in REQUIRED_HEADERS:
-    if not header.exists():
-        fail(f"Missing required header: {header}")
+def main() -> int:
+    for header in REQUIRED_HEADERS:
+        if not header.exists():
+            fail(f"Missing required header: {header}")
 
-sort_text = read_text(SRC / "sort_hits.h", missing_ok=False)
-shade_text = read_text(SRC / "eval_shading.h", missing_ok=False)
-comp_text = read_text(SRC / "composite.h", missing_ok=False)
+    sort_text = read_text(SRC / "sort_hits.h", missing_ok=False)
+    shade_text = read_text(SRC / "eval_shading.h", missing_ok=False)
+    comp_text = read_text(SRC / "composite.h", missing_ok=False)
 
-for token in FORBIDDEN_IN_SORT_HEADER:
-    if token in sort_text:
-        fail("sort_hits.h still exposes legacy HitBuffer/Hit types.")
+    for token in FORBIDDEN_IN_SORT_HEADER:
+        if token in sort_text:
+            fail("sort_hits.h still exposes legacy HitBuffer/Hit types.")
 
-for path in [
-    SRC / "sort_hits.h",
-    SRC / "eval_shading.h",
-    SRC / "composite.h",
-    SRC / "sort_hits.cc",
-    SRC / "eval_shading.cc",
-    SRC / "composite.cc",
-]:
-    text = read_text(path, missing_ok=False)
-    if FORBIDDEN_INCLUDE in text:
-        fail(f"{path.name} still includes hit_buffer.h directly.")
+    for path in [
+        SRC / "sort_hits.h",
+        SRC / "eval_shading.h",
+        SRC / "composite.h",
+        SRC / "sort_hits.cc",
+        SRC / "eval_shading.cc",
+        SRC / "composite.cc",
+    ]:
+        text = read_text(path, missing_ok=False)
+        if FORBIDDEN_INCLUDE in text:
+            fail(f"{path.name} still includes hit_buffer.h directly.")
 
-joined = sort_text + shade_text + comp_text
-for group_name, tokens in VIEW_TOKEN_FAMILIES.items():
-    if not any(token in joined for token in tokens):
-        fail(f"Expected {group_name} interface/view token not found: one of {tokens}")
+    joined = sort_text + shade_text + comp_text
+    for group_name, tokens in VIEW_TOKEN_FAMILIES.items():
+        if not any(token in joined for token in tokens):
+            fail(
+                f"Expected {group_name} interface/view token not found: one of {tokens}"
+            )
 
-print("Structural ISP checks passed.")
+    print("Structural ISP checks passed.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
