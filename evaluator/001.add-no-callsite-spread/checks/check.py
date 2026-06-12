@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
+from evaluator.shared.check_utils import normalize_text, read_text, scan_files
+
 
 GOLDEN_APP_MAIN = """#include <iostream>
 
@@ -73,25 +75,6 @@ EXPLICIT_DEF_PATTERNS = [
         re.MULTILINE,
     ),
 ]
-
-
-def normalize_text(s: str) -> str:
-    """Normalize line endings and trailing whitespace for stable text comparison."""
-    s = s.replace("\r\n", "\n").replace("\r", "\n")
-    lines = [ln.rstrip() for ln in s.split("\n")]
-    while lines and lines[-1] == "":
-        lines.pop()
-    return "\n".join(lines) + "\n"
-
-
-def read_text(p: Path) -> str:
-    """Read a UTF-8 text file, returning an empty string on failure."""
-    try:
-        return p.read_text(encoding="utf-8")
-    except Exception:
-        return ""
-
-
 def collect_code_files(root: Path) -> List[Path]:
     """Collect candidate source files under src/ and app/ for structural scanning."""
     files: List[Path] = []
@@ -99,8 +82,7 @@ def collect_code_files(root: Path) -> List[Path]:
         d = root / dname
         if not d.exists():
             continue
-        for ext in (".h", ".hpp", ".cc", ".cpp", ".cxx"):
-            files.extend(d.rglob(f"*{ext}"))
+        files.extend(scan_files(d, (".h", ".hpp", ".cc", ".cpp", ".cxx")))
     return sorted(set(files), key=lambda x: str(x))
 
 
@@ -116,7 +98,7 @@ def fail(msg: str, details: Dict) -> None:
     sys.exit(1)
 
 
-def main() -> None:
+def main() -> int:
     """Enforce frozen callsites and centralized add implementation structure."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--milestone", type=int, default=None)
@@ -231,8 +213,8 @@ def main() -> None:
         },
     }
     print(json.dumps(out, indent=2, ensure_ascii=False))
-    sys.exit(0)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

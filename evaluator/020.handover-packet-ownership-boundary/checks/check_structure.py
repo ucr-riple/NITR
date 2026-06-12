@@ -2,16 +2,13 @@
 
 import json
 import re
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from evaluator.shared.check_utils import case_root_from_script, read_text
 
-ROOT = (
-    Path(__file__).resolve().parents[3]
-    / "cases"
-    / Path(__file__).resolve().parents[1].name
-)
+
+ROOT = case_root_from_script(__file__)
 SRC_DIR = ROOT / "src"
 APP_FILE = ROOT / "app" / "main.cc"
 
@@ -58,11 +55,6 @@ class Finding:
     message: str
 
 
-def read_text(path: Path) -> str:
-    """Read a text file used by the structural ownership checks."""
-    return path.read_text()
-
-
 def count_matches(patterns: list[re.Pattern], text: str) -> int:
     """Count how many structural signal patterns appear in the text."""
     return sum(1 for pattern in patterns if pattern.search(text))
@@ -90,7 +82,7 @@ def find_domain_assembly_candidates(files: list[Path]) -> list[str]:
     """Find likely domain-side files that own packet assembly responsibilities."""
     candidates: list[str] = []
     for path in files:
-        text = read_text(path)
+        text = read_text(path, missing_ok=False)
 
         if is_consumer_side(path):
             continue
@@ -120,7 +112,7 @@ def main() -> int:
     consumer_assembly_sites: list[str] = []
 
     for path in source_files:
-        text = read_text(path)
+        text = read_text(path, missing_ok=False)
         rel_path = str(path.relative_to(ROOT))
         assembly_score = count_matches(ASSEMBLY_SIGNAL_PATTERNS, text)
         summary_score = count_matches(SUMMARY_SIGNAL_PATTERNS, text)
@@ -208,4 +200,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

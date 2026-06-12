@@ -4,6 +4,8 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
 FORBIDDEN = [
     "static_policy_provider.h",
     "file_policy_provider.h",
@@ -14,13 +16,12 @@ FORBIDDEN = [
 
 def main() -> int:
     """Reject concrete provider references from the pipeline runner core surface."""
-    repo_root = Path(__file__).resolve().parents[3]
-    case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
+    case_root = case_root_from_script(__file__)
     for path in [
         case_root / "src/pipeline_runner.h",
         case_root / "src/pipeline_runner.cc",
     ]:
-        text = path.read_text(encoding="utf-8")
+        text = read_text(path, missing_ok=False)
         for token in FORBIDDEN:
             if token in text:
                 print(f"Forbidden concrete provider dependency in {path}: {token}")
@@ -29,4 +30,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

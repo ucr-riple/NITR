@@ -5,6 +5,8 @@ from pathlib import Path
 import re
 import sys
 
+from evaluator.shared.check_utils import case_root_from_script, read_text, scan_files
+
 ALLOWED_FILES = {
     "build_pipeline.cc",
     "main.cc",
@@ -26,11 +28,10 @@ FORBIDDEN_CREATION_PATTERNS = [
 
 def main() -> int:
     """Ensure concrete provider construction stays inside the allowed wiring boundary."""
-    repo_root = Path(__file__).resolve().parents[3]
-    case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
+    case_root = case_root_from_script(__file__)
     offenders: list[str] = []
-    for path in list(case_root.rglob("*.cc")) + list(case_root.rglob("*.h")):
-        text = path.read_text(encoding="utf-8")
+    for path in scan_files(case_root, (".cc", ".h")):
+        text = read_text(path, missing_ok=False)
         if not any(re.search(pattern, text) for pattern in FORBIDDEN_CREATION_PATTERNS):
             continue
         if path.name not in ALLOWED_FILES:
@@ -45,4 +46,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

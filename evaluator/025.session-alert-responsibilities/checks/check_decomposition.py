@@ -24,9 +24,11 @@ Positive arm: each family must be produced by a function REACHABLE from
 vacuously pass and dead one-family helpers cannot pad the check.
 """
 
+import argparse
 import pathlib
 import re
-import sys
+
+from evaluator.shared.check_utils import strip_comments_and_strings
 
 _FAMILIES = ("range", "drift", "leak")
 _ALERT_TYPE = {"range": "RangeAlert", "drift": "DriftAlert", "leak": "LeakAlert"}
@@ -66,17 +68,6 @@ _FUNC_OPEN = re.compile(
     r"\b([A-Za-z_]\w*)\s*\([^;{}]*\)\s*"
     r"(?:const|noexcept|override|final|->|[\w:<>,&*\s])*\{"
 )
-
-
-def strip_comments_and_strings(text: str) -> str:
-    """Blank out comments and string/char literals so tokens only match code."""
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    text = re.sub(r"//.*", "", text)
-    text = re.sub(r'"(?:\\.|[^"\\])*"', '""', text)
-    text = re.sub(r"'(?:\\.|[^'\\])+'", "''", text)
-    return text
-
-
 def function_bodies(text: str):
     """Yield (name, body) for every function/method body in ``text``."""
     for match in _FUNC_OPEN.finditer(text):
@@ -156,11 +147,15 @@ def _reachable_from(entry: str, calls_map: dict) -> set:
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        print("Usage: check_decomposition.py <case_dir>")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--case_root", type=pathlib.Path)
+    args = parser.parse_args()
+
+    if args.case_root is None:
+        parser.print_usage()
         return 1
 
-    case_dir = pathlib.Path(sys.argv[1]).resolve()
+    case_dir = args.case_root.resolve()
     src_dir = case_dir / "src"
 
     src_files = sorted(src_dir.rglob("*.h")) + sorted(
@@ -236,4 +231,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

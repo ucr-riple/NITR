@@ -5,6 +5,8 @@ from pathlib import Path
 import re
 import sys
 
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
 CREATION_PATTERNS = [
     r"\bstd::make_unique\s*<\s*StaticPolicyProvider\s*>",
     r"\bstd::make_unique\s*<\s*FilePolicyProvider\s*>",
@@ -17,13 +19,12 @@ CREATION_PATTERNS = [
 
 def main() -> int:
     """Ensure the allowed boundary actually owns provider creation or selection."""
-    repo_root = Path(__file__).resolve().parents[3]
-    case_root = repo_root / "cases" / Path(__file__).resolve().parents[1].name
+    case_root = case_root_from_script(__file__)
     boundary_files = [case_root / "src/build_pipeline.cc", case_root / "app/main.cc"]
     boundary_has_wiring = False
 
     for path in boundary_files:
-        text = path.read_text(encoding="utf-8")
+        text = read_text(path, missing_ok=False)
         if any(re.search(pattern, text) for pattern in CREATION_PATTERNS):
             boundary_has_wiring = True
             break
@@ -37,4 +38,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

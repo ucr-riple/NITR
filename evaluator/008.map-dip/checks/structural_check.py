@@ -2,17 +2,17 @@
 import re
 from pathlib import Path
 
-ROOT = (
-    Path(__file__).resolve().parents[3]
-    / "cases"
-    / Path(__file__).resolve().parents[1].name
-)
+import sys
+
+from evaluator.shared.check_utils import case_root_from_script, read_text
+
+ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src" / "map_snapshot.cc"
 
 
-def main():
+def main() -> int:
     """Reject provider knowledge and hardcoded type dispatch inside map_snapshot.cc."""
-    txt = SRC.read_text()
+    txt = read_text(SRC, missing_ok=False)
     forbidden = [
         r"\bGeometryProvider\b",
         r"\bSemanticsProvider\b",

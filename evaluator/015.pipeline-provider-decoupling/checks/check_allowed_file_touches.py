@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
-import sys
+
+from evaluator.shared.check_utils import repo_root_from_script
 
 ALLOWED_TOP_LEVEL = {"app", "src", "CMakeLists.txt", "TASK.md", "SPEC.md"}
 
 
 def main() -> int:
     """Limit touched paths to the expected top-level case files and directories."""
-    repo_root = Path(__file__).resolve().parents[3]
-    if len(sys.argv) == 1:
+    repo_root = repo_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("paths", nargs="*")
+    args = parser.parse_args()
+
+    if not args.paths:
         print("No file list provided; starter skeleton check passes by default.")
         return 0
 
-    for raw_path in sys.argv[1:]:
+    for raw_path in args.paths:
         path = Path(raw_path)
         top = path.parts[0] if path.parts else ""
         if top not in ALLOWED_TOP_LEVEL:
@@ -27,4 +33,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
