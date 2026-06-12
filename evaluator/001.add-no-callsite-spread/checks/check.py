@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# check.py — MaintainBench structural checks for the add multi-type case
+# check.py — NITR structural checks for the add multi-type case
 #
 # Structural rules enforced:
 #   1) app/main.cc must match the golden baseline (ignoring EOL style + trailing whitespace).

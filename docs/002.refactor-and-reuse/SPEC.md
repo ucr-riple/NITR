@@ -5,7 +5,7 @@
 ```yaml
 case_id:        computer_vision-maintain-8point-shared-normalization
 domain:         computer_vision
-principle:      N/A  # MaintainBench: duplication control / shared internal step reuse
+principle:      N/A  # NITR: duplication control / shared internal step reuse
 difficulty:     easy
 language:       C++20
 loc:            ~250-400
@@ -153,7 +153,7 @@ Common incorrect solutions include:
 ## 8. Principle Mapping
 
 ```text
-Mapping: MaintainBench (not SOLID-mapped)
+Mapping: NITR (not SOLID-mapped)
 Measured Capability:
   - Ability to evolve code across milestones while controlling duplication
   - Ability to share an internal numeric step across features without being told a helper API

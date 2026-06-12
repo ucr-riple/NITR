@@ -1,5 +1,5 @@
 ---
-case_id: maintainbench-reuse-existing-step
+case_id: nitr-reuse-existing-step
 domain: utils
 principle: SRP
 difficulty: easy
