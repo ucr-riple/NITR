@@ -4,8 +4,6 @@ from pathlib import Path
 
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-
 from evaluator.shared.check_utils import case_root_from_script, read_text
 
 ROOT = case_root_from_script(__file__)

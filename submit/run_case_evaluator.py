@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -16,7 +17,7 @@ from docker_runtime import (
 )
 
 
-def run_command(cmd, cwd, stream_output=False, timeout_seconds=None):
+def run_command(cmd, cwd, stream_output=False, timeout_seconds=None, env=None):
     """Run a subprocess and return a normalized result payload for reports."""
     print(f"[*] Running: {' '.join(cmd)}")
     if not stream_output:
@@ -28,6 +29,7 @@ def run_command(cmd, cwd, stream_output=False, timeout_seconds=None):
                 text=True,
                 check=False,
                 timeout=timeout_seconds,
+                env=env,
             )
             return {
                 "cmd": cmd,
@@ -54,6 +56,7 @@ def run_command(cmd, cwd, stream_output=False, timeout_seconds=None):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        env=env,
     )
     combined_output = []
     assert process.stdout is not None
@@ -213,12 +216,23 @@ def run_structural_check(
     """Execute one structural-check script with the best-effort argument convention."""
     if script_path.suffix != ".py":
         raise ValueError(f"Unsupported check script: {script_path}")
+    env = os.environ.copy()
+    pythonpath_entries = [str(workspace_root)]
+    existing_pythonpath = env.get("PYTHONPATH")
+    if existing_pythonpath:
+        pythonpath_entries.append(existing_pythonpath)
+    env["PYTHONPATH"] = os.pathsep.join(pythonpath_entries)
     cmd = [
         sys.executable,
         str(script_path),
         *structural_check_args(script_path, case_root),
     ]
-    return run_command(cmd, workspace_root, timeout_seconds=timeout_seconds)
+    return run_command(
+        cmd,
+        workspace_root,
+        timeout_seconds=timeout_seconds,
+        env=env,
+    )
 
 
 def save_summary(summary: dict, generated_root: Path, case_slug: str):

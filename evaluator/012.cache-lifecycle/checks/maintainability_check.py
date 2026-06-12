@@ -2,8 +2,6 @@ from pathlib import Path
 import re
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-
 from evaluator.shared.check_utils import case_root_from_script
 
 ROOT = case_root_from_script(__file__)

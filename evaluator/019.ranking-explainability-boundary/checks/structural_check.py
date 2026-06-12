@@ -4,8 +4,6 @@ import re
 import sys
 from typing import List
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3]))
-
 from evaluator.shared.check_utils import read_text, strip_comments
 
 

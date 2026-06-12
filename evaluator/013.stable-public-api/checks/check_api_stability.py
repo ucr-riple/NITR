@@ -2,8 +2,6 @@ from pathlib import Path
 import re
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-
 from evaluator.shared.check_utils import case_root_from_script, read_text
 
 HEADER = case_root_from_script(__file__) / "src" / "library_catalog.h"

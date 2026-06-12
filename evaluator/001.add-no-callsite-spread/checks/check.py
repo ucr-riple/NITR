@@ -20,8 +20,6 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-
 from evaluator.shared.check_utils import normalize_text, read_text, scan_files
 
 
