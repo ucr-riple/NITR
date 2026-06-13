@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import re
+import sys
 from pathlib import Path
-from typing import Iterable, NoReturn
+from typing import Iterable, NoReturn, TextIO
 
 
 CPP_LIKE_SUFFIXES = (".h", ".hpp", ".hh", ".cc", ".cpp", ".cxx")
@@ -69,9 +70,11 @@ def fail_message(message: str) -> int:
     return 1
 
 
-def die_message(message: str) -> NoReturn:
-    print(message)
-    raise SystemExit(1)
+def die_message(
+    message: str, *, code: int = 1, stream: TextIO = sys.stdout
+) -> NoReturn:
+    print(message, file=stream)
+    raise SystemExit(code)
 
 
 def find_missing_paths(paths: Iterable[Path]) -> list[Path]:
@@ -215,8 +218,12 @@ def has_all_substrings(needles: Iterable[str], text: str) -> bool:
     return all(needle in text for needle in needles)
 
 
+def find_matching_substrings(needles: Iterable[str], text: str) -> list[str]:
+    return [needle for needle in needles if needle in text]
+
+
 def count_matching_substrings(needles: Iterable[str], text: str) -> int:
-    return sum(needle in text for needle in needles)
+    return len(find_matching_substrings(needles, text))
 
 
 def _compile_pattern(pattern: PatternLike, flags: int = 0) -> re.Pattern[str]:

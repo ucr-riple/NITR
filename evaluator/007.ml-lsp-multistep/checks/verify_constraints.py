@@ -6,8 +6,11 @@ import sys
 from evaluator.shared.check_utils import (
     classify_relative_paths_against_baseline,
     case_root_from_script,
+    find_matching_substrings,
+    find_missing_paths,
     find_missing_relative_paths,
     read_text,
+    scan_files,
 )
 
 ROOT = case_root_from_script(__file__)
@@ -74,9 +77,7 @@ def main() -> int:
     for rel in protected_status.modified:
         print(f"protected file modified: {rel}")
         ok = False
-    for path in case_root.glob("src/*"):
-        if path.suffix not in {".h", ".cc"}:
-            continue
+    for path in scan_files(case_root / "src", suffixes=(".h", ".cc")):
         text = read_text(path, missing_ok=False)
         for pattern in FORBIDDEN_PATTERNS:
             if pattern in text:
@@ -86,13 +87,12 @@ def main() -> int:
                 ok = False
     for rel in GENERIC_FILES:
         path = case_root / rel
-        if not path.exists():
+        if find_missing_paths([path]):
             continue
         text = read_text(path, missing_ok=False)
-        for token in CONCRETE_TOKENS:
-            if token in text:
-                print(f"generic path leaked concrete type {token} in {rel}")
-                ok = False
+        for token in find_matching_substrings(CONCRETE_TOKENS, text):
+            print(f"generic path leaked concrete type {token} in {rel}")
+            ok = False
     return 0 if ok else 1
 
 

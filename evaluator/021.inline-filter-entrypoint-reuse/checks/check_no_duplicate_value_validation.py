@@ -4,6 +4,7 @@ from evaluator.shared.check_utils import (
     case_root_from_script,
     has_all_substrings,
     has_any_substring,
+    scan_files,
 )
 
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h"}
@@ -12,7 +13,7 @@ ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h"}
 def main() -> int:
     """Reject duplicate numeric value validation outside the shared validation module."""
     src_dir = case_root_from_script(__file__) / "src"
-    for source_file in sorted(src_dir.glob("*.[ch]c*")):
+    for source_file in scan_files(src_dir, suffixes=(".h", ".cc", ".cpp")):
         if source_file.name in ALLOWED_FILES:
             continue
 

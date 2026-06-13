@@ -1,9 +1,9 @@
-from pathlib import Path
 import re
-import sys
 
 from evaluator.shared.check_utils import (
     case_root_from_script,
+    find_matching_substrings,
+    has_any_pattern,
     has_any_substring,
     read_text,
 )
@@ -21,12 +21,13 @@ def main() -> int:
     if has_any_substring(["audit_logger.h"], policy_all):
         errors.append("loan_policy must not depend on audit_logger.h")
 
-    signature_match = re.search(
-        r"ReviewDecision\s+EvaluateApplicant\s*\(([^)]*)\)", policy_h
-    )
-    if not signature_match:
+    signature_patterns = [
+        r"ReviewDecision\s+EvaluateApplicant\s*\(([^)]*)\)",
+    ]
+    if not has_any_pattern(signature_patterns, policy_h):
         errors.append("Could not find EvaluateApplicant signature in loan_policy.h")
     else:
+        signature_match = re.search(signature_patterns[0], policy_h)
         signature = signature_match.group(1)
         lowered = signature.lower()
         if "logger" in lowered or "audit" in lowered:
@@ -42,9 +43,8 @@ def main() -> int:
         "ofstream",
         "fstream",
     ]
-    for banned in direct_io_tokens:
-        if has_any_substring([banned], policy_cc):
-            errors.append(f"loan_policy.cc must not perform direct IO: found {banned}")
+    for banned in find_matching_substrings(direct_io_tokens, policy_cc):
+        errors.append(f"loan_policy.cc must not perform direct IO: found {banned}")
 
     if has_any_substring([".Log(", "->Log("], policy_cc):
         errors.append("loan_policy.cc must not emit audit logs directly")

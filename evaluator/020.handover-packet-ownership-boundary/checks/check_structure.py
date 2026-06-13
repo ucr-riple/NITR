@@ -8,8 +8,10 @@ from pathlib import Path
 from evaluator.shared.check_utils import (
     case_root_from_script,
     count_matching_patterns,
+    has_any_substring,
     read_text,
     regex_matches,
+    scan_files,
 )
 
 
@@ -105,9 +107,7 @@ def find_domain_assembly_candidates(files: list[Path]) -> list[str]:
 def main() -> int:
     """Report whether packet assembly logic leaked into consumer-side files."""
     findings: list[Finding] = []
-    source_files = sorted(list(SRC_DIR.glob("*.h")) + list(SRC_DIR.glob("*.cc"))) + [
-        APP_FILE
-    ]
+    source_files = scan_files(SRC_DIR, suffixes=(".h", ".cc")) + [APP_FILE]
 
     consumer_assembly_sites: list[str] = []
 
@@ -120,8 +120,8 @@ def main() -> int:
         packet_mentions = has_packet_mentions(text)
 
         if path in CONSUMER_FILES:
-            if assembly_score >= 2 and (
-                "current_tote" in text or "completed_totes" in text
+            if assembly_score >= 2 and has_any_substring(
+                ["current_tote", "completed_totes"], text
             ):
                 consumer_assembly_sites.append(rel_path)
                 findings.append(
@@ -131,7 +131,9 @@ def main() -> int:
                         message="consumer-side file inspects tracker state and assembles packet rows",
                     )
                 )
-            if summary_score >= 2 and ("summary" in text or "total_packages" in text):
+            if summary_score >= 2 and has_any_substring(
+                ["summary", "total_packages"], text
+            ):
                 findings.append(
                     Finding(
                         code="consumer_summary_logic",

@@ -4,7 +4,9 @@ import re
 from evaluator.shared.check_utils import (
     case_root_from_script,
     evaluator_root_from_script,
+    find_missing_paths,
     find_matching_patterns,
+    has_any_pattern,
     scan_files,
 )
 
@@ -69,17 +71,15 @@ def main() -> int:
             )
 
     header_path = SRC_DIR / "session_manager.h"
-    if not header_path.exists():
+    if find_missing_paths([header_path]):
         failures.append(
             "session_manager.h is missing from cases/009.session-expiry-testability/src/"
         )
     else:
         header_text = header_path.read_text()
-        seam_ctor = re.search(
-            r"SessionManager\s*\([^)]*TimeSource[^)]*\)",
-            header_text,
-        )
-        if seam_ctor is None:
+        if not has_any_pattern(
+            [r"SessionManager\s*\([^)]*TimeSource[^)]*\)"], header_text
+        ):
             failures.append(
                 "session_manager.h must keep a SessionManager constructor that "
                 "accepts a TimeSource (the test seam)."

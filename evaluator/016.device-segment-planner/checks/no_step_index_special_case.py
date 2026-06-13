@@ -2,6 +2,8 @@
 import pathlib
 import re
 
+from evaluator.shared.check_utils import find_matching_patterns, scan_files
+
 FORBIDDEN_PATTERNS = [
     re.compile(r"==\s*4"),
     re.compile(r"==\s*6"),
@@ -26,13 +28,12 @@ ALLOWLIST = {
 def main() -> int:
     """Detect suspicious hardcoded step-index branching in production source files."""
     violations = []
-    for path in pathlib.Path("src").glob("*.cc"):
+    for path in scan_files(pathlib.Path("src"), suffixes=(".cc",)):
         if path in ALLOWLIST:
             continue
         text = path.read_text()
-        for pattern in FORBIDDEN_PATTERNS:
-            if pattern.search(text):
-                violations.append(f"{path}: matched {pattern.pattern}")
+        for pattern in find_matching_patterns(FORBIDDEN_PATTERNS, text):
+            violations.append(f"{path}: matched {pattern.pattern}")
     if violations:
         print("Suspicious step-index special-casing detected:")
         for violation in violations:

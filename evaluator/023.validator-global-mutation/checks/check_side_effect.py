@@ -8,8 +8,10 @@ from pathlib import Path
 from evaluator.shared.check_utils import (
     case_root_from_script,
     classify_relative_paths_against_baseline,
+    has_any_pattern,
     include_paths,
     read_text,
+    scan_files,
     strip_comments_and_strings,
 )
 
@@ -71,12 +73,12 @@ def main() -> int:
                 "include style."
             )
 
-        if re.search(r"\btotal_processed\b", scanned_text):
+        if has_any_pattern([r"\btotal_processed\b"], scanned_text):
             failures.append(
                 f"{path.name}: Validator must not reference total_processed."
             )
 
-    source_files = sorted(src_root.glob("*.h")) + sorted(src_root.glob("*.cc"))
+    source_files = scan_files(src_root, suffixes=(".h", ".cc"))
     source_files.append(app_root / "main.cc")
     for path in source_files:
         raw_text = read_text(path)
@@ -89,8 +91,8 @@ def main() -> int:
         scanned_text = strip_comments_and_strings(raw_text)
         includes = include_paths(raw_text)
 
-        if path not in allowed_total_processed_refs and re.search(
-            r"\btotal_processed\b", scanned_text
+        if path not in allowed_total_processed_refs and has_any_pattern(
+            [r"\btotal_processed\b"], scanned_text
         ):
             failures.append(
                 f"{path.relative_to(case_root)}: total_processed must stay owned by stats/reporter/main only."

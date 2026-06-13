@@ -10,6 +10,7 @@ from evaluator.shared.check_utils import (
     has_any_pattern,
     include_paths,
     read_text,
+    scan_files,
     strip_comments_and_strings,
 )
 
@@ -25,12 +26,11 @@ def main() -> int:
     sensor_source_path = src_root / "tmp26_sensor.cc"
     app_main_path = case_root / "app" / "main.cc"
 
-    core_files = sorted(
+    core_files = [
         path
-        for path in src_root.rglob("*")
-        if path.suffix in {".h", ".cc"}
-        and path.name not in {"tmp26_sensor.h", "tmp26_sensor.cc", "main.cc"}
-    )
+        for path in scan_files(src_root, suffixes=(".h", ".cc"))
+        if path.name not in {"tmp26_sensor.h", "tmp26_sensor.cc", "main.cc"}
+    ]
 
     core_text_by_file: dict[Path, str] = {path: read_text(path) for path in core_files}
     sensor_source_text = read_text(sensor_source_path)
@@ -84,8 +84,12 @@ def main() -> int:
         )
 
     scanned_main_text = strip_comments_and_strings(app_main_text)
-    has_no_arg_evaluate_call = re.search(r"\.\s*Evaluate\s*\(\s*\)", scanned_main_text)
-    has_arg_evaluate_call = re.search(r"\.\s*Evaluate\s*\(\s*[^)\s]", scanned_main_text)
+    has_no_arg_evaluate_call = has_any_pattern(
+        [r"\.\s*Evaluate\s*\(\s*\)"], scanned_main_text
+    )
+    has_arg_evaluate_call = has_any_pattern(
+        [r"\.\s*Evaluate\s*\(\s*[^)\s]"], scanned_main_text
+    )
 
     if not has_no_arg_evaluate_call:
         failures.append(

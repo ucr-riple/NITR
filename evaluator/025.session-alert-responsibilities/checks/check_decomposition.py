@@ -28,7 +28,7 @@ import argparse
 import pathlib
 import re
 
-from evaluator.shared.check_utils import strip_comments_and_strings
+from evaluator.shared.check_utils import scan_files, strip_comments_and_strings
 
 _FAMILIES = ("range", "drift", "leak")
 _ALERT_TYPE = {"range": "RangeAlert", "drift": "DriftAlert", "leak": "LeakAlert"}
@@ -158,9 +158,7 @@ def main() -> int:
     case_dir = args.case_root.resolve()
     src_dir = case_dir / "src"
 
-    src_files = sorted(src_dir.rglob("*.h")) + sorted(
-        list(src_dir.rglob("*.cc")) + list(src_dir.rglob("*.cpp"))
-    )
+    src_files = scan_files(src_dir, suffixes=(".h", ".cc", ".cpp"))
     if not src_files:
         print(f"No source files found under {src_dir}")
         return 1

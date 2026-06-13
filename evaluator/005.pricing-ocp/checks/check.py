@@ -4,7 +4,12 @@ import re
 import sys
 from pathlib import Path
 
-from evaluator.shared.check_utils import read_text, strip_comments_and_strings
+from evaluator.shared.check_utils import (
+    find_missing_paths,
+    has_any_pattern,
+    read_text,
+    strip_comments_and_strings,
+)
 
 
 def find_violations(code: str) -> list[tuple[str, str]]:
@@ -41,7 +46,7 @@ def find_violations(code: str) -> list[tuple[str, str]]:
     # Comment out if too strict.
     case_pat = re.compile(r"\bcase\s+[^:]+:", re.IGNORECASE)
     # Only flag cases if the file has a coupon-related switch/if somewhere.
-    if re.search(coupon_kw, cleaned, flags=re.IGNORECASE):
+    if has_any_pattern([coupon_kw], cleaned, flags=re.IGNORECASE):
         for m in case_pat.finditer(cleaned):
             snippet = m.group(0)[:200]
             violations.append(("NO_CASE_DISPATCH_IN_COUPON_CONTEXT", snippet))
@@ -62,14 +67,14 @@ def main() -> int:
     args = ap.parse_args()
 
     case_dir = Path(args.case_dir)
-    if not case_dir.exists():
+    if find_missing_paths([case_dir]):
         print(f"[gate2] case_dir not found: {case_dir}", file=sys.stderr)
         return 2
 
     any_violation = False
     for rel in args.core_files:
         p = case_dir / rel
-        if not p.exists():
+        if find_missing_paths([p]):
             print(
                 f"[gate2] core file missing (treated as failure): {p}", file=sys.stderr
             )
