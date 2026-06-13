@@ -6,7 +6,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CASE_NAME = Path(__file__).resolve().parents[1].name
 ROOT = REPO_ROOT / "cases" / CASE_NAME

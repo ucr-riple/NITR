@@ -5,9 +5,7 @@ import sys
 from typing import Any, Iterable, NoReturn, TextIO
 
 
-def emit_check_result(
-    *, passed: bool, findings: Iterable[Any], **extra: Any
-) -> int:
+def emit_check_result(*, passed: bool, findings: Iterable[Any], **extra: Any) -> int:
     """Emit the standard evaluator result payload and return a process code."""
     payload = {
         "passed": passed,

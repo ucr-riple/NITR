@@ -1,3 +1,6 @@
+import argparse
+from pathlib import Path
+
 from evaluator.shared.path_checks import (
     case_root_from_script,
     read_text,
@@ -5,15 +8,24 @@ from evaluator.shared.path_checks import (
 from evaluator.shared.source_analysis import has_any_pattern
 from evaluator.shared.check_output import emit_check_result
 
-ROOT = case_root_from_script(__file__)
-SRC = ROOT / "src"
-
 
 def main() -> int:
-    service_h = read_text(SRC / "inventory_report_service.h", missing_ok=False)
-    service_cc = read_text(SRC / "inventory_report_service.cc", missing_ok=False)
-    engine_h = read_text(SRC / "summary_engine.h", missing_ok=False)
-    engine_cc = read_text(SRC / "summary_engine.cc", missing_ok=False)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+
+    src_dir = case_root / "src"
+    service_h = read_text(src_dir / "inventory_report_service.h", missing_ok=False)
+    service_cc = read_text(src_dir / "inventory_report_service.cc", missing_ok=False)
+    engine_h = read_text(src_dir / "summary_engine.h", missing_ok=False)
+    engine_cc = read_text(src_dir / "summary_engine.cc", missing_ok=False)
     errors = []
 
     engine_all = engine_h + "\n" + engine_cc

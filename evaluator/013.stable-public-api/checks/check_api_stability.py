@@ -1,4 +1,6 @@
+import argparse
 import re
+from pathlib import Path
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
@@ -21,7 +23,17 @@ REQUIRED_SIGNATURES = {
 
 
 def main() -> int:
-    header = case_root_from_script(__file__) / "src" / "library_catalog.h"
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    header = case_root / "src" / "library_catalog.h"
     text = read_text(header, missing_ok=False)
     violations = []
 

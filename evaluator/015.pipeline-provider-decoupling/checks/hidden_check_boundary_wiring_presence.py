@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+import argparse
+from pathlib import Path
 
 from evaluator.shared.path_checks import case_root_from_script, read_text
 from evaluator.shared.source_analysis import has_any_pattern
@@ -17,7 +19,15 @@ CREATION_PATTERNS = [
 
 def main() -> int:
     """Ensure the allowed boundary actually owns provider creation or selection."""
-    case_root = case_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
     boundary_files = [case_root / "src/build_pipeline.cc", case_root / "app/main.cc"]
     boundary_has_wiring = False
 

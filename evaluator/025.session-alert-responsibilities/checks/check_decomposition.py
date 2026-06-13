@@ -25,7 +25,7 @@ vacuously pass and dead one-family helpers cannot pad the check.
 """
 
 import argparse
-import pathlib
+from pathlib import Path
 import re
 
 from evaluator.shared.path_checks import scan_files
@@ -70,6 +70,8 @@ _FUNC_OPEN = re.compile(
     r"\b([A-Za-z_]\w*)\s*\([^;{}]*\)\s*"
     r"(?:const|noexcept|override|final|->|[\w:<>,&*\s])*\{"
 )
+
+
 def function_bodies(text: str):
     """Yield (name, body) for every function/method body in ``text``."""
     for match in _FUNC_OPEN.finditer(text):
@@ -150,7 +152,7 @@ def _reachable_from(entry: str, calls_map: dict) -> set:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=pathlib.Path)
+    parser.add_argument("--case_root", type=Path)
     args = parser.parse_args()
 
     if args.case_root is None:
@@ -168,7 +170,7 @@ def main() -> int:
         )
 
     funcs: dict[str, list[str]] = {}
-    all_bodies: list[tuple[pathlib.Path, str, str]] = []
+    all_bodies: list[tuple[Path, str, str]] = []
     for path in src_files:
         try:
             text = strip_comments_and_strings(path.read_text())

@@ -90,6 +90,7 @@ def run_command(cmd, cwd, stream_output=False, timeout_seconds=None, env=None):
         "timed_out": timed_out,
     }
 
+
 def resolve_cases_root(input_dir: Path) -> Path:
     """Accept either the repo root or a direct cases directory and normalize to cases/."""
     repo_cases_dir = input_dir / "cases"
@@ -393,9 +394,7 @@ def main():
         default=60,
         help="Timeout in seconds for each Python structural check",
     )
-    add_common_runtime_args(
-        parser, default_dockerfile=current_default_dockerfile()
-    )
+    add_common_runtime_args(parser, default_dockerfile=current_default_dockerfile())
     args = parser.parse_args()
 
     case_id = args.case_id.zfill(3)

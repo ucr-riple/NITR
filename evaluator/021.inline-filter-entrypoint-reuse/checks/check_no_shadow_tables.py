@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 
+import argparse
+from pathlib import Path
+
 from evaluator.shared.path_checks import (
     case_root_from_script,
     scan_files,
 )
-from evaluator.shared.source_analysis import count_matching_substrings, has_any_substring
+from evaluator.shared.source_analysis import (
+    count_matching_substrings,
+    has_any_substring,
+)
 from evaluator.shared.check_output import emit_check_result
 
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h", "filter_rule.cc"}
@@ -18,7 +24,16 @@ ERROR_LITERALS = [
 
 def main() -> int:
     """Reject duplicated field/error lookup tables outside the shared validation layer."""
-    src_dir = case_root_from_script(__file__) / "src"
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    src_dir = case_root / "src"
     for source_file in scan_files(src_dir, suffixes=(".h", ".cc", ".cpp")):
         if source_file.name in ALLOWED_FILES:
             continue

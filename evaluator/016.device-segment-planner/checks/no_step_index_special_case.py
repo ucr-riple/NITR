@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import pathlib
+from pathlib import Path
 import re
 
 from evaluator.shared.path_checks import scan_files
@@ -15,13 +15,9 @@ FORBIDDEN_PATTERNS = [
 ]
 
 ALLOWLIST = {
-    pathlib.Path(
-        "evaluator/016.device-segment-planner/tests/execution_plan_legacy_test.cc"
-    ),
-    pathlib.Path(
-        "evaluator/016.device-segment-planner/tests/execution_plan_updated_test.cc"
-    ),
-    pathlib.Path(
+    Path("evaluator/016.device-segment-planner/tests/execution_plan_legacy_test.cc"),
+    Path("evaluator/016.device-segment-planner/tests/execution_plan_updated_test.cc"),
+    Path(
         "evaluator/016.device-segment-planner/tests/runner_respects_segmentation_test.cc"
     ),
 }
@@ -30,7 +26,7 @@ ALLOWLIST = {
 def main() -> int:
     """Detect suspicious hardcoded step-index branching in production source files."""
     violations = []
-    for path in scan_files(pathlib.Path("src"), suffixes=(".cc",)):
+    for path in scan_files(Path("src"), suffixes=(".cc",)):
         if path in ALLOWLIST:
             continue
         text = path.read_text()

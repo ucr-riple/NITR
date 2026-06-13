@@ -23,7 +23,7 @@ from evaluator.shared.path_checks import (
     read_text,
     scan_files,
 )
-
+from evaluator.shared.source_analysis import count_matching_patterns
 
 MACRO_ADD_PATTERN = re.compile(r"^\s*#\s*define\s+add\b", re.MULTILINE)
 
@@ -64,6 +64,8 @@ EXPLICIT_DEF_PATTERNS = [
         re.MULTILINE,
     ),
 ]
+
+
 def main() -> int:
     """Enforce frozen callsites and centralized add implementation structure."""
     ap = argparse.ArgumentParser()
@@ -142,8 +144,11 @@ def main() -> int:
     macro_hits = []
     for f in files:
         txt = read_text(f)
-        if txt and MACRO_ADD_PATTERN.search(txt):
+        if not txt:
+            continue
+        if count_matching_patterns([MACRO_ADD_PATTERN], txt) > 0:
             macro_hits.append(str(f))
+
     if macro_hits:
         return emit_check_result(
             passed=False,
@@ -157,8 +162,9 @@ def main() -> int:
         txt = read_text(f)
         if not txt:
             continue
-        if any(p.search(txt) for p in GENERIC_ADD_PATTERNS):
+        if count_matching_patterns(GENERIC_ADD_PATTERNS, txt) > 0:
             generic_hits.append(str(f))
+
     generic_present = len(generic_hits) > 0
     if not generic_present:
         return emit_check_result(
@@ -177,11 +183,9 @@ def main() -> int:
         txt = read_text(f)
         if not txt:
             continue
-        for pat in EXPLICIT_DEF_PATTERNS:
-            if pat.search(txt):
-                explicit_def_count += 1
-                explicit_def_files.append(str(f))
-                break
+        if count_matching_patterns(EXPLICIT_DEF_PATTERNS, txt) > 0:
+            explicit_def_count += 1
+            explicit_def_files.append(str(f))
 
     if explicit_def_count > args.max_explicit_defs:
         return emit_check_result(

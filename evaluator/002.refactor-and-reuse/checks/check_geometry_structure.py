@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import pathlib
+from pathlib import Path
 
 from evaluator.shared.path_checks import (
     classify_relative_paths_against_baseline,
@@ -17,16 +17,16 @@ from evaluator.shared.source_analysis import (
 
 
 def main() -> int:
-    findings: list[str] = []
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--case_root",
-        type=pathlib.Path,
+        type=Path,
         default=case_root_from_script(__file__),
     )
     parser.add_argument(
         "--baseline_case_root",
-        type=pathlib.Path,
+        type=Path,
         default=case_root_from_script(__file__),
     )
     args = parser.parse_args()
@@ -41,6 +41,7 @@ def main() -> int:
             case_root / "src", case_root / "app", suffixes=(".h", ".cc")
         )
     }
+
     baseline_files = {
         path.relative_to(baseline_root).as_posix()
         for path in scan_files(
@@ -52,6 +53,7 @@ def main() -> int:
         case_root, baseline_root, tracked_files
     )
 
+    findings: list[str] = []
     if file_status.created_in_root:
         findings.append(f"Unexpected new source file: {file_status.created_in_root[0]}")
 
@@ -93,7 +95,9 @@ def main() -> int:
 
     normalization_hits = count_matching_patterns(normalization_patterns, code)
     if normalization_hits < 3:
-        findings.append("Expected Hartley-style normalization evidence in src/geometry.cc")
+        findings.append(
+            "Expected Hartley-style normalization evidence in src/geometry.cc"
+        )
 
     essential_constraint_patterns = [
         r"\w+\s*\(\s*0\s*\)\s*=\s*\w+\s*\(\s*1\s*\)",

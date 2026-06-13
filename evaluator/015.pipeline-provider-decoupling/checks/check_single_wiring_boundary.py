@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+import argparse
+from pathlib import Path
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
@@ -30,7 +32,15 @@ FORBIDDEN_CREATION_PATTERNS = [
 
 def main() -> int:
     """Ensure concrete provider construction stays inside the allowed wiring boundary."""
-    case_root = case_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
     offenders: list[str] = []
     for path in scan_files(case_root, suffixes=(".cc", ".h")):
         text = read_text(path, missing_ok=False)

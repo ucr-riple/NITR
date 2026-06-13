@@ -34,7 +34,8 @@ def main() -> int:
     )
     if disallowed_paths:
         return emit_check_result(
-            passed=False, findings=[f"Forbidden modification target: {disallowed_paths[0]}"]
+            passed=False,
+            findings=[f"Forbidden modification target: {disallowed_paths[0]}"],
         )
 
     disallowed_root_files = find_relative_paths_not_in_allowlist(
@@ -49,7 +50,8 @@ def main() -> int:
     missing_paths = find_missing_relative_paths(repo_root, args.paths)
     if missing_paths:
         return emit_check_result(
-            passed=False, findings=[f"Path does not exist in repository: {missing_paths[0]}"]
+            passed=False,
+            findings=[f"Path does not exist in repository: {missing_paths[0]}"],
         )
     return emit_check_result(passed=True, findings=[])
 

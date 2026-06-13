@@ -7,50 +7,19 @@ import os
 import re
 import sys
 import subprocess
+import argparse
 from pathlib import Path
 from typing import Iterable, List, Tuple, Optional
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
     find_missing_paths,
-    read_text as shared_read_text,
+    read_text,
     repo_root_from_script,
     scan_files,
 )
 from evaluator.shared.source_analysis import find_matching_patterns, regex_matches
 from evaluator.shared.check_output import emit_check_result
-
-
-class CheckFailure(RuntimeError):
-    """Raised when a structural SRP check fails."""
-
-
-def case_root() -> Path:
-    """Resolve the case directory that this evaluator should inspect."""
-    return case_root_from_script(__file__)
-
-
-def repo_root() -> Path:
-    """Return the repository root inferred from this evaluator's location."""
-    return repo_root_from_script(__file__)
-
-
-def read_text(path: Path) -> str:
-    """Read a text file or abort with a descriptive error."""
-    try:
-        return shared_read_text(
-            path,
-            encoding="utf-8",
-            errors="replace",
-            missing_ok=False,
-        )
-    except Exception as e:
-        raise CheckFailure(f"Failed to read {path}: {e}") from e
-
-
-def list_files(base: Path, exts: Tuple[str, ...]) -> List[Path]:
-    """Recursively collect files under a base directory that match the given suffixes."""
-    return scan_files(base, suffixes=exts)
 
 
 def run(cmd: List[str]) -> Tuple[int, str, str]:
@@ -92,15 +61,15 @@ def scan_disallowed_patterns(
         relative_path = rel(path, root).replace("\\", "/")
         if relative_path in allowed_relative_paths:
             continue
-        text = read_text(path)
+        text = read_text(path, encoding="utf-8", errors="replace", missing_ok=False)
         for pattern, error_template in patterns:
             if regex_matches(pattern, text):
-                raise CheckFailure(error_template.format(path=relative_path))
+                raise RuntimeError(error_template.format(path=relative_path))
 
 
 def binary_candidates(root: Path, name: str) -> list[Path]:
     """Enumerate common build-output paths for a named binary."""
-    repo = repo_root()
+    repo = repo_root_from_script(__file__)
     case_name = root.name
     base_candidates = [
         root / "build" / name,
@@ -151,7 +120,9 @@ def check_legacy_not_modified(root: Path) -> None:
 
     for lf in legacy_files:
         if lf.exists() and str(lf.relative_to(root)) in modified:
-            raise CheckFailure(f"Legacy file must NOT be modified: {lf.relative_to(root)}")
+            raise RuntimeError(
+                f"Legacy file must NOT be modified: {lf.relative_to(root)}"
+            )
 
 
 def check_no_legacy_includes(root: Path) -> None:
@@ -165,7 +136,7 @@ def check_no_legacy_includes(root: Path) -> None:
     }
     scan_disallowed_patterns(
         root,
-        paths=list_files(root, (".cc", ".h")),
+        paths=scan_files(root, suffixes=(".cc", ".h")),
         allowed_relative_paths=allowed,
         patterns=[
             (
@@ -187,7 +158,7 @@ def check_no_legacy_symbol_references_in_source(root: Path) -> None:
     }
     scan_disallowed_patterns(
         root,
-        paths=list_files(root, (".cc", ".h")),
+        paths=scan_files(root, suffixes=(".cc", ".h")),
         allowed_relative_paths=allowed,
         patterns=[
             (
@@ -215,11 +186,11 @@ def check_json_restrictions(root: Path) -> None:
     )
 
     for p in existing_paths(forbidden_files):
-        txt = read_text(p)
+        txt = read_text(p, encoding="utf-8", errors="replace", missing_ok=False)
         if regex_matches(forbid_io_include, txt):
-            raise CheckFailure(f"Forbidden include io_json.h in {rel(p, root)}")
+            raise RuntimeError(f"Forbidden include io_json.h in {rel(p, root)}")
         if regex_matches(forbid_json_include, txt):
-            raise CheckFailure(f"Forbidden JSON usage/include in {rel(p, root)}")
+            raise RuntimeError(f"Forbidden JSON usage/include in {rel(p, root)}")
 
 
 def check_policy_dependency_restrictions(root: Path) -> None:
@@ -229,7 +200,7 @@ def check_policy_dependency_restrictions(root: Path) -> None:
     p = root / "src" / "policy.cc"
     if not existing_paths([p]):
         return
-    txt = read_text(p)
+    txt = read_text(p, encoding="utf-8", errors="replace", missing_ok=False)
     forbid = [
         re.compile(r'^\s*#\s*include\s*"normalize\.h"\s*$', re.MULTILINE),
         re.compile(r'^\s*#\s*include\s*"estimator.*\.h"\s*$', re.MULTILINE),
@@ -237,7 +208,7 @@ def check_policy_dependency_restrictions(root: Path) -> None:
     ]
     for pat in forbid:
         if regex_matches(pat, txt):
-            raise CheckFailure(
+            raise RuntimeError(
                 f"policy.cc must not include estimator/normalize headers: {rel(p, root)}"
             )
 
@@ -249,14 +220,16 @@ def find_binary(root: Path, name: str) -> Path:
     for c in binary_candidates(root, name):
         if c.exists() and c.is_file():
             return c
-    raise CheckFailure(f"Cannot find binary '{name}' in common locations. Build it first.")
+    raise RuntimeError(
+        f"Cannot find binary '{name}' in common locations. Build it first."
+    )
 
 
 def maybe_find_binary(root: Path, name: str) -> Optional[Path]:
     """Find a build artifact if available, but tolerate it being absent."""
     try:
         return find_binary(root, name)
-    except CheckFailure:
+    except RuntimeError:
         return None
 
 
@@ -294,7 +267,7 @@ def extract_symbols(bin_path: Path) -> str:
         s = fn(bin_path)
         if s is not None:
             return s
-    raise CheckFailure(
+    raise RuntimeError(
         "No symbol tool available (nm/objdump/dumpbin). Cannot enforce symbol isolation."
     )
 
@@ -315,21 +288,30 @@ def check_binary_symbol_isolation(root: Path) -> None:
     ]
 
     for pat in find_matching_patterns(forbidden, sym):
-        raise CheckFailure(f"Binary isolation failed: '{pat}' found in {cv_bin}")
+        raise RuntimeError(f"Binary isolation failed: '{pat}' found in {cv_bin}")
 
 
 def main() -> int:
     """Run source and binary isolation checks for the SRP case."""
-    root = case_root()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+        help="Path to the case root (defaults to the case inferred from this script).",
+    )
+    args = parser.parse_args()
+
+    root = args.case_root.resolve()
     checks_run: list[str] = []
     skipped_checks: list[str] = []
 
     try:
         missing_required_dirs = find_missing_paths([root / "src", root / "app"])
         if root / "src" in missing_required_dirs:
-            raise CheckFailure("Missing src/ directory.")
+            raise RuntimeError("Missing src/ directory.")
         if root / "app" in missing_required_dirs:
-            raise CheckFailure("Missing app/ directory.")
+            raise RuntimeError("Missing app/ directory.")
 
         check_legacy_not_modified(root)
         checks_run.append("check_legacy_not_modified")
@@ -355,7 +337,7 @@ def main() -> int:
             checks_run=checks_run,
             skipped_checks=skipped_checks,
         )
-    except CheckFailure as exc:
+    except RuntimeError as exc:
         return emit_check_result(
             passed=False,
             findings=[str(exc)],

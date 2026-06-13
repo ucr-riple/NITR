@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-
 CPP_LIKE_SUFFIXES = (".h", ".hpp", ".hh", ".cc", ".cpp", ".cxx")
 RelativePathLike = str | Path
 
@@ -37,14 +36,18 @@ def case_name_from_script(script_path: str | Path) -> str:
 
 
 def case_root_from_script(script_path: str | Path) -> Path:
-    return repo_root_from_script(script_path) / "cases" / case_name_from_script(
-        script_path
+    return (
+        repo_root_from_script(script_path)
+        / "cases"
+        / case_name_from_script(script_path)
     )
 
 
 def evaluator_root_from_script(script_path: str | Path) -> Path:
-    return repo_root_from_script(script_path) / "evaluator" / case_name_from_script(
-        script_path
+    return (
+        repo_root_from_script(script_path)
+        / "evaluator"
+        / case_name_from_script(script_path)
     )
 
 
@@ -129,7 +132,8 @@ def find_paths_with_disallowed_top_level(
 
 
 def find_relative_paths_not_in_allowlist(
-    paths: Iterable[RelativePathLike], allowed_relative_paths: Iterable[RelativePathLike]
+    paths: Iterable[RelativePathLike],
+    allowed_relative_paths: Iterable[RelativePathLike],
 ) -> list[str]:
     allowed = {_to_relative_path(path).as_posix() for path in allowed_relative_paths}
     violations: list[str] = []

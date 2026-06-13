@@ -44,6 +44,8 @@ SUSPICIOUS_API_PATTERNS = [
     r"SetNowForTest",
     r"InjectNowForTest",
 ]
+
+
 def main() -> int:
     failures = []
 

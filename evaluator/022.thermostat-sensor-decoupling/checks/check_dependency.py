@@ -20,7 +20,9 @@ from evaluator.shared.source_analysis import (
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=Path, default=case_root_from_script(__file__))
+    parser.add_argument(
+        "--case_root", type=Path, default=case_root_from_script(__file__)
+    )
     args = parser.parse_args()
 
     case_root = args.case_root.resolve()

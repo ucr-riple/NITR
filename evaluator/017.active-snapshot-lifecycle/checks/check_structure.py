@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import argparse
+from pathlib import Path
+
 from evaluator.shared.path_checks import case_root_from_script
 from evaluator.shared.source_analysis import find_matching_paths
 from evaluator.shared.check_output import emit_check_result
@@ -7,11 +10,19 @@ from evaluator.shared.check_output import emit_check_result
 
 def main() -> int:
     """Enforce that active snapshot lifecycle state stays centralized in core ownership."""
-    root_dir = case_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
     failures: list[str] = []
 
-    src_dir = root_dir / "src"
-    app_main = root_dir / "app/main.cc"
+    src_dir = case_root / "src"
+    app_main = case_root / "app/main.cc"
 
     global_state_hits = find_matching_paths(
         r"\b(g_active|global_active|g_active_snapshot|g_active_version)\b", src_dir

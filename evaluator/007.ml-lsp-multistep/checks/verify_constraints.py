@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
-import pathlib
-import sys
+from pathlib import Path
 
 from evaluator.shared.path_checks import (
     classify_relative_paths_against_baseline,
@@ -13,8 +12,6 @@ from evaluator.shared.path_checks import (
 )
 from evaluator.shared.source_analysis import find_matching_substrings
 from evaluator.shared.check_output import emit_check_result
-
-ROOT = case_root_from_script(__file__)
 
 PROTECTED_FILES = [
     "src/feature_transform.h",
@@ -49,11 +46,16 @@ CONCRETE_TOKENS = [
     "L2NormalizeTransform",
 ]
 
+
 def main() -> int:
     """Validate protected files, required artifacts, and generic pipeline boundaries."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=pathlib.Path, default=ROOT)
-    parser.add_argument("--baseline_case_root", type=pathlib.Path, default=ROOT)
+    parser.add_argument(
+        "--case_root", type=Path, default=case_root_from_script(__file__)
+    )
+    parser.add_argument(
+        "--baseline_case_root", type=Path, default=case_root_from_script(__file__)
+    )
     args = parser.parse_args()
 
     case_root = args.case_root.resolve()

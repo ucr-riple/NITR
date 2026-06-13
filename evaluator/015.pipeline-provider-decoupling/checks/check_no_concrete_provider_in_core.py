@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 from evaluator.shared.path_checks import case_root_from_script, read_text
@@ -16,7 +17,15 @@ FORBIDDEN = [
 
 def main() -> int:
     """Reject concrete provider references from the pipeline runner core surface."""
-    case_root = case_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
     violations = []
     for path in [
         case_root / "src/pipeline_runner.h",

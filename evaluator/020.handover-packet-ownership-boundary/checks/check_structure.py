@@ -16,7 +16,6 @@ from evaluator.shared.source_analysis import (
     regex_matches,
 )
 
-
 ROOT = case_root_from_script(__file__)
 SRC_DIR = ROOT / "src"
 APP_FILE = ROOT / "app" / "main.cc"

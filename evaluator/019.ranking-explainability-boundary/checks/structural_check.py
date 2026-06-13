@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import argparse
-import pathlib
+from pathlib import Path
 import re
 from typing import List
 
-from evaluator.shared.path_checks import read_text
+from evaluator.shared.path_checks import case_root_from_script, read_text
 from evaluator.shared.source_analysis import has_any_substring, strip_comments
 from evaluator.shared.check_output import emit_check_result
 
@@ -45,7 +45,9 @@ def count_field_lines(body: str) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=pathlib.Path, default=pathlib.Path.cwd())
+    parser.add_argument(
+        "--case_root", type=Path, default=case_root_from_script(__file__)
+    )
     args = parser.parse_args()
 
     root = args.case_root.resolve()
@@ -59,7 +61,9 @@ def main() -> int:
     )
     ranker_literals = string_literals(ranker_text)
     if ranker_literals:
-        failures.append("ranker core should not contain display-oriented string literals")
+        failures.append(
+            "ranker core should not contain display-oriented string literals"
+        )
 
     forbidden_ranker_includes = ["<sstream>", "<format>", "<iostream>"]
     ranker_sources = read_text(src / "ranker.cc") + "\n" + read_text(src / "ranker.h")
@@ -92,10 +96,14 @@ def main() -> int:
     else:
         field_count = count_field_lines(ranked_body)
         if field_count > 3:
-            failures.append("RankedItem should stay compact and not accumulate many fields")
+            failures.append(
+                "RankedItem should stay compact and not accumulate many fields"
+            )
 
     if has_any_substring(["std::string"], ranking_result_text):
-        failures.append("ranking_result.h should not store display-oriented string fields")
+        failures.append(
+            "ranking_result.h should not store display-oriented string fields"
+        )
 
     if has_any_substring(["std::vector"], ranking_result_text):
         failures.append("ranking_result.h should not store bulk diagnostic containers")

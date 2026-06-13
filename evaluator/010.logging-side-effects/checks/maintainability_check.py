@@ -1,3 +1,5 @@
+import argparse
+from pathlib import Path
 import re
 
 from evaluator.shared.path_checks import (
@@ -11,13 +13,22 @@ from evaluator.shared.source_analysis import (
     has_any_substring,
 )
 
-ROOT = case_root_from_script(__file__)
-SRC = ROOT / "src"
 
 def main() -> int:
-    policy_h = read_text(SRC / "loan_policy.h", missing_ok=False)
-    policy_cc = read_text(SRC / "loan_policy.cc", missing_ok=False)
-    service_cc = read_text(SRC / "loan_review_service.cc", missing_ok=False)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+    case_root = args.case_root.resolve()
+    src = case_root / "src"
+
+    policy_h = read_text(src / "loan_policy.h", missing_ok=False)
+    policy_cc = read_text(src / "loan_policy.cc", missing_ok=False)
+    service_cc = read_text(src / "loan_review_service.cc", missing_ok=False)
     errors = []
 
     policy_all = policy_h + "\n" + policy_cc

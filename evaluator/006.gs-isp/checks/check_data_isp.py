@@ -47,7 +47,9 @@ VIEW_TOKEN_FAMILIES = {
     ],
 }
 
+
 def main() -> int:
+
     findings: list[str] = []
     for header in find_missing_paths(REQUIRED_HEADERS):
         findings.append(f"Missing required header: {header}")

@@ -15,7 +15,9 @@ from evaluator.shared.path_checks import (
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=Path, default=case_root_from_script(__file__))
+    parser.add_argument(
+        "--case_root", type=Path, default=case_root_from_script(__file__)
+    )
     parser.add_argument(
         "--baseline_case_root", type=Path, default=case_root_from_script(__file__)
     )
@@ -38,7 +40,9 @@ def main() -> int:
     )
 
     if file_status.created_in_root:
-        return fail_message(f"Unexpected new source file: {file_status.created_in_root[0]}")
+        return fail_message(
+            f"Unexpected new source file: {file_status.created_in_root[0]}"
+        )
 
     if file_status.deleted_from_root:
         return fail_message(

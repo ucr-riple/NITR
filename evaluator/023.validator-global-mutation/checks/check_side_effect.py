@@ -27,7 +27,9 @@ PROTECTED_FILES = [
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=Path, default=case_root_from_script(__file__))
+    parser.add_argument(
+        "--case_root", type=Path, default=case_root_from_script(__file__)
+    )
     parser.add_argument(
         "--baseline_case_root", type=Path, default=case_root_from_script(__file__)
     )

@@ -63,6 +63,25 @@ def find_matching_patterns(
     ]
 
 
+def find_pattern_snippets(
+    pattern: PatternLike,
+    text: str,
+    *,
+    flags: int = 0,
+    max_chars: int | None = None,
+) -> list[str]:
+    """Return matched snippets for a regex pattern.
+
+    This is useful when a check needs not only a boolean/pattern hit, but also
+    short user-facing excerpts that explain why the file failed.
+    """
+    compiled = _compile_pattern(pattern, flags)
+    snippets = [match.group(0) for match in compiled.finditer(text)]
+    if max_chars is not None:
+        return [snippet[:max_chars] for snippet in snippets]
+    return snippets
+
+
 def find_missing_patterns(
     patterns: Iterable[PatternLike], text: str, *, flags: int = 0
 ) -> list[PatternLike]:
@@ -74,7 +93,9 @@ def find_missing_patterns(
     ]
 
 
-def has_any_pattern(patterns: Iterable[PatternLike], text: str, *, flags: int = 0) -> bool:
+def has_any_pattern(
+    patterns: Iterable[PatternLike], text: str, *, flags: int = 0
+) -> bool:
     """Return whether at least one regex pattern matches the text."""
     return any(_compile_pattern(pattern, flags).search(text) for pattern in patterns)
 
