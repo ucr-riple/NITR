@@ -10,9 +10,8 @@ Structural / semantic signal checks live in `evaluator.shared.source_analysis`.
 """
 
 from dataclasses import dataclass
-import sys
 from pathlib import Path
-from typing import Iterable, NoReturn, TextIO
+from typing import Iterable
 
 
 CPP_LIKE_SUFFIXES = (".h", ".hpp", ".hh", ".cc", ".cpp", ".cxx")
@@ -49,7 +48,7 @@ def evaluator_root_from_script(script_path: str | Path) -> Path:
     )
 
 
-# Shared file IO / messaging
+# Shared file IO
 def normalize_text(text: str) -> str:
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     lines = [line.rstrip() for line in text.split("\n")]
@@ -71,18 +70,6 @@ def read_text(
     if errors is not None:
         kwargs["errors"] = errors
     return path.read_text(**kwargs)
-
-
-def fail_message(message: str) -> int:
-    print(message)
-    return 1
-
-
-def die_message(
-    message: str, *, code: int = 1, stream: TextIO = sys.stdout
-) -> NoReturn:
-    print(message, file=stream)
-    raise SystemExit(code)
 
 
 # 1. File existence / retention

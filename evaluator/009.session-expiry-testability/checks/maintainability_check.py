@@ -8,6 +8,7 @@ from evaluator.shared.path_checks import (
     scan_files,
 )
 from evaluator.shared.source_analysis import find_matching_patterns, has_any_pattern
+from evaluator.shared.check_output import emit_check_result
 
 ROOT = case_root_from_script(__file__)
 EVALUATOR_ROOT = evaluator_root_from_script(__file__)
@@ -84,13 +85,7 @@ def main() -> int:
                 "accepts a TimeSource (the test seam)."
             )
 
-    if failures:
-        for failure in failures:
-            print(failure)
-        return 1
-
-    print("maintainability checks passed")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ from evaluator.shared.path_checks import (
     read_text,
     scan_files,
 )
+from evaluator.shared.check_output import emit_check_result
 from evaluator.shared.source_analysis import (
     has_any_pattern,
     include_paths,
@@ -39,17 +40,21 @@ def main() -> int:
     app_main_text = read_text(app_main_path)
 
     if not core_files or any(not text for text in core_text_by_file.values()):
-        print(
-            "Structural check failed: could not read all core source files under "
-            f"{src_root}."
+        return emit_check_result(
+            passed=False,
+            findings=[
+                "Structural check failed: could not read all core source files under "
+                f"{src_root}."
+            ],
         )
-        return 1
     if not app_main_text:
-        print(
-            "Structural check failed: could not read app entrypoint at "
-            f"{app_main_path}."
+        return emit_check_result(
+            passed=False,
+            findings=[
+                "Structural check failed: could not read app entrypoint at "
+                f"{app_main_path}."
+            ],
         )
-        return 1
 
     failures: list[str] = []
     forbidden_core_coupling_patterns = [
@@ -105,19 +110,7 @@ def main() -> int:
             "with manual temperature arguments."
         )
 
-    if failures:
-        print("Maintainability check failed:")
-        for failure in failures:
-            print(f"- {failure}")
-        print(
-            "ThermostatController should keep policy logic free of hardware and "
-            "environment-specific reading details. Wire concrete sensor access "
-            "outside the core controller files."
-        )
-        return 1
-
-    print("Dependency check passed: ThermostatController remains decoupled.")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

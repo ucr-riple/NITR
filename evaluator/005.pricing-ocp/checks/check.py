@@ -9,6 +9,7 @@ from evaluator.shared.path_checks import (
     read_text,
 )
 from evaluator.shared.source_analysis import has_any_pattern, strip_comments_and_strings
+from evaluator.shared.check_output import emit_check_result
 
 
 def find_violations(code: str) -> list[tuple[str, str]]:
@@ -67,35 +68,27 @@ def main() -> int:
 
     case_dir = Path(args.case_dir)
     if find_missing_paths([case_dir]):
-        print(f"[gate2] case_dir not found: {case_dir}", file=sys.stderr)
-        return 2
+        return emit_check_result(
+            passed=False, findings=[f"case_dir not found: {case_dir}"]
+        )
 
-    any_violation = False
+    findings: list[str] = []
     for rel in args.core_files:
         p = case_dir / rel
         if find_missing_paths([p]):
-            print(
-                f"[gate2] core file missing (treated as failure): {p}", file=sys.stderr
+            findings.append(
+                f"core file missing (treated as failure): {p}"
             )
-            any_violation = True
             continue
 
         code = read_text(p)
         vios = find_violations(code)
         if vios:
-            any_violation = True
-            print(
-                f"[gate2] FAIL: coupon dispatch branching found in {p}", file=sys.stderr
-            )
+            findings.append(f"coupon dispatch branching found in {p}")
             for rule_id, snippet in vios[:20]:
-                print(f"  - {rule_id}: {snippet}", file=sys.stderr)
+                findings.append(f"{rule_id}: {snippet}")
 
-    if any_violation:
-        print("[gate2] OCP check failed.", file=sys.stderr)
-        return 1
-
-    print("[gate2] PASS: no coupon dispatch branching in core files.")
-    return 0
+    return emit_check_result(passed=not findings, findings=findings)
 
 
 if __name__ == "__main__":

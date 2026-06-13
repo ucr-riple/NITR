@@ -41,10 +41,16 @@ def main() -> int:
     """Run functional and structural sub-suites and emit a combined JSON summary."""
     functional_code, functional_payload = run_script(FUNCTIONAL)
     structural_code, structural_payload = run_script(STRUCTURAL)
+    findings: list[str] = []
+    if functional_code != 0:
+        findings.append("functional sub-suite failed")
+    if structural_code != 0:
+        findings.append("structural sub-suite failed")
 
     summary = {
         "case_id": "020-handover-packet-ownership-boundary",
         "passed": functional_code == 0 and structural_code == 0,
+        "findings": findings,
         "functional": functional_payload,
         "structural": structural_payload,
     }

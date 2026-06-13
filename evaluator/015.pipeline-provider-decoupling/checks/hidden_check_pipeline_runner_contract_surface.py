@@ -6,6 +6,7 @@ from evaluator.shared.path_checks import (
     read_text,
 )
 from evaluator.shared.source_analysis import find_matching_patterns
+from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN = [
     r"\bPolicyMode\b",
@@ -35,9 +36,7 @@ def main() -> int:
             violations.append(
                 f"PipelineRunner contract leaks provider selection detail in {path}: {pattern}"
             )
-    for v in violations:
-        print(v)
-    return 1 if violations else 0
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

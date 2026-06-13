@@ -2,6 +2,7 @@
 
 from evaluator.shared.path_checks import case_root_from_script
 from evaluator.shared.source_analysis import find_matching_paths
+from evaluator.shared.check_output import emit_check_result
 
 
 def main() -> int:
@@ -60,14 +61,7 @@ def main() -> int:
     if reset_mentions:
         failures.append("ResetActiveSnapshot logic appears outside snapshot_store.*")
 
-    for msg in failures:
-        print(f"[STRUCTURE FAIL] {msg}")
-    if failures:
-        print(f"{len(failures)} structure check(s) failed.")
-        return 1
-
-    print("All structure checks passed.")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

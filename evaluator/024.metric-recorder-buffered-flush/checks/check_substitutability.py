@@ -19,6 +19,7 @@ from evaluator.shared.path_checks import (
     read_text,
     scan_files,
 )
+from evaluator.shared.check_output import emit_check_result
 from evaluator.shared.source_analysis import (
     find_class_body,
     find_matching_patterns,
@@ -85,8 +86,9 @@ def main() -> int:
 
     recorder_h = read("metric_recorder.h")
     if not recorder_h:
-        print("[STRUCTURE FAIL] metric_recorder.h is missing.")
-        return 1
+        return emit_check_result(
+            passed=False, findings=["metric_recorder.h is missing."]
+        )
 
     recorder_h_clean = strip_comments(recorder_h)
     recorder_body = find_class_body(recorder_h_clean, "MetricRecorder")
@@ -279,14 +281,7 @@ def main() -> int:
             "by making the caller aware of implementation details."
         )
 
-    if failures:
-        print("Substitutability check failed:")
-        for f in failures:
-            print(f"[STRUCTURE FAIL] {f}")
-        return 1
-
-    print("Substitutability check passed.")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

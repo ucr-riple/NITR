@@ -11,6 +11,7 @@ from evaluator.shared.path_checks import (
     read_text,
     scan_files,
 )
+from evaluator.shared.check_output import emit_check_result
 from evaluator.shared.source_analysis import (
     has_any_pattern,
     include_paths,
@@ -121,20 +122,7 @@ def main() -> int:
             f"{relative_path}: must remain unchanged from the starter code."
         )
 
-    if failures:
-        print("Maintainability check failed:")
-        for failure in failures:
-            print(f"- {failure}")
-        print(
-            "Validator should only inspect Submission and return a boolean. "
-            "The total_processed counter belongs in app/main.cc, while "
-            "Reporter only reads it. Do not move counter ownership into "
-            "validator or other helpers."
-        )
-        return 1
-
-    print("Side-effect check passed: Validator remains decoupled from global stats.")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

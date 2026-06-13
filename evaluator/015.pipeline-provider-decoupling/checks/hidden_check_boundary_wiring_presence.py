@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from evaluator.shared.path_checks import case_root_from_script, read_text
 from evaluator.shared.source_analysis import has_any_pattern
+from evaluator.shared.check_output import emit_check_result
 
 CREATION_PATTERNS = [
     r"\bstd::make_unique\s*<\s*StaticPolicyProvider\s*>",
@@ -27,11 +28,13 @@ def main() -> int:
             break
 
     if not boundary_has_wiring:
-        print(
-            "Expected provider creation/selection to appear in src/build_pipeline.cc or app/main.cc."
+        return emit_check_result(
+            passed=False,
+            findings=[
+                "Expected provider creation/selection to appear in src/build_pipeline.cc or app/main.cc."
+            ],
         )
-        return 1
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

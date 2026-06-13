@@ -4,6 +4,7 @@ from evaluator.shared.path_checks import (
     case_root_from_script,
     read_text,
 )
+from evaluator.shared.check_output import emit_check_result
 from evaluator.shared.source_analysis import (
     find_matching_substrings,
     has_any_pattern,
@@ -54,12 +55,7 @@ def main() -> int:
     if not has_any_substring([".Log(", "->Log("], service_cc):
         errors.append("loan_review_service.cc should localize audit emission")
 
-    if errors:
-        for error in errors:
-            print(error)
-        return 1
-
-    return 0
+    return emit_check_result(passed=not errors, findings=errors)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,7 @@
-from pathlib import Path
 import re
-import sys
 
 from evaluator.shared.path_checks import case_root_from_script, read_text
+from evaluator.shared.check_output import emit_check_result
 
 ROOT = case_root_from_script(__file__)
 FILES = [
@@ -22,14 +21,7 @@ def main() -> int:
                 f"{path.relative_to(ROOT)}:{line_no}: standalone compact_mode parameter in function signature"
             )
 
-    if violations:
-        print("[FAIL] detected compact_mode parameter sprawl:")
-        for violation in violations:
-            print(violation)
-        return 1
-
-    print("[PASS] no compact_mode parameter sprawl detected")
-    return 0
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

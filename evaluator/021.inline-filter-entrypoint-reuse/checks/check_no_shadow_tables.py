@@ -5,6 +5,7 @@ from evaluator.shared.path_checks import (
     scan_files,
 )
 from evaluator.shared.source_analysis import count_matching_substrings, has_any_substring
+from evaluator.shared.check_output import emit_check_result
 
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h", "filter_rule.cc"}
 FIELD_LITERALS = ['"status"', '"priority"', '"owner"']
@@ -28,18 +29,22 @@ def main() -> int:
         has_inline_parser = has_any_substring(["ParseInlineFilter"], content)
 
         if field_hits > 1:
-            print(
-                f"Suspicious duplicated field interpretation outside filter_validation: {source_file}"
+            return emit_check_result(
+                passed=False,
+                findings=[
+                    f"Suspicious duplicated field interpretation outside filter_validation: {source_file}"
+                ],
             )
-            return 1
 
         if has_inline_parser and field_hits > 0 and error_hits > 1:
-            print(
-                f"Suspicious duplicated error classification outside filter_validation: {source_file}"
+            return emit_check_result(
+                passed=False,
+                findings=[
+                    f"Suspicious duplicated error classification outside filter_validation: {source_file}"
+                ],
             )
-            return 1
 
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

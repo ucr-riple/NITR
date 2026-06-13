@@ -5,6 +5,7 @@ from evaluator.shared.path_checks import (
     read_text,
 )
 from evaluator.shared.source_analysis import find_missing_patterns
+from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN_FLAGS = [
     "include_archived",
@@ -42,12 +43,7 @@ def main() -> int:
             + ", ".join(missing_descriptions)
         )
 
-    for v in violations:
-        print(v)
-    if violations:
-        return 1
-    print("API stability check passed.")
-    return 0
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

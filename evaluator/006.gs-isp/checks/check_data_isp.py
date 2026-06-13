@@ -3,11 +3,11 @@ from __future__ import annotations
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
-    die_message,
     find_missing_paths,
     read_text,
 )
 from evaluator.shared.source_analysis import has_any_substring
+from evaluator.shared.check_output import emit_check_result
 
 ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"
@@ -48,8 +48,9 @@ VIEW_TOKEN_FAMILIES = {
 }
 
 def main() -> int:
+    findings: list[str] = []
     for header in find_missing_paths(REQUIRED_HEADERS):
-        die_message(f"Missing required header: {header}")
+        findings.append(f"Missing required header: {header}")
 
     sort_text = read_text(SRC / "sort_hits.h", missing_ok=False)
     shade_text = read_text(SRC / "eval_shading.h", missing_ok=False)
@@ -57,7 +58,8 @@ def main() -> int:
 
     for token in FORBIDDEN_IN_SORT_HEADER:
         if token in sort_text:
-            die_message("sort_hits.h still exposes legacy HitBuffer/Hit types.")
+            findings.append("sort_hits.h still exposes legacy HitBuffer/Hit types.")
+            break
 
     for path in [
         SRC / "sort_hits.h",
@@ -69,17 +71,16 @@ def main() -> int:
     ]:
         text = read_text(path, missing_ok=False)
         if FORBIDDEN_INCLUDE in text:
-            die_message(f"{path.name} still includes hit_buffer.h directly.")
+            findings.append(f"{path.name} still includes hit_buffer.h directly.")
 
     joined = sort_text + shade_text + comp_text
     for group_name, tokens in VIEW_TOKEN_FAMILIES.items():
         if not has_any_substring(tokens, joined):
-            die_message(
+            findings.append(
                 f"Expected {group_name} interface/view token not found: one of {tokens}"
             )
 
-    print("Structural ISP checks passed.")
-    return 0
+    return emit_check_result(passed=not findings, findings=findings)
 
 
 if __name__ == "__main__":

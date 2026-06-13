@@ -3,6 +3,7 @@ from evaluator.shared.path_checks import (
     read_text,
 )
 from evaluator.shared.source_analysis import has_any_pattern
+from evaluator.shared.check_output import emit_check_result
 
 ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"
@@ -44,12 +45,7 @@ def main() -> int:
     if "Compute(" not in engine_h:
         errors.append("summary_engine.h must continue to expose Compute(...)")
 
-    if errors:
-        for error in errors:
-            print(error)
-        return 1
-
-    return 0
+    return emit_check_result(passed=not errors, findings=errors)
 
 
 if __name__ == "__main__":

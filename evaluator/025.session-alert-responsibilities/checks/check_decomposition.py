@@ -30,6 +30,7 @@ import re
 
 from evaluator.shared.path_checks import scan_files
 from evaluator.shared.source_analysis import strip_comments_and_strings
+from evaluator.shared.check_output import emit_check_result
 
 _FAMILIES = ("range", "drift", "leak")
 _ALERT_TYPE = {"range": "RangeAlert", "drift": "DriftAlert", "leak": "LeakAlert"}
@@ -153,16 +154,18 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.case_root is None:
-        parser.print_usage()
-        return 1
+        return emit_check_result(
+            passed=False, findings=["--case_root is required for this evaluator."]
+        )
 
     case_dir = args.case_root.resolve()
     src_dir = case_dir / "src"
 
     src_files = scan_files(src_dir, suffixes=(".h", ".cc", ".cpp"))
     if not src_files:
-        print(f"No source files found under {src_dir}")
-        return 1
+        return emit_check_result(
+            passed=False, findings=[f"No source files found under {src_dir}"]
+        )
 
     funcs: dict[str, list[str]] = {}
     all_bodies: list[tuple[pathlib.Path, str, str]] = []
@@ -170,8 +173,9 @@ def main() -> int:
         try:
             text = strip_comments_and_strings(path.read_text())
         except Exception as exc:  # noqa: BLE001
-            print(f"Failed to read {path}: {exc}")
-            return 1
+            return emit_check_result(
+                passed=False, findings=[f"Failed to read {path}: {exc}"]
+            )
         rel = path.relative_to(case_dir)
         for name, body in function_bodies(text):
             funcs.setdefault(name, []).append(body)
@@ -220,13 +224,7 @@ def main() -> int:
             "transitively); unused helpers do not count."
         )
 
-    if violations:
-        for v in violations:
-            print(v)
-        return 1
-
-    print("Decomposition check passed: each alert family is owned separately.")
-    return 0
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

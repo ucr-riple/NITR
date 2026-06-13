@@ -12,13 +12,17 @@ from typing import Iterable, List, Tuple, Optional
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
-    die_message,
     find_missing_paths,
     read_text as shared_read_text,
     repo_root_from_script,
     scan_files,
 )
 from evaluator.shared.source_analysis import find_matching_patterns, regex_matches
+from evaluator.shared.check_output import emit_check_result
+
+
+class CheckFailure(RuntimeError):
+    """Raised when a structural SRP check fails."""
 
 
 def case_root() -> Path:
@@ -41,7 +45,7 @@ def read_text(path: Path) -> str:
             missing_ok=False,
         )
     except Exception as e:
-        die_message(f"Failed to read {path}: {e}", stream=sys.stderr)
+        raise CheckFailure(f"Failed to read {path}: {e}") from e
 
 
 def list_files(base: Path, exts: Tuple[str, ...]) -> List[Path]:
@@ -91,9 +95,7 @@ def scan_disallowed_patterns(
         text = read_text(path)
         for pattern, error_template in patterns:
             if regex_matches(pattern, text):
-                die_message(
-                    error_template.format(path=relative_path), stream=sys.stderr
-                )
+                raise CheckFailure(error_template.format(path=relative_path))
 
 
 def binary_candidates(root: Path, name: str) -> list[Path]:
@@ -149,10 +151,7 @@ def check_legacy_not_modified(root: Path) -> None:
 
     for lf in legacy_files:
         if lf.exists() and str(lf.relative_to(root)) in modified:
-            die_message(
-                f"Legacy file must NOT be modified: {lf.relative_to(root)}",
-                stream=sys.stderr,
-            )
+            raise CheckFailure(f"Legacy file must NOT be modified: {lf.relative_to(root)}")
 
 
 def check_no_legacy_includes(root: Path) -> None:
@@ -218,15 +217,9 @@ def check_json_restrictions(root: Path) -> None:
     for p in existing_paths(forbidden_files):
         txt = read_text(p)
         if regex_matches(forbid_io_include, txt):
-            die_message(
-                f"Forbidden include io_json.h in {rel(p, root)}",
-                stream=sys.stderr,
-            )
+            raise CheckFailure(f"Forbidden include io_json.h in {rel(p, root)}")
         if regex_matches(forbid_json_include, txt):
-            die_message(
-                f"Forbidden JSON usage/include in {rel(p, root)}",
-                stream=sys.stderr,
-            )
+            raise CheckFailure(f"Forbidden JSON usage/include in {rel(p, root)}")
 
 
 def check_policy_dependency_restrictions(root: Path) -> None:
@@ -244,9 +237,8 @@ def check_policy_dependency_restrictions(root: Path) -> None:
     ]
     for pat in forbid:
         if regex_matches(pat, txt):
-            die_message(
-                f"policy.cc must not include estimator/normalize headers: {rel(p, root)}",
-                stream=sys.stderr,
+            raise CheckFailure(
+                f"policy.cc must not include estimator/normalize headers: {rel(p, root)}"
             )
 
 
@@ -257,17 +249,14 @@ def find_binary(root: Path, name: str) -> Path:
     for c in binary_candidates(root, name):
         if c.exists() and c.is_file():
             return c
-    die_message(
-        f"Cannot find binary '{name}' in common locations. Build it first.",
-        stream=sys.stderr,
-    )
+    raise CheckFailure(f"Cannot find binary '{name}' in common locations. Build it first.")
 
 
 def maybe_find_binary(root: Path, name: str) -> Optional[Path]:
     """Find a build artifact if available, but tolerate it being absent."""
     try:
         return find_binary(root, name)
-    except SystemExit:
+    except CheckFailure:
         return None
 
 
@@ -305,10 +294,8 @@ def extract_symbols(bin_path: Path) -> str:
         s = fn(bin_path)
         if s is not None:
             return s
-    die_message(
+    raise CheckFailure(
         "No symbol tool available (nm/objdump/dumpbin). Cannot enforce symbol isolation."
-        ,
-        stream=sys.stderr,
     )
 
 
@@ -328,55 +315,53 @@ def check_binary_symbol_isolation(root: Path) -> None:
     ]
 
     for pat in find_matching_patterns(forbidden, sym):
-        die_message(
-            f"Binary isolation failed: '{pat}' found in {cv_bin}",
-            stream=sys.stderr,
-        )
-
-
-def run_named_check(name: str, fn, *args) -> None:
-    """Run one check function and print a PASS banner if it succeeds."""
-    fn(*args)
-    print(f"PASS {name}")
+        raise CheckFailure(f"Binary isolation failed: '{pat}' found in {cv_bin}")
 
 
 def main() -> int:
     """Run source and binary isolation checks for the SRP case."""
     root = case_root()
+    checks_run: list[str] = []
+    skipped_checks: list[str] = []
 
-    # Basic sanity
-    missing_required_dirs = find_missing_paths([root / "src", root / "app"])
-    if root / "src" in missing_required_dirs:
-        die_message("Missing src/ directory.", stream=sys.stderr)
-    if root / "app" in missing_required_dirs:
-        die_message("Missing app/ directory.", stream=sys.stderr)
-    # Static / source-level checks
-    run_named_check("check_legacy_not_modified", check_legacy_not_modified, root)
-    run_named_check("check_no_legacy_includes", check_no_legacy_includes, root)
-    run_named_check(
-        "check_no_legacy_symbol_references_in_source",
-        check_no_legacy_symbol_references_in_source,
-        root,
-    )
-    run_named_check("check_json_restrictions", check_json_restrictions, root)
-    run_named_check(
-        "check_policy_dependency_restrictions",
-        check_policy_dependency_restrictions,
-        root,
-    )
+    try:
+        missing_required_dirs = find_missing_paths([root / "src", root / "app"])
+        if root / "src" in missing_required_dirs:
+            raise CheckFailure("Missing src/ directory.")
+        if root / "app" in missing_required_dirs:
+            raise CheckFailure("Missing app/ directory.")
 
-    # Binary-level check (link isolation)
-    cv_bin = maybe_find_binary(root, "cv_srp")
-    if cv_bin is None:
-        print("SKIP check_binary_symbol_isolation (cv_srp was not built)")
-        print("OK")
-        return 0
-    run_named_check(
-        "check_binary_symbol_isolation", check_binary_symbol_isolation, root
-    )
+        check_legacy_not_modified(root)
+        checks_run.append("check_legacy_not_modified")
+        check_no_legacy_includes(root)
+        checks_run.append("check_no_legacy_includes")
+        check_no_legacy_symbol_references_in_source(root)
+        checks_run.append("check_no_legacy_symbol_references_in_source")
+        check_json_restrictions(root)
+        checks_run.append("check_json_restrictions")
+        check_policy_dependency_restrictions(root)
+        checks_run.append("check_policy_dependency_restrictions")
 
-    print("OK")
-    return 0
+        cv_bin = maybe_find_binary(root, "cv_srp")
+        if cv_bin is None:
+            skipped_checks.append("check_binary_symbol_isolation")
+        else:
+            check_binary_symbol_isolation(root)
+            checks_run.append("check_binary_symbol_isolation")
+
+        return emit_check_result(
+            passed=True,
+            findings=[],
+            checks_run=checks_run,
+            skipped_checks=skipped_checks,
+        )
+    except CheckFailure as exc:
+        return emit_check_result(
+            passed=False,
+            findings=[str(exc)],
+            checks_run=checks_run,
+            skipped_checks=skipped_checks,
+        )
 
 
 if __name__ == "__main__":

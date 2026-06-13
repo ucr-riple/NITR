@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
-from evaluator.shared.path_checks import case_root_from_script, fail_message, read_text
+from evaluator.shared.check_output import emit_check_result, fail_message
+from evaluator.shared.path_checks import (
+    case_root_from_script,
+    read_text,
+)
 
 
 def main() -> int:
@@ -14,7 +18,7 @@ def main() -> int:
         return fail_message(
             "pipeline_runner.cc does not appear to call BuildExecutionPlan(...)"
         )
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

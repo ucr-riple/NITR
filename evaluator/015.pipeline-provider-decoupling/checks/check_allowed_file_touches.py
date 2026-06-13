@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from evaluator.shared.check_output import emit_check_result
 from evaluator.shared.path_checks import (
     find_missing_relative_paths,
     find_relative_paths_not_in_allowlist,
@@ -23,8 +24,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if not args.paths:
-        print("No file list provided; starter skeleton check passes by default.")
-        return 0
+        return emit_check_result(passed=True, findings=[])
 
     root_file_paths = [path for path in args.paths if "/" not in path]
     nested_paths = [path for path in args.paths if "/" in path]
@@ -33,21 +33,25 @@ def main() -> int:
         nested_paths, ALLOWED_TOP_LEVEL_DIRS
     )
     if disallowed_paths:
-        print(f"Forbidden modification target: {disallowed_paths[0]}")
-        return 1
+        return emit_check_result(
+            passed=False, findings=[f"Forbidden modification target: {disallowed_paths[0]}"]
+        )
 
     disallowed_root_files = find_relative_paths_not_in_allowlist(
         root_file_paths, ALLOWED_ROOT_FILES
     )
     if disallowed_root_files:
-        print(f"Forbidden modification target: {disallowed_root_files[0]}")
-        return 1
+        return emit_check_result(
+            passed=False,
+            findings=[f"Forbidden modification target: {disallowed_root_files[0]}"],
+        )
 
     missing_paths = find_missing_relative_paths(repo_root, args.paths)
     if missing_paths:
-        print(f"Path does not exist in repository: {missing_paths[0]}")
-        return 1
-    return 0
+        return emit_check_result(
+            passed=False, findings=[f"Path does not exist in repository: {missing_paths[0]}"]
+        )
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

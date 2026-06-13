@@ -12,6 +12,7 @@ from evaluator.shared.path_checks import (
     scan_files,
 )
 from evaluator.shared.source_analysis import find_matching_substrings
+from evaluator.shared.check_output import emit_check_result
 
 ROOT = case_root_from_script(__file__)
 
@@ -58,42 +59,36 @@ def main() -> int:
     case_root = args.case_root.resolve()
     baseline_root = args.baseline_case_root.resolve()
 
-    ok = True
+    findings: list[str] = []
     for rel in find_missing_relative_paths(case_root, REQUIRED_FILES):
-        print(f"missing required file: {rel}")
-        ok = False
+        findings.append(f"missing required file: {rel}")
 
     protected_status = classify_relative_paths_against_baseline(
         case_root, baseline_root, PROTECTED_FILES
     )
     for rel in protected_status.missing_in_root:
-        print(f"missing protected file: {rel}")
-        ok = False
+        findings.append(f"missing protected file: {rel}")
 
     for rel in protected_status.missing_in_baseline:
-        print(f"missing baseline protected file: {rel}")
-        ok = False
+        findings.append(f"missing baseline protected file: {rel}")
 
     for rel in protected_status.modified:
-        print(f"protected file modified: {rel}")
-        ok = False
+        findings.append(f"protected file modified: {rel}")
     for path in scan_files(case_root / "src", suffixes=(".h", ".cc")):
         text = read_text(path, missing_ok=False)
         for pattern in FORBIDDEN_PATTERNS:
             if pattern in text:
-                print(
+                findings.append(
                     f"forbidden pattern {pattern} found in {path.relative_to(case_root)}"
                 )
-                ok = False
     for rel in GENERIC_FILES:
         path = case_root / rel
         if find_missing_paths([path]):
             continue
         text = read_text(path, missing_ok=False)
         for token in find_matching_substrings(CONCRETE_TOKENS, text):
-            print(f"generic path leaked concrete type {token} in {rel}")
-            ok = False
-    return 0 if ok else 1
+            findings.append(f"generic path leaked concrete type {token} in {rel}")
+    return emit_check_result(passed=not findings, findings=findings)
 
 
 if __name__ == "__main__":

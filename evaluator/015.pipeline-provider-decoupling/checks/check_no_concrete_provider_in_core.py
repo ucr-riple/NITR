@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from evaluator.shared.path_checks import case_root_from_script, read_text
+from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN = [
     "static_policy_provider.h",
@@ -27,9 +28,7 @@ def main() -> int:
                 violations.append(
                     f"Forbidden concrete provider dependency in {path}: {token}"
                 )
-    for v in violations:
-        print(v)
-    return 1 if violations else 0
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

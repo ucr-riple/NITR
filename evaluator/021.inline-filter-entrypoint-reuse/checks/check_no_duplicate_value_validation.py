@@ -5,6 +5,7 @@ from evaluator.shared.path_checks import (
     scan_files,
 )
 from evaluator.shared.source_analysis import has_all_substrings, has_any_substring
+from evaluator.shared.check_output import emit_check_result
 
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h"}
 
@@ -19,20 +20,24 @@ def main() -> int:
         content = source_file.read_text(encoding="utf-8", errors="replace")
 
         if has_any_substring(["std::stoi", "std::isdigit"], content):
-            print(
-                f"Suspicious duplicate numeric validation outside filter_validation: {source_file}"
+            return emit_check_result(
+                passed=False,
+                findings=[
+                    f"Suspicious duplicate numeric validation outside filter_validation: {source_file}"
+                ],
             )
-            return 1
 
         if has_all_substrings(
             ["FilterValueKind::kInteger", "ParseInlineFilter"], content
         ):
-            print(
-                f"Suspicious inline-only rule construction with integer value handling in {source_file}"
+            return emit_check_result(
+                passed=False,
+                findings=[
+                    f"Suspicious inline-only rule construction with integer value handling in {source_file}"
+                ],
             )
-            return 1
 
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

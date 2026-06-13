@@ -6,6 +6,7 @@ from typing import List
 
 from evaluator.shared.path_checks import read_text
 from evaluator.shared.source_analysis import has_any_substring, strip_comments
+from evaluator.shared.check_output import emit_check_result
 
 
 def remove_include_lines(text: str) -> str:
@@ -108,13 +109,7 @@ def main() -> int:
                     f"item domain type should not absorb observer-oriented token: {token}"
                 )
 
-    if failures:
-        for failure in failures:
-            print(failure)
-        return 1
-
-    print("structural checks passed")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

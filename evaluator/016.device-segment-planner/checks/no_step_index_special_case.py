@@ -4,6 +4,7 @@ import re
 
 from evaluator.shared.path_checks import scan_files
 from evaluator.shared.source_analysis import find_matching_patterns
+from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN_PATTERNS = [
     re.compile(r"==\s*4"),
@@ -35,12 +36,7 @@ def main() -> int:
         text = path.read_text()
         for pattern in find_matching_patterns(FORBIDDEN_PATTERNS, text):
             violations.append(f"{path}: matched {pattern.pattern}")
-    if violations:
-        print("Suspicious step-index special-casing detected:")
-        for violation in violations:
-            print(violation)
-        return 1
-    return 0
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

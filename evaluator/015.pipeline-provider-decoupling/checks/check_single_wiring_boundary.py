@@ -7,6 +7,7 @@ from evaluator.shared.path_checks import (
     scan_files,
 )
 from evaluator.shared.source_analysis import has_any_pattern
+from evaluator.shared.check_output import emit_check_result
 
 ALLOWED_FILES = {
     "build_pipeline.cc",
@@ -38,12 +39,7 @@ def main() -> int:
         if path.name not in ALLOWED_FILES:
             offenders.append(str(path.relative_to(case_root)))
 
-    if offenders:
-        print("Concrete provider creation escaped the allowed boundary:")
-        for offender in offenders:
-            print(f"- {offender}")
-        return 1
-    return 0
+    return emit_check_result(passed=not offenders, findings=offenders)
 
 
 if __name__ == "__main__":

@@ -2,10 +2,10 @@
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
-    fail_message,
     read_text,
 )
 from evaluator.shared.source_analysis import find_matching_paths
+from evaluator.shared.check_output import emit_check_result, fail_message
 
 
 def main() -> int:
@@ -37,8 +37,7 @@ def main() -> int:
     if "SamplerV1" not in selector_text:
         return fail_message("Replay path does not appear to use SamplerV1 contract")
 
-    print("All structural checks passed")
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

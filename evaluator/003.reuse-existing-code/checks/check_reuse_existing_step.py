@@ -4,10 +4,10 @@ import argparse
 import re
 from pathlib import Path
 
+from evaluator.shared.check_output import emit_check_result, fail_message
 from evaluator.shared.path_checks import (
     case_root_from_script,
     classify_relative_paths_against_baseline,
-    fail_message,
     read_text,
     scan_files,
 )
@@ -80,8 +80,7 @@ def main() -> int:
             "Structural check failed: detected likely re-implementation of math utilities in src/cosine_similarity.cc"
         )
 
-    print("Structural reuse check passed.")
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

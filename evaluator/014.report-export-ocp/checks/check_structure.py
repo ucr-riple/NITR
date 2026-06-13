@@ -1,7 +1,5 @@
-from pathlib import Path
-import sys
-
 from evaluator.shared.path_checks import case_root_from_script, read_text
+from evaluator.shared.check_output import emit_check_result
 
 ROOT = case_root_from_script(__file__)
 SERVICE_CC = ROOT / "src" / "report_export_service.cc"
@@ -37,13 +35,7 @@ def main() -> int:
     if "CreateDefaultExporters" not in factory_text:
         problems.append("factory file looks malformed.")
 
-    if problems:
-        for problem in problems:
-            print(problem)
-        return 1
-
-    print("Structural checks passed.")
-    return 0
+    return emit_check_result(passed=not problems, findings=problems)
 
 
 if __name__ == "__main__":
