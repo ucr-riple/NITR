@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
-
-from evaluator.shared.check_utils import fail_message, find_matching_paths, read_text
-
-
-CASE_REL = Path("cases/018.seeded-selection-testability")
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    fail_message,
+    find_matching_paths,
+    read_text,
+)
 
 
 def main() -> int:
     """Reject test-only hooks and nondeterministic selection mechanisms in src/."""
-    case_root = Path.cwd() / CASE_REL
+    case_root = case_root_from_script(__file__)
     src_dir = case_root / "src"
 
     if find_matching_paths(r"test_mode|ForceNextPick|force_next_pick|debug_only", src_dir):

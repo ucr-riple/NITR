@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
-
-from evaluator.shared.check_utils import find_matching_paths
-
-
-CASE_REL = Path("cases/017.active-snapshot-lifecycle")
+from evaluator.shared.check_utils import case_root_from_script, find_matching_paths
 
 
 def main() -> int:
     """Enforce that active snapshot lifecycle state stays centralized in core ownership."""
-    root_dir = Path.cwd() / CASE_REL
+    root_dir = case_root_from_script(__file__)
     failures: list[str] = []
 
     src_dir = root_dir / "src"

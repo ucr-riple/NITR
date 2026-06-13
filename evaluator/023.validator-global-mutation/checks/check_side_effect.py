@@ -7,6 +7,7 @@ from pathlib import Path
 
 from evaluator.shared.check_utils import (
     case_root_from_script,
+    classify_relative_paths_against_baseline,
     include_paths,
     read_text,
     strip_comments_and_strings,
@@ -102,25 +103,21 @@ def main() -> int:
                 f"{path.relative_to(case_root)}: stats.h may only be included by reporter.cc, stats.cc, or app/main.cc."
             )
 
-    for relative_path in PROTECTED_FILES:
-        path = case_root / relative_path
-        baseline_path = baseline_root / relative_path
-        if not path.exists():
-            failures.append(
-                f"{path.relative_to(case_root)}: missing required starter file."
-            )
-            continue
+    missing_protected, missing_baseline_protected, modified_protected = (
+        classify_relative_paths_against_baseline(
+            case_root, baseline_root, PROTECTED_FILES
+        )
+    )
+    for relative_path in missing_protected:
+        failures.append(f"{relative_path}: missing required starter file.")
 
-        if not baseline_path.exists():
-            failures.append(
-                f"{relative_path}: missing required baseline starter file."
-            )
-            continue
+    for relative_path in missing_baseline_protected:
+        failures.append(f"{relative_path}: missing required baseline starter file.")
 
-        if path.read_bytes() != baseline_path.read_bytes():
-            failures.append(
-                f"{path.relative_to(case_root)}: must remain unchanged from the starter code."
-            )
+    for relative_path in modified_protected:
+        failures.append(
+            f"{relative_path}: must remain unchanged from the starter code."
+        )
 
     if failures:
         print("Maintainability check failed:")

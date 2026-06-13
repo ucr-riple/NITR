@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import pathlib
-import re
-
-from evaluator.shared.check_utils import case_root_from_script, die_message, read_text
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    die_message,
+    find_missing_paths,
+    has_any_substring,
+    read_text,
+)
 
 ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"
@@ -45,9 +48,8 @@ VIEW_TOKEN_FAMILIES = {
 }
 
 def main() -> int:
-    for header in REQUIRED_HEADERS:
-        if not header.exists():
-            die_message(f"Missing required header: {header}")
+    for header in find_missing_paths(REQUIRED_HEADERS):
+        die_message(f"Missing required header: {header}")
 
     sort_text = read_text(SRC / "sort_hits.h", missing_ok=False)
     shade_text = read_text(SRC / "eval_shading.h", missing_ok=False)
@@ -71,7 +73,7 @@ def main() -> int:
 
     joined = sort_text + shade_text + comp_text
     for group_name, tokens in VIEW_TOKEN_FAMILIES.items():
-        if not any(token in joined for token in tokens):
+        if not has_any_substring(tokens, joined):
             die_message(
                 f"Expected {group_name} interface/view token not found: one of {tokens}"
             )

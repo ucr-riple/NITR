@@ -8,6 +8,7 @@ from typing import Iterable, NoReturn
 CPP_LIKE_SUFFIXES = (".h", ".hpp", ".hh", ".cc", ".cpp", ".cxx")
 _INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^">]+)[">]', re.MULTILINE)
 PatternLike = str | re.Pattern[str]
+RelativePathLike = str | Path
 
 
 def repo_root_from_script(script_path: str | Path) -> Path:
@@ -61,6 +62,77 @@ def fail_message(message: str) -> int:
 def die_message(message: str) -> NoReturn:
     print(message)
     raise SystemExit(1)
+
+
+def find_missing_paths(paths: Iterable[Path]) -> list[Path]:
+    return [path for path in paths if not path.exists()]
+
+
+def _to_relative_path(path: RelativePathLike) -> Path:
+    return path if isinstance(path, Path) else Path(path)
+
+
+def find_missing_relative_paths(
+    root: Path, relative_paths: Iterable[RelativePathLike]
+) -> list[str]:
+    missing: list[str] = []
+    for relative_path in relative_paths:
+        rel = _to_relative_path(relative_path)
+        if not (root / rel).exists():
+            missing.append(rel.as_posix())
+    return missing
+
+
+def find_modified_relative_paths(
+    root: Path, baseline_root: Path, relative_paths: Iterable[RelativePathLike]
+) -> list[str]:
+    modified: list[str] = []
+    for relative_path in relative_paths:
+        rel = _to_relative_path(relative_path)
+        if (root / rel).read_bytes() != (baseline_root / rel).read_bytes():
+            modified.append(rel.as_posix())
+    return modified
+
+
+def classify_relative_paths_against_baseline(
+    root: Path, baseline_root: Path, relative_paths: Iterable[RelativePathLike]
+) -> tuple[list[str], list[str], list[str]]:
+    relative_paths = list(relative_paths)
+    missing = find_missing_relative_paths(root, relative_paths)
+    missing_baseline = find_missing_relative_paths(baseline_root, relative_paths)
+    comparable = [
+        relative_path
+        for relative_path in relative_paths
+        if _to_relative_path(relative_path).as_posix() not in missing
+        and _to_relative_path(relative_path).as_posix() not in missing_baseline
+    ]
+    modified = find_modified_relative_paths(root, baseline_root, comparable)
+    return missing, missing_baseline, modified
+
+
+def find_paths_with_disallowed_top_level(
+    paths: Iterable[RelativePathLike], allowed_top_levels: Iterable[str]
+) -> list[str]:
+    allowed = set(allowed_top_levels)
+    violations: list[str] = []
+    for raw_path in paths:
+        rel = _to_relative_path(raw_path)
+        top = rel.parts[0] if rel.parts else ""
+        if top not in allowed:
+            violations.append(rel.as_posix())
+    return violations
+
+
+def find_relative_paths_not_in_allowlist(
+    paths: Iterable[RelativePathLike], allowed_relative_paths: Iterable[RelativePathLike]
+) -> list[str]:
+    allowed = {_to_relative_path(path).as_posix() for path in allowed_relative_paths}
+    violations: list[str] = []
+    for raw_path in paths:
+        rel = _to_relative_path(raw_path).as_posix()
+        if rel not in allowed:
+            violations.append(rel)
+    return violations
 
 
 def scan_files(*roots: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> list[Path]:

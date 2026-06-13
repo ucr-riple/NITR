@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    has_all_substrings,
+    has_any_substring,
+)
 
-from evaluator.shared.check_utils import has_all_substrings, has_any_substring
-
-
-CASE_REL = Path("cases/021.inline-filter-entrypoint-reuse/src")
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h"}
 
 
 def main() -> int:
     """Reject duplicate numeric value validation outside the shared validation module."""
-    workspace_root = Path.cwd()
-    src_dir = workspace_root / CASE_REL
+    src_dir = case_root_from_script(__file__) / "src"
     for source_file in sorted(src_dir.glob("*.[ch]c*")):
         if source_file.name in ALLOWED_FILES:
             continue

@@ -3,7 +3,12 @@ import argparse
 import pathlib
 import sys
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import (
+    classify_relative_paths_against_baseline,
+    case_root_from_script,
+    find_missing_relative_paths,
+    read_text,
+)
 
 ROOT = case_root_from_script(__file__)
 
@@ -51,24 +56,26 @@ def main() -> int:
     baseline_root = args.baseline_case_root.resolve()
 
     ok = True
-    for rel in REQUIRED_FILES:
-        if not (case_root / rel).exists():
-            print(f"missing required file: {rel}")
-            ok = False
-    for rel in PROTECTED_FILES:
-        path = case_root / rel
-        baseline_path = baseline_root / rel
-        if not path.exists():
-            print(f"missing protected file: {rel}")
-            ok = False
-            continue
-        if not baseline_path.exists():
-            print(f"missing baseline protected file: {rel}")
-            ok = False
-            continue
-        if path.read_bytes() != baseline_path.read_bytes():
-            print(f"protected file modified: {rel}")
-            ok = False
+    for rel in find_missing_relative_paths(case_root, REQUIRED_FILES):
+        print(f"missing required file: {rel}")
+        ok = False
+
+    missing_protected, missing_baseline_protected, modified_protected = (
+        classify_relative_paths_against_baseline(
+            case_root, baseline_root, PROTECTED_FILES
+        )
+    )
+    for rel in missing_protected:
+        print(f"missing protected file: {rel}")
+        ok = False
+
+    for rel in missing_baseline_protected:
+        print(f"missing baseline protected file: {rel}")
+        ok = False
+
+    for rel in modified_protected:
+        print(f"protected file modified: {rel}")
+        ok = False
     for path in case_root.glob("src/*"):
         if path.suffix not in {".h", ".cc"}:
             continue
