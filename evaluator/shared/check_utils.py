@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import re
 from pathlib import Path
 from typing import Iterable, NoReturn
@@ -9,6 +10,15 @@ CPP_LIKE_SUFFIXES = (".h", ".hpp", ".hh", ".cc", ".cpp", ".cxx")
 _INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^">]+)[">]', re.MULTILINE)
 PatternLike = str | re.Pattern[str]
 RelativePathLike = str | Path
+
+
+@dataclass(frozen=True)
+class BaselinePathCheck:
+    missing_in_root: list[str]
+    missing_in_baseline: list[str]
+    created_in_root: list[str]
+    deleted_from_root: list[str]
+    modified: list[str]
 
 
 def repo_root_from_script(script_path: str | Path) -> Path:
@@ -94,12 +104,50 @@ def find_modified_relative_paths(
     return modified
 
 
+def find_new_relative_paths(
+    root: Path, baseline_root: Path, relative_paths: Iterable[RelativePathLike]
+) -> list[str]:
+    created: list[str] = []
+    for relative_path in relative_paths:
+        rel = _to_relative_path(relative_path)
+        if (root / rel).exists() and not (baseline_root / rel).exists():
+            created.append(rel.as_posix())
+    return created
+
+
+def find_deleted_relative_paths(
+    root: Path, baseline_root: Path, relative_paths: Iterable[RelativePathLike]
+) -> list[str]:
+    deleted: list[str] = []
+    for relative_path in relative_paths:
+        rel = _to_relative_path(relative_path)
+        if not (root / rel).exists() and (baseline_root / rel).exists():
+            deleted.append(rel.as_posix())
+    return deleted
+
+
 def classify_relative_paths_against_baseline(
     root: Path, baseline_root: Path, relative_paths: Iterable[RelativePathLike]
-) -> tuple[list[str], list[str], list[str]]:
+) -> BaselinePathCheck:
+    """Compare a fixed set of relative paths between a case root and baseline root.
+
+    Args:
+        root: Current case root to validate.
+        baseline_root: Baseline/starter case root used for comparison.
+        relative_paths: Relative paths to classify against the two roots.
+
+    Returns structured path status for the supplied relative paths, including:
+    - paths missing from the current root
+    - paths missing from the baseline root
+    - paths newly created in the current root
+    - paths deleted from the current root relative to baseline
+    - paths present in both roots whose bytes differ
+    """
     relative_paths = list(relative_paths)
     missing = find_missing_relative_paths(root, relative_paths)
     missing_baseline = find_missing_relative_paths(baseline_root, relative_paths)
+    created = find_new_relative_paths(root, baseline_root, relative_paths)
+    deleted = find_deleted_relative_paths(root, baseline_root, relative_paths)
     comparable = [
         relative_path
         for relative_path in relative_paths
@@ -107,7 +155,13 @@ def classify_relative_paths_against_baseline(
         and _to_relative_path(relative_path).as_posix() not in missing_baseline
     ]
     modified = find_modified_relative_paths(root, baseline_root, comparable)
-    return missing, missing_baseline, modified
+    return BaselinePathCheck(
+        missing_in_root=missing,
+        missing_in_baseline=missing_baseline,
+        created_in_root=created,
+        deleted_from_root=deleted,
+        modified=modified,
+    )
 
 
 def find_paths_with_disallowed_top_level(
@@ -242,13 +296,7 @@ def include_paths(text: str) -> list[str]:
     return [match.group(1) for match in _INCLUDE_RE.finditer(text)]
 
 
-def find_class_body(text: str, class_name: str) -> str | None:
-    pattern = re.compile(rf"class\s+{re.escape(class_name)}\b[^{{]*\{{", re.S)
-    match = pattern.search(text)
-    if not match:
-        return None
-
-    start = match.end()
+def _extract_brace_enclosed_block(text: str, start: int) -> str | None:
     depth = 1
     i = start
     while i < len(text) and depth > 0:
@@ -262,20 +310,19 @@ def find_class_body(text: str, class_name: str) -> str | None:
     return text[start : i - 1]
 
 
+def find_class_body(text: str, class_name: str) -> str | None:
+    pattern = re.compile(rf"class\s+{re.escape(class_name)}\b[^{{]*\{{", re.S)
+    match = pattern.search(text)
+    if not match:
+        return None
+
+    return _extract_brace_enclosed_block(text, match.end())
+
+
 def extract_function_body(text: str, function_name: str) -> str:
     match = re.search(rf"\b{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text)
     if not match:
         return ""
 
-    start = match.end()
-    depth = 1
-    i = start
-    while i < len(text):
-        if text[i] == "{":
-            depth += 1
-        elif text[i] == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start:i]
-        i += 1
-    return ""
+    body = _extract_brace_enclosed_block(text, match.end())
+    return body if body is not None else ""

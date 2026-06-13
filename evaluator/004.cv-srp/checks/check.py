@@ -12,6 +12,7 @@ from typing import Iterable, List, Tuple, Optional
 
 from evaluator.shared.check_utils import (
     case_root_from_script,
+    find_missing_paths,
     find_matching_patterns,
     regex_matches,
     read_text as shared_read_text,
@@ -170,8 +171,9 @@ def check_json_restrictions(root: Path) -> None:
         r'nlohmann\s*/\s*json|<\s*nlohmann/json\.hpp\s*>|"\s*nlohmann/json\.hpp\s*"'
     )
 
+    missing_forbidden_files = set(find_missing_paths(forbidden_files))
     for p in forbidden_files:
-        if not p.exists():
+        if p in missing_forbidden_files:
             continue
         txt = read_text(p)
         if regex_matches(forbid_io_include, txt):
@@ -185,7 +187,7 @@ def check_policy_dependency_restrictions(root: Path) -> None:
     Enforce: src/policy.cc must not include normalize.h or estimator*.h
     """
     p = root / "src" / "policy.cc"
-    if not p.exists():
+    if find_missing_paths([p]):
         return
     txt = read_text(p)
     forbid = [
@@ -314,9 +316,10 @@ def main() -> int:
     root = case_root()
 
     # Basic sanity
-    if not (root / "src").exists():
+    missing_required_dirs = find_missing_paths([root / "src", root / "app"])
+    if root / "src" in missing_required_dirs:
         die("Missing src/ directory.")
-    if not (root / "app").exists():
+    if root / "app" in missing_required_dirs:
         die("Missing app/ directory.")
     # Static / source-level checks
     run_named_check("check_legacy_not_modified", check_legacy_not_modified, root)

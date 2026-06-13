@@ -2,7 +2,11 @@ from pathlib import Path
 import re
 import sys
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.check_utils import (
+    case_root_from_script,
+    has_any_substring,
+    read_text,
+)
 
 ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"
@@ -14,7 +18,7 @@ def main() -> int:
     errors = []
 
     policy_all = policy_h + "\n" + policy_cc
-    if "audit_logger.h" in policy_all:
+    if has_any_substring(["audit_logger.h"], policy_all):
         errors.append("loan_policy must not depend on audit_logger.h")
 
     signature_match = re.search(
@@ -30,21 +34,22 @@ def main() -> int:
                 "EvaluateApplicant must not accept a logger or audit dependency"
             )
 
-    for banned in [
+    direct_io_tokens = [
         "std::cout",
         "std::cerr",
         "printf(",
         "fprintf(",
         "ofstream",
         "fstream",
-    ]:
-        if banned in policy_cc:
+    ]
+    for banned in direct_io_tokens:
+        if has_any_substring([banned], policy_cc):
             errors.append(f"loan_policy.cc must not perform direct IO: found {banned}")
 
-    if ".Log(" in policy_cc or "->Log(" in policy_cc:
+    if has_any_substring([".Log(", "->Log("], policy_cc):
         errors.append("loan_policy.cc must not emit audit logs directly")
 
-    if ".Log(" not in service_cc and "->Log(" not in service_cc:
+    if not has_any_substring([".Log(", "->Log("], service_cc):
         errors.append("loan_review_service.cc should localize audit emission")
 
     if errors:

@@ -60,20 +60,18 @@ def main() -> int:
         print(f"missing required file: {rel}")
         ok = False
 
-    missing_protected, missing_baseline_protected, modified_protected = (
-        classify_relative_paths_against_baseline(
-            case_root, baseline_root, PROTECTED_FILES
-        )
+    protected_status = classify_relative_paths_against_baseline(
+        case_root, baseline_root, PROTECTED_FILES
     )
-    for rel in missing_protected:
+    for rel in protected_status.missing_in_root:
         print(f"missing protected file: {rel}")
         ok = False
 
-    for rel in missing_baseline_protected:
+    for rel in protected_status.missing_in_baseline:
         print(f"missing baseline protected file: {rel}")
         ok = False
 
-    for rel in modified_protected:
+    for rel in protected_status.modified:
         print(f"protected file modified: {rel}")
         ok = False
     for path in case_root.glob("src/*"):

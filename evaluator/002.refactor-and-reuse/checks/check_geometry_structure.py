@@ -4,18 +4,65 @@ import argparse
 import pathlib
 
 from evaluator.shared.check_utils import (
+    classify_relative_paths_against_baseline,
+    case_root_from_script,
     count_matching_patterns,
     extract_function_body,
+    scan_files,
     strip_comments_and_strings,
 )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=pathlib.Path, default=pathlib.Path.cwd())
+    parser.add_argument(
+        "--case_root",
+        type=pathlib.Path,
+        default=case_root_from_script(__file__),
+    )
+    parser.add_argument(
+        "--baseline_case_root",
+        type=pathlib.Path,
+        default=case_root_from_script(__file__),
+    )
     args = parser.parse_args()
 
-    src = args.case_root.resolve() / "src" / "geometry.cc"
+    case_root = args.case_root.resolve()
+    baseline_root = args.baseline_case_root.resolve()
+    src = case_root / "src" / "geometry.cc"
+
+    current_files = {
+        path.relative_to(case_root).as_posix()
+        for path in scan_files(
+            case_root / "src", case_root / "app", suffixes=(".h", ".cc")
+        )
+    }
+    baseline_files = {
+        path.relative_to(baseline_root).as_posix()
+        for path in scan_files(
+            baseline_root / "src", baseline_root / "app", suffixes=(".h", ".cc")
+        )
+    }
+    tracked_files = sorted(current_files | baseline_files)
+    file_status = classify_relative_paths_against_baseline(
+        case_root, baseline_root, tracked_files
+    )
+
+    if file_status.created_in_root:
+        print(f"Unexpected new source file: {file_status.created_in_root[0]}")
+        return 1
+
+    if file_status.deleted_from_root:
+        print(f"Unexpected deleted source file: {file_status.deleted_from_root[0]}")
+        return 1
+
+    forbidden_modifications = [
+        path for path in file_status.modified if path != "src/geometry.cc"
+    ]
+    if forbidden_modifications:
+        print(f"Unexpected modified protected file: {forbidden_modifications[0]}")
+        return 1
+
     code = strip_comments_and_strings(src.read_text(encoding="utf-8"))
     fundamental_body = extract_function_body(code, "EstimateFundamental8Point")
     essential_body = extract_function_body(code, "EstimateEssential8Point")

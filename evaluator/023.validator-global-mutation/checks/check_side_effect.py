@@ -103,18 +103,16 @@ def main() -> int:
                 f"{path.relative_to(case_root)}: stats.h may only be included by reporter.cc, stats.cc, or app/main.cc."
             )
 
-    missing_protected, missing_baseline_protected, modified_protected = (
-        classify_relative_paths_against_baseline(
-            case_root, baseline_root, PROTECTED_FILES
-        )
+    protected_status = classify_relative_paths_against_baseline(
+        case_root, baseline_root, PROTECTED_FILES
     )
-    for relative_path in missing_protected:
+    for relative_path in protected_status.missing_in_root:
         failures.append(f"{relative_path}: missing required starter file.")
 
-    for relative_path in missing_baseline_protected:
+    for relative_path in protected_status.missing_in_baseline:
         failures.append(f"{relative_path}: missing required baseline starter file.")
 
-    for relative_path in modified_protected:
+    for relative_path in protected_status.modified:
         failures.append(
             f"{relative_path}: must remain unchanged from the starter code."
         )
