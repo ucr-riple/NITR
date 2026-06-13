@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from evaluator.shared.check_utils import case_root_from_script, has_any_pattern, read_text
+from evaluator.shared.path_checks import case_root_from_script, read_text
+from evaluator.shared.source_analysis import has_any_pattern
 
 CREATION_PATTERNS = [
     r"\bstd::make_unique\s*<\s*StaticPolicyProvider\s*>",

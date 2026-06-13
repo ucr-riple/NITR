@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
-    find_matching_patterns,
     read_text,
 )
+from evaluator.shared.source_analysis import find_matching_patterns
 
 FORBIDDEN_PATTERNS = [
     r"\bStaticPolicyProvider\b",

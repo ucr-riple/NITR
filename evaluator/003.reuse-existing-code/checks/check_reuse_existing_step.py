@@ -4,7 +4,7 @@ import argparse
 import re
 from pathlib import Path
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
     classify_relative_paths_against_baseline,
     fail_message,

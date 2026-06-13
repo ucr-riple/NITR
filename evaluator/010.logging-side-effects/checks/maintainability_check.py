@@ -1,11 +1,13 @@
 import re
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
+    read_text,
+)
+from evaluator.shared.source_analysis import (
     find_matching_substrings,
     has_any_pattern,
     has_any_substring,
-    read_text,
 )
 
 ROOT = case_root_from_script(__file__)

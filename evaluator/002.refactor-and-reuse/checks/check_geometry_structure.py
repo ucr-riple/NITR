@@ -3,12 +3,14 @@
 import argparse
 import pathlib
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     classify_relative_paths_against_baseline,
     case_root_from_script,
+    scan_files,
+)
+from evaluator.shared.source_analysis import (
     count_matching_patterns,
     extract_function_body,
-    scan_files,
     strip_comments_and_strings,
 )
 

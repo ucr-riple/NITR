@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 import sys
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.path_checks import case_root_from_script, read_text
 
 ROOT = case_root_from_script(__file__)
 FILES = [

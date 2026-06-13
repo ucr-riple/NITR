@@ -1,10 +1,10 @@
 import re
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
-    find_missing_patterns,
     read_text,
 )
+from evaluator.shared.source_analysis import find_missing_patterns
 
 FORBIDDEN_FLAGS = [
     "include_archived",

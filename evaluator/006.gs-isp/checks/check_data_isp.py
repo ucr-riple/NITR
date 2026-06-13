@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
     die_message,
     find_missing_paths,
-    has_any_substring,
     read_text,
 )
+from evaluator.shared.source_analysis import has_any_substring
 
 ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"

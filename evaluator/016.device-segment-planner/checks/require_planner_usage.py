@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
-from evaluator.shared.check_utils import case_root_from_script, fail_message, read_text
+from evaluator.shared.path_checks import case_root_from_script, fail_message, read_text
 
 
 def main() -> int:

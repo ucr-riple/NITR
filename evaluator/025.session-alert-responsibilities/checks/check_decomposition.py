@@ -28,7 +28,8 @@ import argparse
 import pathlib
 import re
 
-from evaluator.shared.check_utils import scan_files, strip_comments_and_strings
+from evaluator.shared.path_checks import scan_files
+from evaluator.shared.source_analysis import strip_comments_and_strings
 
 _FAMILIES = ("range", "drift", "leak")
 _ALERT_TYPE = {"range": "RangeAlert", "drift": "DriftAlert", "leak": "LeakAlert"}

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from evaluator.shared.check_utils import case_root_from_script, find_matching_paths
+from evaluator.shared.path_checks import case_root_from_script
+from evaluator.shared.source_analysis import find_matching_paths
 
 
 def main() -> int:

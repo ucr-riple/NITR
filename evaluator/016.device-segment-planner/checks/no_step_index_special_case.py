@@ -2,7 +2,8 @@
 import pathlib
 import re
 
-from evaluator.shared.check_utils import find_matching_patterns, scan_files
+from evaluator.shared.path_checks import scan_files
+from evaluator.shared.source_analysis import find_matching_patterns
 
 FORBIDDEN_PATTERNS = [
     re.compile(r"==\s*4"),

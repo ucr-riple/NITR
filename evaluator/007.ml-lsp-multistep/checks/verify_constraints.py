@@ -3,15 +3,15 @@ import argparse
 import pathlib
 import sys
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     classify_relative_paths_against_baseline,
     case_root_from_script,
-    find_matching_substrings,
     find_missing_paths,
     find_missing_relative_paths,
     read_text,
     scan_files,
 )
+from evaluator.shared.source_analysis import find_matching_substrings
 
 ROOT = case_root_from_script(__file__)
 

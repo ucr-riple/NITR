@@ -4,11 +4,8 @@ import pathlib
 import re
 from typing import List
 
-from evaluator.shared.check_utils import (
-    has_any_substring,
-    read_text,
-    strip_comments,
-)
+from evaluator.shared.path_checks import read_text
+from evaluator.shared.source_analysis import has_any_substring, strip_comments
 
 
 def remove_include_lines(text: str) -> str:

@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 from typing import Dict
 
-from evaluator.shared.check_utils import normalize_text, read_text, scan_files
+from evaluator.shared.path_checks import normalize_text, read_text, scan_files
 
 
 MACRO_ADD_PATTERN = re.compile(r"^\s*#\s*define\s+add\b", re.MULTILINE)

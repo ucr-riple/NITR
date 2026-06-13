@@ -10,16 +10,15 @@ import subprocess
 from pathlib import Path
 from typing import Iterable, List, Tuple, Optional
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
     die_message,
     find_missing_paths,
-    find_matching_patterns,
-    regex_matches,
     read_text as shared_read_text,
     repo_root_from_script,
     scan_files,
 )
+from evaluator.shared.source_analysis import find_matching_patterns, regex_matches
 
 
 def case_root() -> Path:

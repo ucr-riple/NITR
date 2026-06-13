@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 import re
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
     evaluator_root_from_script,
     find_missing_paths,
-    find_matching_patterns,
-    has_any_pattern,
     scan_files,
 )
+from evaluator.shared.source_analysis import find_matching_patterns, has_any_pattern
 
 ROOT = case_root_from_script(__file__)
 EVALUATOR_ROOT = evaluator_root_from_script(__file__)

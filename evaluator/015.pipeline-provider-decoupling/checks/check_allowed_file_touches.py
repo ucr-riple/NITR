@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     find_missing_relative_paths,
     find_relative_paths_not_in_allowlist,
     find_paths_with_disallowed_top_level,

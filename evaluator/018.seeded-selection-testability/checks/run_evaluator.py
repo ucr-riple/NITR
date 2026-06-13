@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
     fail_message,
-    find_matching_paths,
     read_text,
 )
+from evaluator.shared.source_analysis import find_matching_paths
 
 
 def main() -> int:

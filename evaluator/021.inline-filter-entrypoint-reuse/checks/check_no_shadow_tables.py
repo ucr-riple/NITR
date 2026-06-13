@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
-    count_matching_substrings,
-    has_any_substring,
     scan_files,
 )
+from evaluator.shared.source_analysis import count_matching_substrings, has_any_substring
 
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h", "filter_rule.cc"}
 FIELD_LITERALS = ['"status"', '"priority"', '"owner"']

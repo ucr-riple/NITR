@@ -5,13 +5,15 @@ import argparse
 import re
 from pathlib import Path
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
     classify_relative_paths_against_baseline,
-    has_any_pattern,
-    include_paths,
     read_text,
     scan_files,
+)
+from evaluator.shared.source_analysis import (
+    has_any_pattern,
+    include_paths,
     strip_comments_and_strings,
 )
 

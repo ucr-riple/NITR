@@ -1,8 +1,8 @@
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
-    has_any_pattern,
     read_text,
 )
+from evaluator.shared.source_analysis import has_any_pattern
 
 ROOT = case_root_from_script(__file__)
 SRC = ROOT / "src"

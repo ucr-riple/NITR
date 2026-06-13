@@ -4,12 +4,11 @@ import re
 import sys
 from pathlib import Path
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     find_missing_paths,
-    has_any_pattern,
     read_text,
-    strip_comments_and_strings,
 )
+from evaluator.shared.source_analysis import has_any_pattern, strip_comments_and_strings
 
 
 def find_violations(code: str) -> list[tuple[str, str]]:

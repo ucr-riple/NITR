@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
-    has_all_substrings,
-    has_any_substring,
     scan_files,
 )
+from evaluator.shared.source_analysis import has_all_substrings, has_any_substring
 
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h"}
 
