@@ -16,7 +16,6 @@ import argparse
 import os
 import re
 from pathlib import Path
-from typing import Dict
 
 from evaluator.shared.check_output import emit_check_result
 from evaluator.shared.path_checks import (
@@ -65,12 +64,6 @@ EXPLICIT_DEF_PATTERNS = [
         re.MULTILINE,
     ),
 ]
-
-
-def fail(msg: str, details: Dict) -> int:
-    """Emit the standard evaluator failure payload."""
-    return emit_check_result(passed=False, findings=[msg], details=details)
-
 def main() -> int:
     """Enforce frozen callsites and centralized add implementation structure."""
     ap = argparse.ArgumentParser()
@@ -100,7 +93,11 @@ def main() -> int:
     if ms is None:
         ms = int(os.environ.get("NITR_MILESTONE", "1"))
     if ms < 1:
-        return fail("ERR_BAD_MILESTONE", {"milestone": ms})
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_BAD_MILESTONE"],
+            details={"milestone": ms},
+        )
 
     root = Path(args.case_root).resolve()
     baseline_root = Path(args.baseline_case_root).resolve()
@@ -113,8 +110,10 @@ def main() -> int:
         suffixes=(".h", ".hpp", ".cc", ".cpp", ".cxx"),
     )
     if not files:
-        return fail(
-            "ERR_NO_CODE_FILES", {"searched": [str(root / "src"), str(root / "app")]}
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_NO_CODE_FILES"],
+            details={"searched": [str(root / "src"), str(root / "app")]},
         )
 
     # (1) Freeze app/main.cc
@@ -122,11 +121,16 @@ def main() -> int:
         cur = read_text(app_main)
         baseline = read_text(baseline_app_main, missing_ok=False)
         if not cur:
-            return fail("ERR_MAIN_MISSING_OR_UNREADABLE", {"path": str(app_main)})
+            return emit_check_result(
+                passed=False,
+                findings=["ERR_MAIN_MISSING_OR_UNREADABLE"],
+                details={"path": str(app_main)},
+            )
         if normalize_text(cur) != normalize_text(baseline):
-            return fail(
-                "ERR_MAIN_MODIFIED",
-                {
+            return emit_check_result(
+                passed=False,
+                findings=["ERR_MAIN_MODIFIED"],
+                details={
                     "path": str(app_main),
                     "baseline_path": str(baseline_app_main),
                     "milestone": ms,
@@ -141,7 +145,11 @@ def main() -> int:
         if txt and MACRO_ADD_PATTERN.search(txt):
             macro_hits.append(str(f))
     if macro_hits:
-        return fail("ERR_ADD_MACRO_FORBIDDEN", {"files": macro_hits})
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_ADD_MACRO_FORBIDDEN"],
+            details={"files": macro_hits},
+        )
 
     # (3) Detect centralized reusable core (generic-function patterns)
     generic_hits = []
@@ -153,9 +161,10 @@ def main() -> int:
             generic_hits.append(str(f))
     generic_present = len(generic_hits) > 0
     if not generic_present:
-        return fail(
-            "ERR_NON_MAINTAINABLE_STRUCTURE",
-            {
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_NON_MAINTAINABLE_STRUCTURE"],
+            details={
                 "note": "Implementation structure does not appear to centralize shared add behavior.",
                 "hint": "Avoid duplicating per-type logic; keep shared behavior reusable/centralized.",
             },
@@ -175,9 +184,10 @@ def main() -> int:
                 break
 
     if explicit_def_count > args.max_explicit_defs:
-        return fail(
-            "ERR_DUPLICATED_IMPLEMENTATION",
-            {
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_DUPLICATED_IMPLEMENTATION"],
+            details={
                 "explicit_def_count": explicit_def_count,
                 "max_allowed": args.max_explicit_defs,
                 "files": sorted(set(explicit_def_files)),
