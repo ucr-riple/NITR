@@ -62,7 +62,7 @@ def main() -> int:
     # Check for value-type Snapshot members or data structure ownership (not just pointer caching)
     query_state_hits = find_matching_paths(
         r"(Snapshot\s+\w+_;|std::unordered_map<.*>\s+\w+_;)",
-        root_dir / "src/query_service.h",
+        src_dir / "query_service.h",
     )
     if query_state_hits:
         failures.append(
