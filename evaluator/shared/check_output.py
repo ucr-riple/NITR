@@ -3,6 +3,10 @@ import sys
 from typing import Any, Iterable, NoReturn, TextIO
 
 
+CHECK_PASSED = 0
+CHECK_FAILED = 1
+
+
 def emit_check_result(*, passed: bool, findings: Iterable[Any], **extra: Any) -> int:
     """Emit the standard evaluator result payload and return a process code."""
     payload = {
@@ -11,7 +15,7 @@ def emit_check_result(*, passed: bool, findings: Iterable[Any], **extra: Any) ->
         **extra,
     }
     print(json.dumps(payload, indent=2, ensure_ascii=False, sort_keys=True))
-    return 0 if passed else 1
+    return CHECK_PASSED if passed else CHECK_FAILED
 
 
 def fail_message(message: str) -> int:
@@ -20,7 +24,7 @@ def fail_message(message: str) -> int:
 
 
 def die_message(
-    message: str, *, code: int = 1, stream: TextIO = sys.stdout
+    message: str, *, code: int = CHECK_FAILED, stream: TextIO = sys.stdout
 ) -> NoReturn:
     """Emit a one-finding failure result and terminate immediately."""
     payload = json.dumps(
