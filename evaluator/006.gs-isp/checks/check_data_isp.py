@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
+from pathlib import Path
+
 from evaluator.shared.path_checks import (
     case_root_from_script,
     find_missing_paths,
@@ -9,13 +12,10 @@ from evaluator.shared.path_checks import (
 from evaluator.shared.source_analysis import has_any_substring
 from evaluator.shared.check_output import emit_check_result
 
-ROOT = case_root_from_script(__file__)
-SRC = ROOT / "src"
-
 REQUIRED_HEADERS = [
-    SRC / "sort_hits.h",
-    SRC / "eval_shading.h",
-    SRC / "composite.h",
+    "sort_hits.h",
+    "eval_shading.h",
+    "composite.h",
 ]
 
 FORBIDDEN_INCLUDE = '#include "hit_buffer.h"'
@@ -50,13 +50,26 @@ VIEW_TOKEN_FAMILIES = {
 
 def main() -> int:
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+
+    src_dir = case_root / "src"
+
     findings: list[str] = []
-    for header in find_missing_paths(REQUIRED_HEADERS):
+    required_headers = [src_dir / header for header in REQUIRED_HEADERS]
+    for header in find_missing_paths(required_headers):
         findings.append(f"Missing required header: {header}")
 
-    sort_text = read_text(SRC / "sort_hits.h", missing_ok=False)
-    shade_text = read_text(SRC / "eval_shading.h", missing_ok=False)
-    comp_text = read_text(SRC / "composite.h", missing_ok=False)
+    sort_text = read_text(src_dir / "sort_hits.h", missing_ok=False)
+    shade_text = read_text(src_dir / "eval_shading.h", missing_ok=False)
+    comp_text = read_text(src_dir / "composite.h", missing_ok=False)
 
     for token in FORBIDDEN_IN_SORT_HEADER:
         if token in sort_text:
@@ -64,12 +77,12 @@ def main() -> int:
             break
 
     for path in [
-        SRC / "sort_hits.h",
-        SRC / "eval_shading.h",
-        SRC / "composite.h",
-        SRC / "sort_hits.cc",
-        SRC / "eval_shading.cc",
-        SRC / "composite.cc",
+        src_dir / "sort_hits.h",
+        src_dir / "eval_shading.h",
+        src_dir / "composite.h",
+        src_dir / "sort_hits.cc",
+        src_dir / "eval_shading.cc",
+        src_dir / "composite.cc",
     ]:
         text = read_text(path, missing_ok=False)
         if FORBIDDEN_INCLUDE in text:

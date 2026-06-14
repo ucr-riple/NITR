@@ -11,6 +11,7 @@ function-name blacklist; the check verifies the architecture, not syntax.
 
 from __future__ import annotations
 
+import argparse
 import re
 from pathlib import Path
 
@@ -27,20 +28,6 @@ from evaluator.shared.source_analysis import (
     strip_comments,
 )
 
-SRC_DIR = case_root_from_script(__file__) / "src"
-
-
-def read(name: str) -> str:
-    p = SRC_DIR / name
-    return read_text(p)
-
-
-def all_src_headers() -> list[Path]:
-    return scan_files(SRC_DIR, suffixes=(".h",))
-
-
-def all_src_files() -> list[Path]:
-    return scan_files(SRC_DIR, suffixes=(".h", ".cc"))
 
 
 def count_pure_virtual_methods(class_body: str) -> int:
@@ -82,9 +69,20 @@ def has_virtual_method_matching(class_body: str, name_pattern: str) -> bool:
 
 
 def main() -> int:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    src_dir = case_root / "src"
     failures: list[str] = []
 
-    recorder_h = read("metric_recorder.h")
+    recorder_h = read_text(src_dir / "metric_recorder.h")
     if not recorder_h:
         return emit_check_result(
             passed=False, findings=["metric_recorder.h is missing."]
@@ -148,7 +146,7 @@ def main() -> int:
 
     # Assertion 2: a buffered MetricRecorder subclass must exist.
     buffered_class_match: tuple[Path, str] | None = None
-    for path in all_src_headers():
+    for path in scan_files(src_dir, suffixes=(".h",)):
         text = strip_comments(path.read_text(encoding="utf-8"))
         m = re.search(
             r"class\s+(\w+)\s*:\s*public\s+MetricRecorder\b",
@@ -201,8 +199,8 @@ def main() -> int:
     # visibility-trigger, so we just need to ensure ConsoleMetricRecorder can
     # call it (either by overriding or inheriting). Since C++ inheritance
     # provides this automatically, we only verify that Record is overridden.
-    console_h = read("console_metric_recorder.h")
-    console_cc = read("console_metric_recorder.cc")
+    console_h = read_text(src_dir / "console_metric_recorder.h")
+    console_cc = read_text(src_dir / "console_metric_recorder.cc")
     console_combined = strip_comments(console_h + "\n" + console_cc)
     console_body = (
         find_class_body(strip_comments(console_h), "ConsoleMetricRecorder") or ""
@@ -223,8 +221,8 @@ def main() -> int:
     # type in its source files (excluding #include lines, which are
     # implementation-detail noise that does not constitute a dependency
     # in the type system).
-    collector_h = read("metric_collector.h")
-    collector_cc = read("metric_collector.cc")
+    collector_h = read_text(src_dir / "metric_collector.h")
+    collector_cc = read_text(src_dir / "metric_collector.cc")
     collector_combined = strip_comments(collector_h + "\n" + collector_cc)
     non_include_lines = "\n".join(
         line

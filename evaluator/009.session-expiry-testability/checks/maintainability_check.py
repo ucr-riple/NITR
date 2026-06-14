@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-import re
+
+import argparse
+from pathlib import Path
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
@@ -9,11 +11,6 @@ from evaluator.shared.path_checks import (
 )
 from evaluator.shared.source_analysis import find_matching_patterns, has_any_pattern
 from evaluator.shared.check_output import emit_check_result
-
-ROOT = case_root_from_script(__file__)
-EVALUATOR_ROOT = evaluator_root_from_script(__file__)
-SRC_DIR = ROOT / "src"
-TEST_DIR = EVALUATOR_ROOT / "tests"
 
 FORBIDDEN_SRC_PATTERNS = [
     r"system_clock::now",
@@ -47,9 +44,28 @@ SUSPICIOUS_API_PATTERNS = [
 
 
 def main() -> int:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    parser.add_argument(
+        "--evaluator_root",
+        type=Path,
+        default=evaluator_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    evaluator_root = args.evaluator_root.resolve()
+    src_dir = case_root / "src"
+    test_dir = evaluator_root / "tests"
+
     failures = []
 
-    for path in scan_files(SRC_DIR, suffixes=(".h", ".cc", ".cpp")):
+    for path in scan_files(src_dir, suffixes=(".h", ".cc", ".cpp")):
         if path.name == "time_source.cc":
             continue
         text = path.read_text()
@@ -57,22 +73,22 @@ def main() -> int:
         suspicious = find_matching_patterns(SUSPICIOUS_API_PATTERNS, text)
         if forbidden:
             failures.append(
-                f"forbidden time coupling in {path.relative_to(ROOT)}: {forbidden}"
+                f"forbidden time coupling in {path.relative_to(case_root)}: {forbidden}"
             )
         if suspicious:
             failures.append(
-                f"evaluation-only API smell in {path.relative_to(ROOT)}: {suspicious}"
+                f"evaluation-only API smell in {path.relative_to(case_root)}: {suspicious}"
             )
 
-    for path in scan_files(TEST_DIR, suffixes=(".h", ".cc", ".cpp")):
+    for path in scan_files(test_dir, suffixes=(".h", ".cc", ".cpp")):
         text = path.read_text()
         forbidden = find_matching_patterns(FORBIDDEN_TEST_PATTERNS, text)
         if forbidden:
             failures.append(
-                f"sleep-based test detected in {path.relative_to(EVALUATOR_ROOT)}: {forbidden}"
+                f"sleep-based test detected in {path.relative_to(evaluator_root)}: {forbidden}"
             )
 
-    header_path = SRC_DIR / "session_manager.h"
+    header_path = src_dir / "session_manager.h"
     if find_missing_paths([header_path]):
         failures.append(
             "session_manager.h is missing from cases/009.session-expiry-testability/src/"
