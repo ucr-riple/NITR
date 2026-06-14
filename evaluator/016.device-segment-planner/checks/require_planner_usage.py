@@ -1,4 +1,20 @@
 #!/usr/bin/env python3
+
+"""Enforce planner delegation for case 016.
+
+Rule:
+  - `src/pipeline_runner.cc` must route execution through `BuildExecutionPlan(...)`.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root)
+  - File:
+      - `src/pipeline_runner.cc`
+
+Output:
+  - `{"passed": bool, "findings": []}` on success,
+    or early failure via shared fail helper when source file is missing.
+"""
+
 import argparse
 from pathlib import Path
 

@@ -1,4 +1,20 @@
 #!/usr/bin/env python3
+
+"""Detect hardcoded step-index branching in production code for case 016.
+
+Rule:
+  - Forbid suspicious `==` comparisons against legacy step literals that signal
+    non-robust branching logic.
+
+Inputs:
+  - No explicit CLI args.
+  - Scans `.cc` files under `src/`.
+  - Ignores known test allowlisted files.
+
+Output:
+  - `{"passed": bool, "findings": [violations]}` via emit_check_result.
+"""
+
 from pathlib import Path
 import re
 
