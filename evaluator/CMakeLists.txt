@@ -118,9 +118,9 @@ endfunction()
 function(nitr_register_case_005)
   nitr_case_source_dir(CASE_DIR 005.pricing-ocp)
   nitr_case_evaluator_dir(EVAL_DIR 005.pricing-ocp)
-  nitr_add_gtest(pricing_ocp_tests pricing_ocp_lib ${EVAL_DIR}/tests/test_pricing.cc)
-  target_sources(pricing_ocp_tests PRIVATE
-    ${EVAL_DIR}/checks/inject/injected_rule.cc
+  nitr_add_gtest(test_pricing_ocp pricing_ocp_lib ${EVAL_DIR}/tests/test_pricing.cc)
+  target_sources(test_pricing_ocp PRIVATE
+    ${EVAL_DIR}/tests/injected_rule.cc
   )
   nitr_add_python_test(
     pricing_ocp_structural_check
@@ -154,7 +154,7 @@ function(nitr_register_case_008)
   nitr_add_gtest(test_basic case008_lib ${EVAL_DIR}/tests/test_basic.cc)
   add_executable(case008_plugin_reverse_test
     ${EVAL_DIR}/tests/test_plugin_reverse.cc
-    ${EVAL_DIR}/checks/reverse_plugin.cc
+    ${EVAL_DIR}/tests/reverse_plugin.cc
   )
   target_link_libraries(case008_plugin_reverse_test PRIVATE case008_lib gtest_main)
   add_test(NAME case008_plugin_reverse_test COMMAND case008_plugin_reverse_test)
@@ -292,22 +292,22 @@ function(nitr_register_case_016)
     set_tests_properties(${test_name} PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
   endfunction()
 
-  add_case016_test(config_loader_smoke_test ${EVAL_DIR}/tests/test_config_loader_smoke.cc)
-  add_case016_test(runner_smoke_test ${EVAL_DIR}/tests/test_runner_smoke.cc)
-  add_case016_test(execution_plan_legacy_test ${EVAL_DIR}/tests/test_execution_plan_legacy.cc)
-  add_case016_test(execution_plan_updated_test ${EVAL_DIR}/tests/test_execution_plan_updated.cc)
-  add_case016_test(execution_plan_unseen_test ${EVAL_DIR}/tests/test_execution_plan_unseen.cc)
-  add_case016_test(runner_respects_segmentation_test ${EVAL_DIR}/tests/test_runner_respects_segmentation.cc)
+  add_case016_test(test_config_loader_smoke ${EVAL_DIR}/tests/test_config_loader_smoke.cc)
+  add_case016_test(test_runner_smoke ${EVAL_DIR}/tests/test_runner_smoke.cc)
+  add_case016_test(test_execution_plan_legacy ${EVAL_DIR}/tests/test_execution_plan_legacy.cc)
+  add_case016_test(test_execution_plan_updated ${EVAL_DIR}/tests/test_execution_plan_updated.cc)
+  add_case016_test(test_execution_plan_unseen ${EVAL_DIR}/tests/test_execution_plan_unseen.cc)
+  add_case016_test(test_runner_respects_segmentation ${EVAL_DIR}/tests/test_runner_respects_segmentation.cc)
 
   nitr_add_python_test(
     require_planner_usage_check
-    ${EVAL_DIR}/checks/require_planner_usage.py
+    ${EVAL_DIR}/checks/check_require_planner_usage.py
   )
   set_tests_properties(require_planner_usage_check PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   nitr_add_python_test(
     no_step_index_special_case_check
-    ${EVAL_DIR}/checks/no_step_index_special_case.py
+    ${EVAL_DIR}/checks/check_no_step_index_special_case.py
   )
   set_tests_properties(no_step_index_special_case_check PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
