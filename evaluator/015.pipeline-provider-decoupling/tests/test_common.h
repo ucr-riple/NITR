@@ -1,8 +1,6 @@
 #pragma once
 
 #include <fstream>
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -28,11 +26,6 @@ inline std::vector<std::string> ReadExpectedLines(const std::string& path) {
     }
   }
   return lines;
-}
-
-inline int Fail(const std::string& message) {
-  std::cerr << message << std::endl;
-  return 1;
 }
 
 }  // namespace case015_test

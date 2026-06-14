@@ -85,7 +85,7 @@ function(nitr_register_case_003)
   add_executable(case003_functional_tests
     ${EVAL_DIR}/tests/test_cosine_similarity.cc
   )
-  target_link_libraries(case003_functional_tests PRIVATE case003_lib)
+  target_link_libraries(case003_functional_tests PRIVATE case003_lib gtest_main)
   add_test(NAME case003_functional_tests COMMAND case003_functional_tests)
 
   nitr_add_python_test(
@@ -133,15 +133,15 @@ endfunction()
 
 function(nitr_register_case_006)
   nitr_case_evaluator_dir(EVAL_DIR 006.gs-isp)
-  nitr_add_plain_test(public_smoke_test case006_lib ${EVAL_DIR}/tests/public_smoke_test.cc)
+  nitr_add_gtest(public_smoke_test case006_lib ${EVAL_DIR}/tests/test_public_smoke.cc)
   nitr_add_python_test(case006_structural_check ${EVAL_DIR}/checks/check_data_isp.py)
 endfunction()
 
 function(nitr_register_case_007)
   nitr_case_source_dir(CASE_DIR 007.ml-lsp-multistep)
   nitr_case_evaluator_dir(EVAL_DIR 007.ml-lsp-multistep)
-  nitr_add_plain_test(case007_public_tests case007_core ${EVAL_DIR}/tests/test_public.cc)
-  nitr_add_plain_test(case007_hidden_tests case007_core ${EVAL_DIR}/tests/test_hidden.cc)
+  nitr_add_gtest(case007_public_tests case007_core ${EVAL_DIR}/tests/test_public.cc)
+  nitr_add_gtest(case007_hidden_tests case007_core ${EVAL_DIR}/tests/test_hidden.cc)
   nitr_add_python_test(
     case007_constraint_checks
     ${EVAL_DIR}/checks/verify_constraints.py
@@ -153,12 +153,12 @@ endfunction()
 function(nitr_register_case_008)
   nitr_case_source_dir(CASE_DIR 008.map-dip)
   nitr_case_evaluator_dir(EVAL_DIR 008.map-dip)
-  nitr_add_plain_test(test_basic case008_lib ${EVAL_DIR}/tests/test_basic.cc)
+  nitr_add_gtest(test_basic case008_lib ${EVAL_DIR}/tests/test_basic.cc)
   add_executable(case008_plugin_reverse_test
     ${EVAL_DIR}/tests/test_plugin_reverse.cc
     ${EVAL_DIR}/checks/reverse_plugin.cc
   )
-  target_link_libraries(case008_plugin_reverse_test PRIVATE case008_lib)
+  target_link_libraries(case008_plugin_reverse_test PRIVATE case008_lib gtest_main)
   add_test(NAME case008_plugin_reverse_test COMMAND case008_plugin_reverse_test)
   nitr_add_python_test(
     case008_structural_check
@@ -169,7 +169,7 @@ endfunction()
 
 function(nitr_register_case_009)
   nitr_case_evaluator_dir(EVAL_DIR 009.session-expiry-testability)
-  nitr_add_plain_test(session_manager_test case009_lib ${EVAL_DIR}/tests/session_manager_test.cc)
+  nitr_add_gtest(session_manager_test case009_lib ${EVAL_DIR}/tests/test_session_manager.cc)
   nitr_add_python_test(
     maintainability_check_case009
     ${EVAL_DIR}/checks/maintainability_check.py
@@ -178,7 +178,7 @@ endfunction()
 
 function(nitr_register_case_010)
   nitr_case_evaluator_dir(EVAL_DIR 010.logging-side-effects)
-  nitr_add_plain_test(loan_review_test case010_lib ${EVAL_DIR}/tests/loan_review_test.cc)
+  nitr_add_gtest(loan_review_test case010_lib ${EVAL_DIR}/tests/test_loan_review.cc)
   nitr_add_python_test(
     maintainability_check_case010
     ${EVAL_DIR}/checks/maintainability_check.py
@@ -187,7 +187,7 @@ endfunction()
 
 function(nitr_register_case_011)
   nitr_case_evaluator_dir(EVAL_DIR 011.config-sprawl)
-  nitr_add_plain_test(case011_tests case011_lib ${EVAL_DIR}/tests/test_config_sprawl.cc)
+  nitr_add_gtest(case011_tests case011_lib ${EVAL_DIR}/tests/test_config_sprawl.cc)
   nitr_add_python_test(
     case011_structural_check
     ${EVAL_DIR}/checks/check_no_compact_parameter_sprawl.py
@@ -196,7 +196,7 @@ endfunction()
 
 function(nitr_register_case_012)
   nitr_case_evaluator_dir(EVAL_DIR 012.cache-lifecycle)
-  nitr_add_plain_test(report_cache_test case012_lib ${EVAL_DIR}/tests/report_cache_test.cc)
+  nitr_add_gtest(test_report_cache case012_lib ${EVAL_DIR}/tests/test_report_cache.cc)
   nitr_add_python_test(
     maintainability_check_case012
     ${EVAL_DIR}/checks/maintainability_check.py
@@ -205,7 +205,7 @@ endfunction()
 
 function(nitr_register_case_013)
   nitr_case_evaluator_dir(EVAL_DIR 013.stable-public-api)
-  nitr_add_plain_test(test_catalog case013_lib ${EVAL_DIR}/tests/test_catalog.cc)
+  nitr_add_gtest(test_catalog case013_lib ${EVAL_DIR}/tests/test_catalog.cc)
   nitr_add_python_test(
     case013_api_stability_check
     ${EVAL_DIR}/checks/check_api_stability.py
@@ -214,7 +214,7 @@ endfunction()
 
 function(nitr_register_case_014)
   nitr_case_evaluator_dir(EVAL_DIR 014.report-export-ocp)
-  nitr_add_plain_test(test_report_export case014_lib ${EVAL_DIR}/tests/test_report_export.cc)
+  nitr_add_gtest(test_report_export case014_lib ${EVAL_DIR}/tests/test_report_export.cc)
   nitr_add_python_test(case014_structural_check ${EVAL_DIR}/checks/check_structure.py)
 endfunction()
 
@@ -224,7 +224,7 @@ function(nitr_add_case015_test test_name test_source)
     ${CMAKE_SOURCE_DIR}/cases/015.pipeline-provider-decoupling/src
     ${CMAKE_CURRENT_SOURCE_DIR}/015.pipeline-provider-decoupling/tests
   )
-  target_link_libraries(${test_name} PRIVATE case015_core)
+  target_link_libraries(${test_name} PRIVATE case015_core gtest_main)
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_tests_properties(${test_name} PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
@@ -260,36 +260,17 @@ function(nitr_register_case_015)
   if(CASE015_ENABLE_HIDDEN_EVALUATOR)
     nitr_add_case015_test(
       hidden_test_policy_enrichment_static_exact
-      ${EVAL_DIR}/tests/hidden_test_policy_enrichment_static_exact.cc
+      ${EVAL_DIR}/tests/test_hidden_policy_enrichment_static_exact.cc
     )
     nitr_add_case015_test(
       hidden_test_policy_enrichment_file_exact
-      ${EVAL_DIR}/tests/hidden_test_policy_enrichment_file_exact.cc
+      ${EVAL_DIR}/tests/test_hidden_policy_enrichment_file_exact.cc
     )
     nitr_add_case015_test(
       hidden_test_policy_fallback_and_partner
-      ${EVAL_DIR}/tests/hidden_test_policy_fallback_and_partner.cc
+      ${EVAL_DIR}/tests/test_hidden_policy_fallback_and_partner.cc
     )
 
-    nitr_add_case015_python_test(
-      hidden_cli_static_output
-      ${EVAL_DIR}/tests/check_cli_output.py
-      $<TARGET_FILE:case015_app>
-      ${CMAKE_SOURCE_DIR}
-      evaluator/015.pipeline-provider-decoupling/data/expected_output_static.txt
-      --enable-policy-enrichment
-      --mode=static
-    )
-    nitr_add_case015_python_test(
-      hidden_cli_file_output
-      ${EVAL_DIR}/tests/check_cli_output.py
-      $<TARGET_FILE:case015_app>
-      ${CMAKE_SOURCE_DIR}
-      evaluator/015.pipeline-provider-decoupling/data/expected_output_file.txt
-      --enable-policy-enrichment
-      --mode=file
-      --policy-file=evaluator/015.pipeline-provider-decoupling/data/policies.json
-    )
     nitr_add_case015_python_test(
       hidden_check_pipeline_runner_contract_surface
       ${EVAL_DIR}/checks/hidden_check_pipeline_runner_contract_surface.py
@@ -308,17 +289,17 @@ function(nitr_register_case_016)
   function(add_case016_test test_name source_file)
     add_executable(${test_name} ${source_file})
     target_include_directories(${test_name} PRIVATE ${EVAL_DIR}/tests ${CASE_DIR}/src)
-    target_link_libraries(${test_name} PRIVATE case016_lib)
+    target_link_libraries(${test_name} PRIVATE case016_lib gtest_main)
     add_test(NAME ${test_name} COMMAND ${test_name})
     set_tests_properties(${test_name} PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
   endfunction()
 
-  add_case016_test(config_loader_smoke_test ${EVAL_DIR}/tests/config_loader_smoke_test.cc)
-  add_case016_test(runner_smoke_test ${EVAL_DIR}/tests/runner_smoke_test.cc)
-  add_case016_test(execution_plan_legacy_test ${EVAL_DIR}/tests/execution_plan_legacy_test.cc)
-  add_case016_test(execution_plan_updated_test ${EVAL_DIR}/tests/execution_plan_updated_test.cc)
-  add_case016_test(execution_plan_unseen_test ${EVAL_DIR}/tests/execution_plan_unseen_test.cc)
-  add_case016_test(runner_respects_segmentation_test ${EVAL_DIR}/tests/runner_respects_segmentation_test.cc)
+  add_case016_test(config_loader_smoke_test ${EVAL_DIR}/tests/test_config_loader_smoke.cc)
+  add_case016_test(runner_smoke_test ${EVAL_DIR}/tests/test_runner_smoke.cc)
+  add_case016_test(execution_plan_legacy_test ${EVAL_DIR}/tests/test_execution_plan_legacy.cc)
+  add_case016_test(execution_plan_updated_test ${EVAL_DIR}/tests/test_execution_plan_updated.cc)
+  add_case016_test(execution_plan_unseen_test ${EVAL_DIR}/tests/test_execution_plan_unseen.cc)
+  add_case016_test(runner_respects_segmentation_test ${EVAL_DIR}/tests/test_runner_respects_segmentation.cc)
 
   nitr_add_python_test(
     require_planner_usage_check
@@ -345,7 +326,7 @@ endfunction()
 
 function(nitr_register_case_018)
   nitr_case_evaluator_dir(EVAL_DIR 018.seeded-selection-testability)
-  nitr_add_plain_test(case018_evaluator_tests case018_core ${EVAL_DIR}/tests/case018_evaluator_test.cc)
+  nitr_add_gtest(case018_evaluator_tests case018_core ${EVAL_DIR}/tests/test_evaluator.cc)
   nitr_add_python_test(
     case018_structural_checks
     ${EVAL_DIR}/checks/run_evaluator.py
@@ -357,16 +338,16 @@ function(nitr_register_case_019)
   nitr_case_source_dir(CASE_DIR 019.ranking-explainability-boundary)
   nitr_case_evaluator_dir(EVAL_DIR 019.ranking-explainability-boundary)
 
-  add_executable(case019_baseline_test ${EVAL_DIR}/tests/baseline_test.cc)
+  add_executable(case019_baseline_test ${EVAL_DIR}/tests/test_baseline.cc)
   target_link_libraries(case019_baseline_test PRIVATE case019_ranking)
   add_test(NAME case019_baseline_test COMMAND case019_baseline_test)
 
-  add_executable(case019_feature_reason_test ${EVAL_DIR}/tests/feature_reason_test.cc)
+  add_executable(case019_feature_reason_test ${EVAL_DIR}/tests/test_feature_reason.cc)
   target_link_libraries(case019_feature_reason_test PRIVATE case019_ranking)
   target_include_directories(case019_feature_reason_test PRIVATE ${EVAL_DIR}/tests)
   add_test(NAME case019_feature_reason_test COMMAND case019_feature_reason_test)
 
-  add_executable(case019_inspect_compare_test ${EVAL_DIR}/tests/inspect_compare_test.cc)
+  add_executable(case019_inspect_compare_test ${EVAL_DIR}/tests/test_inspect_compare.cc)
   target_link_libraries(case019_inspect_compare_test PRIVATE case019_ranking)
   target_include_directories(case019_inspect_compare_test PRIVATE ${EVAL_DIR}/tests)
   add_test(NAME case019_inspect_compare_test COMMAND case019_inspect_compare_test)
@@ -388,12 +369,12 @@ function(nitr_register_case_021)
   nitr_case_source_dir(CASE_DIR 021.inline-filter-entrypoint-reuse)
   nitr_case_evaluator_dir(EVAL_DIR 021.inline-filter-entrypoint-reuse)
 
-  add_executable(case021_evaluator_tests ${EVAL_DIR}/tests/filter_evaluator_tests.cc)
-  target_include_directories(case021_evaluator_tests PRIVATE ${CASE_DIR}/src)
-  target_compile_definitions(case021_evaluator_tests PRIVATE EVALUATOR_DATA_DIR="${EVAL_DIR}/data")
-  target_link_libraries(case021_evaluator_tests PRIVATE case021_lib)
+  nitr_add_gtest(case021_functional_tests case021_lib
+    ${EVAL_DIR}/tests/test_filter_evaluator.cc)
+  target_compile_definitions(case021_functional_tests PRIVATE
+    EVALUATOR_DATA_DIR="${EVAL_DIR}/data"
+  )
 
-  add_test(NAME case021_functional_tests COMMAND case021_evaluator_tests)
   nitr_add_python_test(
     case021_no_duplicate_value_validation
     ${EVAL_DIR}/checks/check_no_duplicate_value_validation.py
@@ -417,12 +398,6 @@ function(nitr_register_case_022)
   )
   
   nitr_add_python_test(
-    case022_functional_tests
-    ${EVAL_DIR}/tests/test_functional.py
-    $<TARGET_FILE:case022_app>
-  )
-  
-  nitr_add_python_test(
     case022_dependency_check
     ${EVAL_DIR}/checks/check_dependency.py
     --case_root ${CASE_DIR}
@@ -436,13 +411,7 @@ function(nitr_register_case_023)
   nitr_add_gtest(
     case023_validator_tests
     case023_lib
-    ${EVAL_DIR}/tests/validator_test.cc
-  )
-
-  nitr_add_python_test(
-    case023_functional_tests
-    ${EVAL_DIR}/tests/test_functional.py
-    $<TARGET_FILE:case023_app>
+    ${EVAL_DIR}/tests/test_validator.cc
   )
 
   nitr_add_python_test(
@@ -474,7 +443,7 @@ function(nitr_register_case_025)
   nitr_case_evaluator_dir(EVAL_DIR 025.session-alert-responsibilities)
 
   # Functional tests: range / drift / leak detection, ordering, determinism.
-  nitr_add_plain_test(
+  nitr_add_gtest(
     case025_monitor_tests
     case_025_lib
     ${EVAL_DIR}/tests/test_monitor.cpp

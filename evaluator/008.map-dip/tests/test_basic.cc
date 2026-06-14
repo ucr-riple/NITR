@@ -1,23 +1,9 @@
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <string>
 
+#include <gtest/gtest.h>
+
 #include "map_snapshot.h"
-
-static int g_failures = 0;
-
-static void ExpectEq(const std::string& got, const std::string& expected,
-                     const char* name) {
-  if (got != expected) {
-    std::cerr << "[FAIL] " << name << "\n"
-              << "  got:\n"
-              << got << "  expected:\n"
-              << expected;
-    g_failures++;
-  } else {
-    std::cerr << "[ OK ] " << name << "\n";
-  }
-}
 
 static nlohmann::json MakeCfg() {
   nlohmann::json::object_t cfg;
@@ -35,7 +21,7 @@ static nlohmann::json MakeCfg() {
   return nlohmann::json(std::move(cfg));
 }
 
-int main() {
+TEST(Case008MapDip, BasicLayersBuildSnapshot) {
   using nitr::case008::MapSnapshotService;
 
   const std::string payload = "  foo bar42  \n";
@@ -48,12 +34,6 @@ int main() {
       "SNAPSHOT\n"
       "geometry:alnum_count=8\n"
       "semantics:first_token=foo\n";
-  ExpectEq(out, expected, "basic_layers");
 
-  if (g_failures != 0) {
-    std::cerr << g_failures << " test(s) failed.\n";
-    return 1;
-  }
-  std::cerr << "All tests passed.\n";
-  return 0;
+  EXPECT_EQ(out, expected);
 }

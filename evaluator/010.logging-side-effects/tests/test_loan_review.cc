@@ -1,4 +1,5 @@
-#include <cassert>
+#include <gtest/gtest.h>
+
 #include <string>
 #include <vector>
 
@@ -18,28 +19,30 @@ class MemoryAuditLogger final : public nitr::case010::AuditLogger {
   std::vector<std::string> messages;
 };
 
-void TestEvaluateApplicantApprovesEligibleApplicant() {
+}  // namespace
+
+TEST(Case010LoanReview, ApprovesEligibleApplicant) {
   const nitr::case010::Applicant applicant{"alice", 750, 90000, 0.20};
   const nitr::case010::ReviewDecision decision =
       nitr::case010::EvaluateApplicant(applicant);
 
-  assert(decision.approved);
-  assert(decision.denial_reasons.empty());
+  EXPECT_TRUE(decision.approved);
+  EXPECT_TRUE(decision.denial_reasons.empty());
 }
 
-void TestEvaluateApplicantReturnsOrderedReasons() {
+TEST(Case010LoanReview, ReturnsOrderedDenialReasons) {
   const nitr::case010::Applicant applicant{"carol", 680, 40000, 0.45};
   const nitr::case010::ReviewDecision decision =
       nitr::case010::EvaluateApplicant(applicant);
 
-  assert(!decision.approved);
-  assert(decision.denial_reasons.size() == 3);
-  assert(decision.denial_reasons[0] == "low_credit");
-  assert(decision.denial_reasons[1] == "low_income");
-  assert(decision.denial_reasons[2] == "high_debt");
+  EXPECT_FALSE(decision.approved);
+  EXPECT_EQ(decision.denial_reasons.size(), 3u);
+  EXPECT_EQ(decision.denial_reasons[0], "low_credit");
+  EXPECT_EQ(decision.denial_reasons[1], "low_income");
+  EXPECT_EQ(decision.denial_reasons[2], "high_debt");
 }
 
-void TestReviewApplicantsCollectsApprovedIdsAndAuditMessages() {
+TEST(Case010LoanReview, ReviewBatchCollectsApprovedIdsAndAuditMessages) {
   const std::vector<nitr::case010::Applicant> applicants = {
       {"alice", 750, 90000, 0.20},
       {"bob", 650, 80000, 0.30},
@@ -50,20 +53,11 @@ void TestReviewApplicantsCollectsApprovedIdsAndAuditMessages() {
   const nitr::case010::ReviewBatchResult result =
       nitr::case010::ReviewApplicants(applicants, &logger);
 
-  assert(result.approved_ids.size() == 1);
-  assert(result.approved_ids[0] == "alice");
+  ASSERT_EQ(result.approved_ids.size(), 1u);
+  EXPECT_EQ(result.approved_ids[0], "alice");
 
-  assert(logger.messages.size() == 3);
-  assert(logger.messages[0] == "alice approved");
-  assert(logger.messages[1] == "bob denied: low_credit");
-  assert(logger.messages[2] == "carol denied: low_income,high_debt");
-}
-
-}  // namespace
-
-int main() {
-  TestEvaluateApplicantApprovesEligibleApplicant();
-  TestEvaluateApplicantReturnsOrderedReasons();
-  TestReviewApplicantsCollectsApprovedIdsAndAuditMessages();
-  return 0;
+  ASSERT_EQ(logger.messages.size(), 3u);
+  EXPECT_EQ(logger.messages[0], "alice approved");
+  EXPECT_EQ(logger.messages[1], "bob denied: low_credit");
+  EXPECT_EQ(logger.messages[2], "carol denied: low_income,high_debt");
 }

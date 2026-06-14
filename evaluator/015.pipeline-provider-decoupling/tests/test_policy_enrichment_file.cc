@@ -1,7 +1,8 @@
 #include "build_pipeline.h"
 #include "test_common.h"
+#include <gtest/gtest.h>
 
-int main() {
+TEST(Case015PolicyEnrichment, FileSmoke) {
   nitr::case015::PipelineConfig config;
   config.policy_mode = nitr::case015::PolicyMode::kFile;
   config.policy_file_path =
@@ -10,10 +11,5 @@ int main() {
 
   const auto pipeline = nitr::case015::BuildPipeline(config);
   const auto actual = pipeline.runner.Run(case015_test::SampleEvents());
-
-  if (actual.empty()) {
-    return case015_test::Fail(
-        "File-mode smoke test failed: expected non-empty output.");
-  }
-  return 0;
+  EXPECT_FALSE(actual.empty());
 }

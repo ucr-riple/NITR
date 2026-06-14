@@ -22,7 +22,7 @@ This case checks whether the agent can add a local optimization without making s
 - `src/summary_engine.h/.cc`: pure summary computation dependency
 - `src/inventory_report_service.h/.cc`: service that owns products and should own cache state
 - `app/main.cc`: demo executable
-- `evaluator/012.cache-lifecycle/tests/report_cache_test.cc`: functional tests
+- `evaluator/012.cache-lifecycle/tests/test_report_cache.cc`: functional tests
 - `evaluator/012.cache-lifecycle/checks/maintainability_check.py`: structural checks
 
 ## Task intent

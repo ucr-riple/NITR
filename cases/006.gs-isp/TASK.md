@@ -12,7 +12,7 @@ Required outcome:
 
 Constraints:
 - do **not** modify `app/main.cc`
-- do **not** modify `evaluator/tests/public_smoke_test.cc`
+- do **not** modify `evaluator/tests/test_public_smoke.cc`
 - do **not** add third-party dependencies
 - do **not** use RTTI, reflection, or type-switching on concrete classes
 - you may add new files, wrappers, adapters, or view classes
