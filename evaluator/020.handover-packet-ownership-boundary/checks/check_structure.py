@@ -195,7 +195,7 @@ def main() -> int:
             )
         )
 
-    domain_candidates = find_domain_assembly_candidates(source_files)
+    domain_candidates = find_domain_assembly_candidates(source_files, src_dir, case_root)
     if not domain_candidates:
         findings.append(
             Finding(
