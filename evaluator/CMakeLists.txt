@@ -5,6 +5,8 @@ add_subdirectory(
   ${CMAKE_BINARY_DIR}/_deps/googletest-build
   EXCLUDE_FROM_ALL
 )
+set_property(TARGET gtest PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "")
+set_property(TARGET gtest_main PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "")
 
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 find_program(BASH_PROGRAM bash)
