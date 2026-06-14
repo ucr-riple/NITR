@@ -36,7 +36,7 @@ from evaluator.shared.path_checks import (
     scan_files,
 )
 from evaluator.shared.source_analysis import find_matching_patterns, regex_matches
-from evaluator.shared.check_output import emit_check_result
+from evaluator.shared.check_output import RunResult, emit_check_result
 
 
 def run(cmd: List[str]) -> Tuple[int, str, str]:
@@ -47,9 +47,9 @@ def run(cmd: List[str]) -> Tuple[int, str, str]:
         )
         return proc.returncode, proc.stdout, proc.stderr
     except FileNotFoundError:
-        return 127, "", f"Command not found: {cmd[0]}"
+        return RunResult.COMMAND_NOT_FOUND, "", f"Command not found: {cmd[0]}"
     except Exception as e:
-        return 1, "", f"Failed to run {cmd}: {e}"
+        return RunResult.FAILED, "", f"Failed to run {cmd}: {e}"
 
 
 def rel(p: Path, root: Path) -> str:
