@@ -1,6 +1,29 @@
 #!/usr/bin/env python3
 # evaluator/checks/check.py
 
+"""Structural enforcement for case 004 (CV/SRP decomposition and dependency constraints).
+
+Rules:
+  - Prevent legacy monolith from being modified or referenced from unrelated files.
+  - Restrict `nlohmann` JSON includes to permitted locations.
+  - Enforce policy dependency boundary (no normalize/estimator includes in
+    `src/policy.cc`).
+  - Resolve and execute the expected case binary when present.
+
+Inputs:
+  - `--case_root` (defaults to script's case directory).
+
+Inputs checked:
+  - `src/legacy_monolith.*`
+  - `evaluator/oracle_main.cc`
+  - `src/io_json.*`
+  - `src/estimator_e.cc`, `src/scoring.cc`, `src/policy.cc`, and related headers.
+
+Output:
+  - emit_check_result(passed=<bool>, findings=<messages list>) and
+    optional execution reporting from the discovered test binary.
+"""
+
 from __future__ import annotations
 
 import os
