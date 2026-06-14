@@ -99,18 +99,13 @@ function(nitr_register_case_004)
   nitr_case_source_dir(CASE_DIR 004.cv-srp)
   nitr_case_evaluator_dir(EVAL_DIR 004.cv-srp)
 
-  add_executable(cv_srp_oracle
-    ${EVAL_DIR}/checks/oracle_main.cc
-    ${CASE_DIR}/src/legacy_monolith.cc
-  )
-  target_include_directories(cv_srp_oracle PRIVATE ${CASE_DIR}/src)
-  target_link_libraries(cv_srp_oracle PRIVATE nlohmann_json cv_srp_lib)
-
   add_executable(cv_srp_tests
     ${EVAL_DIR}/tests/test_io_json.cc
     ${EVAL_DIR}/tests/test_scoring.cc
     ${EVAL_DIR}/tests/test_policy.cc
     ${EVAL_DIR}/tests/test_pipeline.cc
+    ${EVAL_DIR}/tests/test_legacy_oracle.cc
+    ${CASE_DIR}/src/legacy_monolith.cc
   )
   target_link_libraries(cv_srp_tests PRIVATE cv_srp_lib gtest_main)
   add_test(NAME cv_srp_tests COMMAND cv_srp_tests)
