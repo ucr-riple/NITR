@@ -6,7 +6,7 @@ Rules:
   - Restrict `nlohmann` JSON includes to permitted locations.
   - Enforce policy dependency boundary (no normalize/estimator includes in
     `src/policy.cc`).
-  - Resolve and execute the expected case binary when present.
+  - Enforce binary symbol isolation for `cv_srp`.
 
 Inputs:
   - `--case_root` (defaults to script's case directory).
@@ -26,7 +26,7 @@ import re
 import subprocess
 import argparse
 from pathlib import Path
-from typing import Iterable, List, Tuple, Optional
+from typing import Iterable, List, Optional, Tuple
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
@@ -242,14 +242,6 @@ def find_binary(root: Path, name: str) -> Path:
     )
 
 
-def maybe_find_binary(root: Path, name: str) -> Optional[Path]:
-    """Find a build artifact if available, but tolerate it being absent."""
-    try:
-        return find_binary(root, name)
-    except RuntimeError:
-        return None
-
-
 def symbols_via_nm(bin_path: Path) -> Optional[str]:
     """Try extracting symbols with nm."""
     rc, out, err = run(["nm", "-a", str(bin_path)])
@@ -341,12 +333,8 @@ def main() -> int:
         check_policy_dependency_restrictions(root)
         checks_run.append("check_policy_dependency_restrictions")
 
-        cv_bin = maybe_find_binary(root, "cv_srp")
-        if cv_bin is None:
-            skipped_checks.append("check_binary_symbol_isolation")
-        else:
-            check_binary_symbol_isolation(root)
-            checks_run.append("check_binary_symbol_isolation")
+        check_binary_symbol_isolation(root)
+        checks_run.append("check_binary_symbol_isolation")
 
         return emit_check_result(
             passed=True,
