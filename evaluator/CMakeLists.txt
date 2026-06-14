@@ -99,18 +99,16 @@ function(nitr_register_case_004)
   nitr_case_source_dir(CASE_DIR 004.cv-srp)
   nitr_case_evaluator_dir(EVAL_DIR 004.cv-srp)
 
-  add_executable(cv_srp_oracle
-    ${EVAL_DIR}/checks/oracle_main.cc
-    ${CASE_DIR}/src/legacy_monolith.cc
-  )
-  target_include_directories(cv_srp_oracle PRIVATE ${CASE_DIR}/src)
-  target_link_libraries(cv_srp_oracle PRIVATE nlohmann_json cv_srp_lib)
-
   add_executable(cv_srp_tests
     ${EVAL_DIR}/tests/test_io_json.cc
     ${EVAL_DIR}/tests/test_scoring.cc
     ${EVAL_DIR}/tests/test_policy.cc
     ${EVAL_DIR}/tests/test_pipeline.cc
+    ${EVAL_DIR}/tests/test_legacy_oracle.cc
+    ${CASE_DIR}/src/legacy_monolith.cc
+  )
+  target_compile_definitions(cv_srp_tests PRIVATE
+    "NITR_CASE_DATA_DIR=\"${EVAL_DIR}/data\""
   )
   target_link_libraries(cv_srp_tests PRIVATE cv_srp_lib gtest_main)
   add_test(NAME cv_srp_tests COMMAND cv_srp_tests)
@@ -120,9 +118,9 @@ endfunction()
 function(nitr_register_case_005)
   nitr_case_source_dir(CASE_DIR 005.pricing-ocp)
   nitr_case_evaluator_dir(EVAL_DIR 005.pricing-ocp)
-  nitr_add_gtest(pricing_ocp_tests pricing_ocp_lib ${EVAL_DIR}/tests/test_pricing.cc)
-  target_sources(pricing_ocp_tests PRIVATE
-    ${EVAL_DIR}/checks/inject/injected_rule.cc
+  nitr_add_gtest(test_pricing_ocp pricing_ocp_lib ${EVAL_DIR}/tests/test_pricing.cc)
+  target_sources(test_pricing_ocp PRIVATE
+    ${EVAL_DIR}/tests/injected_rule.cc
   )
   nitr_add_python_test(
     pricing_ocp_structural_check
@@ -144,7 +142,7 @@ function(nitr_register_case_007)
   nitr_add_gtest(case007_hidden_tests case007_core ${EVAL_DIR}/tests/test_hidden.cc)
   nitr_add_python_test(
     case007_constraint_checks
-    ${EVAL_DIR}/checks/verify_constraints.py
+    ${EVAL_DIR}/checks/check.py
     --case_root ${CASE_DIR}
     --baseline_case_root ${NITR_BASELINE_CASES_ROOT}/007.ml-lsp-multistep
   )
@@ -156,13 +154,13 @@ function(nitr_register_case_008)
   nitr_add_gtest(test_basic case008_lib ${EVAL_DIR}/tests/test_basic.cc)
   add_executable(case008_plugin_reverse_test
     ${EVAL_DIR}/tests/test_plugin_reverse.cc
-    ${EVAL_DIR}/checks/reverse_plugin.cc
+    ${EVAL_DIR}/tests/reverse_plugin.cc
   )
   target_link_libraries(case008_plugin_reverse_test PRIVATE case008_lib gtest_main)
   add_test(NAME case008_plugin_reverse_test COMMAND case008_plugin_reverse_test)
   nitr_add_python_test(
     case008_structural_check
-    ${EVAL_DIR}/checks/structural_check.py
+    ${EVAL_DIR}/checks/check.py
     ${CASE_DIR}
   )
 endfunction()
@@ -172,7 +170,7 @@ function(nitr_register_case_009)
   nitr_add_gtest(session_manager_test case009_lib ${EVAL_DIR}/tests/test_session_manager.cc)
   nitr_add_python_test(
     maintainability_check_case009
-    ${EVAL_DIR}/checks/maintainability_check.py
+    ${EVAL_DIR}/checks/check.py
   )
 endfunction()
 
@@ -181,7 +179,7 @@ function(nitr_register_case_010)
   nitr_add_gtest(loan_review_test case010_lib ${EVAL_DIR}/tests/test_loan_review.cc)
   nitr_add_python_test(
     maintainability_check_case010
-    ${EVAL_DIR}/checks/maintainability_check.py
+    ${EVAL_DIR}/checks/check.py
   )
 endfunction()
 
@@ -199,7 +197,7 @@ function(nitr_register_case_012)
   nitr_add_gtest(test_report_cache case012_lib ${EVAL_DIR}/tests/test_report_cache.cc)
   nitr_add_python_test(
     maintainability_check_case012
-    ${EVAL_DIR}/checks/maintainability_check.py
+    ${EVAL_DIR}/checks/check.py
   )
 endfunction()
 
@@ -259,25 +257,25 @@ function(nitr_register_case_015)
 
   if(CASE015_ENABLE_HIDDEN_EVALUATOR)
     nitr_add_case015_test(
-      hidden_test_policy_enrichment_static_exact
+      test_hidden_policy_enrichment_static_exact
       ${EVAL_DIR}/tests/test_hidden_policy_enrichment_static_exact.cc
     )
     nitr_add_case015_test(
-      hidden_test_policy_enrichment_file_exact
+      test_hidden_policy_enrichment_file_exact
       ${EVAL_DIR}/tests/test_hidden_policy_enrichment_file_exact.cc
     )
     nitr_add_case015_test(
-      hidden_test_policy_fallback_and_partner
+      test_hidden_policy_fallback_and_partner
       ${EVAL_DIR}/tests/test_hidden_policy_fallback_and_partner.cc
     )
 
     nitr_add_case015_python_test(
-      hidden_check_pipeline_runner_contract_surface
-      ${EVAL_DIR}/checks/hidden_check_pipeline_runner_contract_surface.py
+      check_hidden_pipeline_runner_contract_surface
+      ${EVAL_DIR}/checks/check_hidden_pipeline_runner_contract_surface.py
     )
     nitr_add_case015_python_test(
-      hidden_check_boundary_wiring_presence
-      ${EVAL_DIR}/checks/hidden_check_boundary_wiring_presence.py
+      check_hidden_boundary_wiring_presence
+      ${EVAL_DIR}/checks/check_hidden_boundary_wiring_presence.py
     )
   endif()
 endfunction()
@@ -294,22 +292,22 @@ function(nitr_register_case_016)
     set_tests_properties(${test_name} PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
   endfunction()
 
-  add_case016_test(config_loader_smoke_test ${EVAL_DIR}/tests/test_config_loader_smoke.cc)
-  add_case016_test(runner_smoke_test ${EVAL_DIR}/tests/test_runner_smoke.cc)
-  add_case016_test(execution_plan_legacy_test ${EVAL_DIR}/tests/test_execution_plan_legacy.cc)
-  add_case016_test(execution_plan_updated_test ${EVAL_DIR}/tests/test_execution_plan_updated.cc)
-  add_case016_test(execution_plan_unseen_test ${EVAL_DIR}/tests/test_execution_plan_unseen.cc)
-  add_case016_test(runner_respects_segmentation_test ${EVAL_DIR}/tests/test_runner_respects_segmentation.cc)
+  add_case016_test(test_config_loader_smoke ${EVAL_DIR}/tests/test_config_loader_smoke.cc)
+  add_case016_test(test_runner_smoke ${EVAL_DIR}/tests/test_runner_smoke.cc)
+  add_case016_test(test_execution_plan_legacy ${EVAL_DIR}/tests/test_execution_plan_legacy.cc)
+  add_case016_test(test_execution_plan_updated ${EVAL_DIR}/tests/test_execution_plan_updated.cc)
+  add_case016_test(test_execution_plan_unseen ${EVAL_DIR}/tests/test_execution_plan_unseen.cc)
+  add_case016_test(test_runner_respects_segmentation ${EVAL_DIR}/tests/test_runner_respects_segmentation.cc)
 
   nitr_add_python_test(
     require_planner_usage_check
-    ${EVAL_DIR}/checks/require_planner_usage.py
+    ${EVAL_DIR}/checks/check_require_planner_usage.py
   )
   set_tests_properties(require_planner_usage_check PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
   nitr_add_python_test(
     no_step_index_special_case_check
-    ${EVAL_DIR}/checks/no_step_index_special_case.py
+    ${EVAL_DIR}/checks/check_no_step_index_special_case.py
   )
   set_tests_properties(no_step_index_special_case_check PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
@@ -329,7 +327,7 @@ function(nitr_register_case_018)
   nitr_add_gtest(case018_evaluator_tests case018_core ${EVAL_DIR}/tests/test_evaluator.cc)
   nitr_add_python_test(
     case018_structural_checks
-    ${EVAL_DIR}/checks/run_evaluator.py
+    ${EVAL_DIR}/checks/check_seeded_selection.py
   )
   set_tests_properties(case018_structural_checks PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
@@ -354,15 +352,24 @@ function(nitr_register_case_019)
 
   nitr_add_python_test(
     case019_structural_check
-    ${EVAL_DIR}/checks/structural_check.py
+    ${EVAL_DIR}/checks/check.py
     --case_root ${CASE_DIR}
   )
 endfunction()
 
 function(nitr_register_case_020)
+  nitr_case_source_dir(CASE_DIR 020.handover-packet-ownership-boundary)
   nitr_case_evaluator_dir(EVAL_DIR 020.handover-packet-ownership-boundary)
-  nitr_add_python_test(case020_evaluator ${EVAL_DIR}/checks/run_evaluator.py)
-  set_tests_properties(case020_evaluator PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  nitr_add_gtest(case020_functional_tests case020_lib
+    ${EVAL_DIR}/tests/test_handover_packet.cc
+  )
+
+  nitr_add_python_test(
+    case020_structural_check
+    ${EVAL_DIR}/checks/check_structure.py
+    --case_root ${CASE_DIR}
+  )
+  set_tests_properties(case020_structural_check PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
 
 function(nitr_register_case_021)

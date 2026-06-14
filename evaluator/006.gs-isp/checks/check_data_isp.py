@@ -20,6 +20,26 @@ Output:
   - emit_check_result(passed=<bool>, findings=[violation messages]).
 """
 
+"""Validate data-ISP interface extraction constraints for case 006.
+
+Rule:
+  - Require required domain headers to exist.
+  - Forbid direct legacy `hit_buffer.h` usage from sort/shade/composite components.
+  - Ensure each ISP family (`sort`, `shade`, `composite`) still exposes expected
+    dedicated view/interface token(s).
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - Source files:
+    - `src/sort_hits.h`
+    - `src/eval_shading.h`
+    - `src/composite.h`
+    - corresponding `.cc` files for direct include scan.
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[violation messages]).
+"""
+
 import argparse
 from pathlib import Path
 

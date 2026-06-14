@@ -59,7 +59,6 @@ cases/004.cv-srp/
 evaluator/004.cv-srp/
   checks/
     check.py
-    oracle_main.cc
   data/
     simple_ok.json
     invalid_schema.json
@@ -108,7 +107,7 @@ Implement the SRP-compliant pipeline so that:
 - `cv_srp` uses the SRP pipeline by default
 - Outputs (including error handling) match the legacy reference on all provided data cases
 - SRP boundaries are respected and enforced by static checks
-- cv_srp must not link legacy; legacy is only linked into cv_srp_oracle for evaluator use.
+- cv_srp must not link legacy; legacy is only linked into dedicated oracle regression tests in evaluator tests.
 - SRP pipeline must not include or call legacy APIs.
 
 This is **not** a pure refactor: you are not asked to reshape the legacy monolith.

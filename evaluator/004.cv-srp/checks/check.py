@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """Structural enforcement for case 004 (CV/SRP decomposition and dependency constraints).
 
 Rules:
@@ -13,7 +14,6 @@ Inputs:
 
 Inputs checked:
   - `src/legacy_monolith.*`
-  - `evaluator/oracle_main.cc`
   - `src/io_json.*`
   - `src/estimator_e.cc`, `src/scoring.cc`, `src/policy.cc`, and related headers.
 
@@ -144,12 +144,11 @@ def check_legacy_not_modified(root: Path) -> None:
 
 def check_no_legacy_includes(root: Path) -> None:
     """
-    Enforce: no file outside legacy_monolith.* and evaluator/oracle_main.cc includes legacy_monolith.h
+    Enforce: no file outside legacy_monolith.* includes legacy_monolith.h.
     """
     allowed = {
         "src/legacy_monolith.cc",
         "src/legacy_monolith.h",
-        "evaluator/oracle_main.cc",
     }
     scan_disallowed_patterns(
         root,
@@ -166,12 +165,11 @@ def check_no_legacy_includes(root: Path) -> None:
 
 def check_no_legacy_symbol_references_in_source(root: Path) -> None:
     """
-    Enforce: no source calls RunLegacyMonolith except legacy and oracle main.
+    Enforce: no source file calls RunLegacyMonolith except legacy monolith files.
     """
     allowed = {
         "src/legacy_monolith.cc",
         "src/legacy_monolith.h",
-        "evaluator/oracle_main.cc",
     }
     scan_disallowed_patterns(
         root,
