@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """Structural enforcement for case 004 (CV/SRP decomposition and dependency constraints).
 
 Rules:
