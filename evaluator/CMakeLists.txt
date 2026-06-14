@@ -139,7 +139,7 @@ function(nitr_register_case_007)
   nitr_add_gtest(case007_hidden_tests case007_core ${EVAL_DIR}/tests/test_hidden.cc)
   nitr_add_python_test(
     case007_constraint_checks
-    ${EVAL_DIR}/checks/verify_constraints.py
+    ${EVAL_DIR}/checks/check.py
     --case_root ${CASE_DIR}
     --baseline_case_root ${NITR_BASELINE_CASES_ROOT}/007.ml-lsp-multistep
   )
@@ -157,7 +157,7 @@ function(nitr_register_case_008)
   add_test(NAME case008_plugin_reverse_test COMMAND case008_plugin_reverse_test)
   nitr_add_python_test(
     case008_structural_check
-    ${EVAL_DIR}/checks/structural_check.py
+    ${EVAL_DIR}/checks/check.py
     ${CASE_DIR}
   )
 endfunction()
@@ -167,7 +167,7 @@ function(nitr_register_case_009)
   nitr_add_gtest(session_manager_test case009_lib ${EVAL_DIR}/tests/test_session_manager.cc)
   nitr_add_python_test(
     maintainability_check_case009
-    ${EVAL_DIR}/checks/maintainability_check.py
+    ${EVAL_DIR}/checks/check.py
   )
 endfunction()
 
@@ -176,7 +176,7 @@ function(nitr_register_case_010)
   nitr_add_gtest(loan_review_test case010_lib ${EVAL_DIR}/tests/test_loan_review.cc)
   nitr_add_python_test(
     maintainability_check_case010
-    ${EVAL_DIR}/checks/maintainability_check.py
+    ${EVAL_DIR}/checks/check.py
   )
 endfunction()
 
@@ -194,7 +194,7 @@ function(nitr_register_case_012)
   nitr_add_gtest(test_report_cache case012_lib ${EVAL_DIR}/tests/test_report_cache.cc)
   nitr_add_python_test(
     maintainability_check_case012
-    ${EVAL_DIR}/checks/maintainability_check.py
+    ${EVAL_DIR}/checks/check.py
   )
 endfunction()
 
@@ -254,25 +254,25 @@ function(nitr_register_case_015)
 
   if(CASE015_ENABLE_HIDDEN_EVALUATOR)
     nitr_add_case015_test(
-      hidden_test_policy_enrichment_static_exact
+      test_hidden_policy_enrichment_static_exact
       ${EVAL_DIR}/tests/test_hidden_policy_enrichment_static_exact.cc
     )
     nitr_add_case015_test(
-      hidden_test_policy_enrichment_file_exact
+      test_hidden_policy_enrichment_file_exact
       ${EVAL_DIR}/tests/test_hidden_policy_enrichment_file_exact.cc
     )
     nitr_add_case015_test(
-      hidden_test_policy_fallback_and_partner
+      test_hidden_policy_fallback_and_partner
       ${EVAL_DIR}/tests/test_hidden_policy_fallback_and_partner.cc
     )
 
     nitr_add_case015_python_test(
-      hidden_check_pipeline_runner_contract_surface
-      ${EVAL_DIR}/checks/hidden_check_pipeline_runner_contract_surface.py
+      check_hidden_pipeline_runner_contract_surface
+      ${EVAL_DIR}/checks/check_hidden_pipeline_runner_contract_surface.py
     )
     nitr_add_case015_python_test(
-      hidden_check_boundary_wiring_presence
-      ${EVAL_DIR}/checks/hidden_check_boundary_wiring_presence.py
+      check_hidden_boundary_wiring_presence
+      ${EVAL_DIR}/checks/check_hidden_boundary_wiring_presence.py
     )
   endif()
 endfunction()
@@ -324,7 +324,7 @@ function(nitr_register_case_018)
   nitr_add_gtest(case018_evaluator_tests case018_core ${EVAL_DIR}/tests/test_evaluator.cc)
   nitr_add_python_test(
     case018_structural_checks
-    ${EVAL_DIR}/checks/run_evaluator.py
+    ${EVAL_DIR}/checks/check_seeded_selection.py
   )
   set_tests_properties(case018_structural_checks PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
@@ -349,15 +349,24 @@ function(nitr_register_case_019)
 
   nitr_add_python_test(
     case019_structural_check
-    ${EVAL_DIR}/checks/structural_check.py
+    ${EVAL_DIR}/checks/check.py
     --case_root ${CASE_DIR}
   )
 endfunction()
 
 function(nitr_register_case_020)
+  nitr_case_source_dir(CASE_DIR 020.handover-packet-ownership-boundary)
   nitr_case_evaluator_dir(EVAL_DIR 020.handover-packet-ownership-boundary)
-  nitr_add_python_test(case020_evaluator ${EVAL_DIR}/checks/run_evaluator.py)
-  set_tests_properties(case020_evaluator PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  nitr_add_gtest(case020_functional_tests case020_lib
+    ${EVAL_DIR}/tests/test_handover_packet.cc
+  )
+
+  nitr_add_python_test(
+    case020_structural_check
+    ${EVAL_DIR}/checks/check_structure.py
+    --case_root ${CASE_DIR}
+  )
+  set_tests_properties(case020_structural_check PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
 
 function(nitr_register_case_021)
