@@ -1,66 +1,113 @@
-#include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <limits>
+#include <random>
 #include <sstream>
 #include <string>
 
 #include <gtest/gtest.h>
+
+#include <nlohmann/json.hpp>
 
 #include "legacy_monolith.h"
 
 namespace {
 
 std::string DataPath(const std::string& file_name) {
+#ifdef NITR_CASE_DATA_DIR
+  return (std::filesystem::path(NITR_CASE_DATA_DIR) / file_name).string();
+#else
   const std::filesystem::path evaluator_dir =
       std::filesystem::path(__FILE__).parent_path();
   return (evaluator_dir / "../data" / file_name).string();
+#endif
 }
 
 std::string TemporaryOutputPath(const std::string& suffix) {
-  const auto now = std::chrono::high_resolution_clock::now().time_since_epoch();
-  const auto micros =
-      std::chrono::duration_cast<std::chrono::microseconds>(now).count();
+  static std::mt19937_64 rng(std::random_device{}());
+  static std::uniform_int_distribution<unsigned long long> dist(
+      0, std::numeric_limits<unsigned long long>::max());
+  const auto token = std::to_string(dist(rng));
   return (std::filesystem::temp_directory_path() /
-          ("case004_legacy_oracle_" + suffix + "_" + std::to_string(micros) +
+          ("case004_legacy_oracle_" + suffix + "_" + token +
            ".json"))
       .string();
+}
+
+std::string TemporaryInputPath(const std::string& suffix) {
+  return TemporaryOutputPath(suffix);
+}
+
+void RemoveIfExists(const std::string& path) {
+  std::error_code ignored;
+  (void)std::filesystem::remove(path, ignored);
 }
 
 }  // namespace
 
 TEST(LegacyOracle, OutputsForSimpleValidCase) {
   const std::string out = TemporaryOutputPath("simple");
-  const auto code = nitr::case004::RunLegacyMonolith(
-      DataPath("simple_ok.json"), out);
-  EXPECT_TRUE(code == nitr::case004::ErrorCode::kOk ||
-              code == nitr::case004::ErrorCode::kRejected ||
-              code == nitr::case004::ErrorCode::kEstimationFailed);
+  const auto code =
+      nitr::case004::RunLegacyMonolith(DataPath("simple_ok.json"), out);
+  EXPECT_NE(code, nitr::case004::ErrorCode::kInvalidJson);
+  EXPECT_NE(code, nitr::case004::ErrorCode::kInvalidSchema);
+
   std::ifstream output(out);
   if (code == nitr::case004::ErrorCode::kOk ||
       code == nitr::case004::ErrorCode::kRejected) {
     EXPECT_TRUE(output.is_open());
-    std::ostringstream buffer;
-    buffer << output.rdbuf();
-    EXPECT_NE(buffer.str().find("\"decision\""), std::string::npos);
+    const auto out_text = [&output]() {
+      std::ostringstream buffer;
+      buffer << output.rdbuf();
+      return buffer.str();
+    }();
+    const auto out_json = nlohmann::json::parse(out_text);
+    EXPECT_EQ(out_json.value("decision", ""),
+              code == nitr::case004::ErrorCode::kOk ? "ACCEPT" : "REJECT");
+    EXPECT_TRUE(out_json.contains("metrics"));
+    EXPECT_TRUE(out_json.value("metrics", nlohmann::json::object())
+                    .contains("num_inliers"));
   } else {
     EXPECT_FALSE(output.is_open());
   }
+
+  EXPECT_TRUE(code == nitr::case004::ErrorCode::kOk ||
+              code == nitr::case004::ErrorCode::kRejected ||
+              code == nitr::case004::ErrorCode::kEstimationFailed);
+
+  RemoveIfExists(out);
 }
 
 TEST(LegacyOracle, RejectCase) {
   const std::string out = TemporaryOutputPath("reject");
   const auto code = nitr::case004::RunLegacyMonolith(DataPath("reject_case.json"),
                                                     out);
+  EXPECT_NE(code, nitr::case004::ErrorCode::kInvalidJson);
+  EXPECT_NE(code, nitr::case004::ErrorCode::kInvalidSchema);
+
+  std::ifstream output(out);
+  if (code == nitr::case004::ErrorCode::kRejected) {
+    EXPECT_TRUE(output.is_open());
+    const auto out_text = [&output]() {
+      std::ostringstream buffer;
+      buffer << output.rdbuf();
+      return buffer.str();
+    }();
+    const auto out_json = nlohmann::json::parse(out_text);
+    EXPECT_EQ(out_json.value("decision", ""), "REJECT");
+    EXPECT_TRUE(out_json.contains("metrics"));
+    EXPECT_TRUE(out_json["metrics"].contains("num_matches"));
+    EXPECT_TRUE(out_json["metrics"].contains("num_inliers"));
+  } else {
+    EXPECT_FALSE(output.is_open());
+    EXPECT_EQ(code, nitr::case004::ErrorCode::kEstimationFailed);
+  }
+
   EXPECT_TRUE(code == nitr::case004::ErrorCode::kOk ||
               code == nitr::case004::ErrorCode::kRejected ||
               code == nitr::case004::ErrorCode::kEstimationFailed);
-  std::ifstream output(out);
-  if (code == nitr::case004::ErrorCode::kOk ||
-      code == nitr::case004::ErrorCode::kRejected) {
-    EXPECT_TRUE(output.is_open());
-  } else {
-    EXPECT_FALSE(output.is_open());
-  }
+
+  RemoveIfExists(out);
 }
 
 TEST(LegacyOracle, EstimationFailedCase) {
@@ -70,14 +117,14 @@ TEST(LegacyOracle, EstimationFailedCase) {
   EXPECT_EQ(code, nitr::case004::ErrorCode::kEstimationFailed);
   std::ifstream output(out);
   EXPECT_FALSE(output.is_open());
+
+  RemoveIfExists(out);
 }
 
 TEST(LegacyOracle, InvalidSchemaAndJsonInputs) {
-  const std::filesystem::path temp_dir = std::filesystem::temp_directory_path();
   const std::string invalid_schema_input =
-      (temp_dir / "case004_legacy_invalid_schema.json").string();
-  const std::string invalid_json_input =
-      (temp_dir / "case004_legacy_invalid_json.json").string();
+      TemporaryInputPath("invalid_schema");
+  const std::string invalid_json_input = TemporaryInputPath("invalid_json");
   const std::string out = TemporaryOutputPath("invalid");
 
   {
@@ -95,4 +142,8 @@ TEST(LegacyOracle, InvalidSchemaAndJsonInputs) {
   EXPECT_EQ(
       nitr::case004::RunLegacyMonolith(invalid_json_input, out),
       nitr::case004::ErrorCode::kInvalidJson);
+
+  RemoveIfExists(invalid_schema_input);
+  RemoveIfExists(invalid_json_input);
+  RemoveIfExists(out);
 }

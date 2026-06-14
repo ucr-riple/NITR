@@ -107,6 +107,9 @@ function(nitr_register_case_004)
     ${EVAL_DIR}/tests/test_legacy_oracle.cc
     ${CASE_DIR}/src/legacy_monolith.cc
   )
+  target_compile_definitions(cv_srp_tests PRIVATE
+    "NITR_CASE_DATA_DIR=\"${EVAL_DIR}/data\""
+  )
   target_link_libraries(cv_srp_tests PRIVATE cv_srp_lib gtest_main)
   add_test(NAME cv_srp_tests COMMAND cv_srp_tests)
   nitr_add_python_test(cv_srp_structural_check ${EVAL_DIR}/checks/check.py)
