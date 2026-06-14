@@ -54,7 +54,13 @@ std::vector<std::string> SplitCsvLine(const std::string& line) {
   std::string current;
   std::istringstream input(line);
   while (std::getline(input, current, ',')) {
+    if (!current.empty() && current.back() == '\r') {
+      current.pop_back();
+    }
     parts.push_back(current);
+  }
+  if (!line.empty() && line.back() == ',') {
+    parts.push_back("");
   }
   return parts;
 }
