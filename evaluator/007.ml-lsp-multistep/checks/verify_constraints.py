@@ -1,4 +1,22 @@
 #!/usr/bin/env python3
+
+"""Verify generic-transform constraints for case 007 multi-step pipeline.
+
+Rule:
+  - Keep protected files (`feature_pipeline.*`, `feature_transform.h`) unchanged
+    versus baseline.
+  - Require required transform artifacts to exist.
+  - Forbid RTTI-like constructs (`dynamic_cast`, `typeid`) in `src`.
+  - Prevent concrete transform-type leakage inside generic transform pipeline files.
+
+Inputs:
+  - `--case_root` (defaults to case root inferred from script path).
+  - `--baseline_case_root` (defaults to same inferred case root).
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[diagnostic messages]).
+"""
+
 import argparse
 from pathlib import Path
 
