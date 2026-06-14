@@ -1,9 +1,10 @@
 #include "session_manager.h"
 
-#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "time_source.h"
 
@@ -26,66 +27,57 @@ class ManualTimeSource final : public nitr::case009::TimeSource {
   std::int64_t now_seconds_;
 };
 
-void TestCreateIsImmediatelyValid() {
+TEST(Case009SessionManager, CreatedSessionIsImmediatelyValid) {
   auto clock = std::make_shared<ManualTimeSource>(100);
   nitr::case009::SessionManager manager(10, clock);
 
-  assert(manager.CreateSession("s1"));
-  assert(manager.IsValid("s1"));
+  EXPECT_TRUE(manager.CreateSession("s1"));
+  EXPECT_TRUE(manager.IsValid("s1"));
 }
 
-void TestExpiresAtBoundary() {
+TEST(Case009SessionManager, ExpiresAtBoundary) {
   auto clock = std::make_shared<ManualTimeSource>(100);
   nitr::case009::SessionManager manager(10, clock);
 
-  assert(manager.CreateSession("s1"));
+  EXPECT_TRUE(manager.CreateSession("s1"));
   clock->AdvanceSeconds(9);
-  assert(manager.IsValid("s1"));
+  EXPECT_TRUE(manager.IsValid("s1"));
 
   clock->AdvanceSeconds(1);
-  assert(!manager.IsValid("s1"));
+  EXPECT_FALSE(manager.IsValid("s1"));
 }
 
-void TestRefreshRestartsWindow() {
+TEST(Case009SessionManager, RefreshRestartsWindow) {
   auto clock = std::make_shared<ManualTimeSource>(100);
   nitr::case009::SessionManager manager(10, clock);
 
-  assert(manager.CreateSession("s1"));
+  EXPECT_TRUE(manager.CreateSession("s1"));
   clock->AdvanceSeconds(5);
-  assert(manager.RefreshSession("s1"));
+  EXPECT_TRUE(manager.RefreshSession("s1"));
 
   clock->AdvanceSeconds(9);
-  assert(manager.IsValid("s1"));
+  EXPECT_TRUE(manager.IsValid("s1"));
 
   clock->AdvanceSeconds(1);
-  assert(!manager.IsValid("s1"));
+  EXPECT_FALSE(manager.IsValid("s1"));
 }
 
-void TestCannotRefreshExpiredSession() {
+TEST(Case009SessionManager, CannotRefreshExpiredSession) {
   auto clock = std::make_shared<ManualTimeSource>(100);
   nitr::case009::SessionManager manager(10, clock);
 
-  assert(manager.CreateSession("s1"));
+  EXPECT_TRUE(manager.CreateSession("s1"));
   clock->AdvanceSeconds(10);
-  assert(!manager.RefreshSession("s1"));
+  EXPECT_FALSE(manager.RefreshSession("s1"));
 }
 
-void TestRemoveInvalidatesSession() {
+TEST(Case009SessionManager, RemoveInvalidatesSession) {
   auto clock = std::make_shared<ManualTimeSource>(100);
   nitr::case009::SessionManager manager(10, clock);
 
-  assert(manager.CreateSession("s1"));
-  assert(manager.RemoveSession("s1"));
-  assert(!manager.IsValid("s1"));
+  EXPECT_TRUE(manager.CreateSession("s1"));
+  EXPECT_TRUE(manager.RemoveSession("s1"));
+  EXPECT_FALSE(manager.IsValid("s1"));
 }
 
 }  // namespace
-
-int main() {
-  TestCreateIsImmediatelyValid();
-  TestExpiresAtBoundary();
-  TestRefreshRestartsWindow();
-  TestCannotRefreshExpiredSession();
-  TestRemoveInvalidatesSession();
-  return 0;
-}

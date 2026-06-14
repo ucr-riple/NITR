@@ -2,6 +2,7 @@
 
 #include "build_pipeline.h"
 #include "test_common.h"
+#include <gtest/gtest.h>
 
 namespace {
 
@@ -32,7 +33,7 @@ std::vector<std::string> ExpectedFile() {
 
 }  // namespace
 
-int main() {
+TEST(Case015PolicyEnrichment, FallbackAndPartnerBehavior) {
   nitr::case015::PipelineConfig static_config;
   static_config.policy_mode = nitr::case015::PolicyMode::kStatic;
   static_config.enable_policy_enrichment = true;
@@ -49,17 +50,7 @@ int main() {
   const auto static_actual =
       static_pipeline.runner.Run(PartnerAndFallbackEvents());
   const auto file_actual = file_pipeline.runner.Run(PartnerAndFallbackEvents());
-
-  if (static_actual != ExpectedStatic()) {
-    return case015_test::Fail(
-        "Static-mode partner/fallback behavior mismatch.");
-  }
-  if (file_actual != ExpectedFile()) {
-    return case015_test::Fail("File-mode partner/fallback behavior mismatch.");
-  }
-  if (static_actual == file_actual) {
-    return case015_test::Fail(
-        "Static and file provider outputs should differ for partner data.");
-  }
-  return 0;
+  EXPECT_EQ(static_actual, ExpectedStatic());
+  EXPECT_EQ(file_actual, ExpectedFile());
+  EXPECT_NE(static_actual, file_actual);
 }

@@ -13,15 +13,17 @@
 # - This is intentionally regex-based (fast, portable, and stable).
 
 import argparse
-import json
 import os
 import re
-import sys
 from pathlib import Path
-from typing import Dict, List
 
-from evaluator.shared.check_utils import normalize_text, read_text, scan_files
-
+from evaluator.shared.check_output import emit_check_result
+from evaluator.shared.path_checks import (
+    normalize_text,
+    read_text,
+    scan_files,
+)
+from evaluator.shared.source_analysis import count_matching_patterns
 
 MACRO_ADD_PATTERN = re.compile(r"^\s*#\s*define\s+add\b", re.MULTILINE)
 
@@ -62,27 +64,7 @@ EXPLICIT_DEF_PATTERNS = [
         re.MULTILINE,
     ),
 ]
-def collect_code_files(root: Path) -> List[Path]:
-    """Collect candidate source files under src/ and app/ for structural scanning."""
-    files: List[Path] = []
-    for dname in ["src", "app"]:
-        d = root / dname
-        if not d.exists():
-            continue
-        files.extend(scan_files(d, (".h", ".hpp", ".cc", ".cpp", ".cxx")))
-    return sorted(set(files), key=lambda x: str(x))
 
-
-def fail(msg: str, details: Dict) -> None:
-    """Emit a structured failure payload and terminate the evaluator."""
-    print(
-        json.dumps(
-            {"ok": False, "error": msg, "details": details},
-            indent=2,
-            ensure_ascii=False,
-        )
-    )
-    sys.exit(1)
 
 def main() -> int:
     """Enforce frozen callsites and centralized add implementation structure."""
@@ -113,27 +95,44 @@ def main() -> int:
     if ms is None:
         ms = int(os.environ.get("NITR_MILESTONE", "1"))
     if ms < 1:
-        fail("ERR_BAD_MILESTONE", {"milestone": ms})
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_BAD_MILESTONE"],
+            details={"milestone": ms},
+        )
 
     root = Path(args.case_root).resolve()
     baseline_root = Path(args.baseline_case_root).resolve()
     app_main = root / "app" / "main.cc"
     baseline_app_main = baseline_root / "app" / "main.cc"
 
-    files = collect_code_files(root)
+    files = scan_files(
+        root / "src",
+        root / "app",
+        suffixes=(".h", ".hpp", ".cc", ".cpp", ".cxx"),
+    )
     if not files:
-        fail("ERR_NO_CODE_FILES", {"searched": [str(root / "src"), str(root / "app")]})
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_NO_CODE_FILES"],
+            details={"searched": [str(root / "src"), str(root / "app")]},
+        )
 
     # (1) Freeze app/main.cc
     if ms >= args.freeze_from_milestone:
         cur = read_text(app_main)
         baseline = read_text(baseline_app_main, missing_ok=False)
         if not cur:
-            fail("ERR_MAIN_MISSING_OR_UNREADABLE", {"path": str(app_main)})
+            return emit_check_result(
+                passed=False,
+                findings=["ERR_MAIN_MISSING_OR_UNREADABLE"],
+                details={"path": str(app_main)},
+            )
         if normalize_text(cur) != normalize_text(baseline):
-            fail(
-                "ERR_MAIN_MODIFIED",
-                {
+            return emit_check_result(
+                passed=False,
+                findings=["ERR_MAIN_MODIFIED"],
+                details={
                     "path": str(app_main),
                     "baseline_path": str(baseline_app_main),
                     "milestone": ms,
@@ -145,10 +144,17 @@ def main() -> int:
     macro_hits = []
     for f in files:
         txt = read_text(f)
-        if txt and MACRO_ADD_PATTERN.search(txt):
+        if not txt:
+            continue
+        if count_matching_patterns([MACRO_ADD_PATTERN], txt) > 0:
             macro_hits.append(str(f))
+
     if macro_hits:
-        fail("ERR_ADD_MACRO_FORBIDDEN", {"files": macro_hits})
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_ADD_MACRO_FORBIDDEN"],
+            details={"files": macro_hits},
+        )
 
     # (3) Detect centralized reusable core (generic-function patterns)
     generic_hits = []
@@ -156,13 +162,15 @@ def main() -> int:
         txt = read_text(f)
         if not txt:
             continue
-        if any(p.search(txt) for p in GENERIC_ADD_PATTERNS):
+        if count_matching_patterns(GENERIC_ADD_PATTERNS, txt) > 0:
             generic_hits.append(str(f))
+
     generic_present = len(generic_hits) > 0
     if not generic_present:
-        fail(
-            "ERR_NON_MAINTAINABLE_STRUCTURE",
-            {
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_NON_MAINTAINABLE_STRUCTURE"],
+            details={
                 "note": "Implementation structure does not appear to centralize shared add behavior.",
                 "hint": "Avoid duplicating per-type logic; keep shared behavior reusable/centralized.",
             },
@@ -175,16 +183,15 @@ def main() -> int:
         txt = read_text(f)
         if not txt:
             continue
-        for pat in EXPLICIT_DEF_PATTERNS:
-            if pat.search(txt):
-                explicit_def_count += 1
-                explicit_def_files.append(str(f))
-                break
+        if count_matching_patterns(EXPLICIT_DEF_PATTERNS, txt) > 0:
+            explicit_def_count += 1
+            explicit_def_files.append(str(f))
 
     if explicit_def_count > args.max_explicit_defs:
-        fail(
-            "ERR_DUPLICATED_IMPLEMENTATION",
-            {
+        return emit_check_result(
+            passed=False,
+            findings=["ERR_DUPLICATED_IMPLEMENTATION"],
+            details={
                 "explicit_def_count": explicit_def_count,
                 "max_allowed": args.max_explicit_defs,
                 "files": sorted(set(explicit_def_files)),
@@ -192,10 +199,11 @@ def main() -> int:
             },
         )
 
-    out = {
-        "ok": True,
-        "milestone": ms,
-        "checks": {
+    return emit_check_result(
+        passed=True,
+        findings=[],
+        milestone=ms,
+        checks={
             "app_main_frozen": (ms < args.freeze_from_milestone)
             or (
                 normalize_text(read_text(app_main))
@@ -205,14 +213,12 @@ def main() -> int:
             "structure_centralized": generic_present,
             "explicit_overload_def_count": explicit_def_count,
         },
-        "features": {
+        features={
             "central_core_files": generic_hits,
             "explicit_def_files": sorted(set(explicit_def_files)),
             "impl_style": ("mixed" if explicit_def_count > 0 else "centralized_only"),
         },
-    }
-    print(json.dumps(out, indent=2, ensure_ascii=False))
-    return 0
+    )
 
 
 if __name__ == "__main__":

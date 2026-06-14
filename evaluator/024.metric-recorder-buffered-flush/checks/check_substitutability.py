@@ -11,31 +11,23 @@ function-name blacklist; the check verifies the architecture, not syntax.
 
 from __future__ import annotations
 
+import argparse
 import re
 from pathlib import Path
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
-    find_class_body,
     read_text,
     scan_files,
+)
+from evaluator.shared.check_output import emit_check_result
+from evaluator.shared.source_analysis import (
+    find_class_body,
+    find_matching_patterns,
+    has_any_pattern,
     strip_comments,
 )
 
-SRC_DIR = case_root_from_script(__file__) / "src"
-
-
-def read(name: str) -> str:
-    p = SRC_DIR / name
-    return read_text(p)
-
-
-def all_src_headers() -> list[Path]:
-    return scan_files(SRC_DIR, (".h",))
-
-
-def all_src_files() -> list[Path]:
-    return scan_files(SRC_DIR, (".h", ".cc"))
 
 
 def count_pure_virtual_methods(class_body: str) -> int:
@@ -77,12 +69,24 @@ def has_virtual_method_matching(class_body: str, name_pattern: str) -> bool:
 
 
 def main() -> int:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    src_dir = case_root / "src"
     failures: list[str] = []
 
-    recorder_h = read("metric_recorder.h")
+    recorder_h = read_text(src_dir / "metric_recorder.h")
     if not recorder_h:
-        print("[STRUCTURE FAIL] metric_recorder.h is missing.")
-        return 1
+        return emit_check_result(
+            passed=False, findings=["metric_recorder.h is missing."]
+        )
 
     recorder_h_clean = strip_comments(recorder_h)
     recorder_body = find_class_body(recorder_h_clean, "MetricRecorder")
@@ -142,7 +146,7 @@ def main() -> int:
 
     # Assertion 2: a buffered MetricRecorder subclass must exist.
     buffered_class_match: tuple[Path, str] | None = None
-    for path in all_src_headers():
+    for path in scan_files(src_dir, suffixes=(".h",)):
         text = strip_comments(path.read_text(encoding="utf-8"))
         m = re.search(
             r"class\s+(\w+)\s*:\s*public\s+MetricRecorder\b",
@@ -195,8 +199,8 @@ def main() -> int:
     # visibility-trigger, so we just need to ensure ConsoleMetricRecorder can
     # call it (either by overriding or inheriting). Since C++ inheritance
     # provides this automatically, we only verify that Record is overridden.
-    console_h = read("console_metric_recorder.h")
-    console_cc = read("console_metric_recorder.cc")
+    console_h = read_text(src_dir / "console_metric_recorder.h")
+    console_cc = read_text(src_dir / "console_metric_recorder.cc")
     console_combined = strip_comments(console_h + "\n" + console_cc)
     console_body = (
         find_class_body(strip_comments(console_h), "ConsoleMetricRecorder") or ""
@@ -217,8 +221,8 @@ def main() -> int:
     # type in its source files (excluding #include lines, which are
     # implementation-detail noise that does not constitute a dependency
     # in the type system).
-    collector_h = read("metric_collector.h")
-    collector_cc = read("metric_collector.cc")
+    collector_h = read_text(src_dir / "metric_collector.h")
+    collector_cc = read_text(src_dir / "metric_collector.cc")
     collector_combined = strip_comments(collector_h + "\n" + collector_cc)
     non_include_lines = "\n".join(
         line
@@ -229,7 +233,7 @@ def main() -> int:
     if buffered_class_match is not None:
         concrete_types.append(buffered_class_match[1])
     for concrete in concrete_types:
-        if re.search(rf"\b{re.escape(concrete)}\b", non_include_lines):
+        if has_any_pattern([rf"\b{re.escape(concrete)}\b"], non_include_lines):
             failures.append(
                 f"metric_collector.{{h,cc}} references concrete recorder type "
                 f"{concrete!r}. MetricCollector must operate through the "
@@ -262,26 +266,20 @@ def main() -> int:
         # Also catch conditional calls to flush-like methods
         r"if\s*\([^)]*\.(Flush|Commit|Sync|MakeVisible|Publish|Drain)\s*\(",
     ]
-    for pattern in capability_patterns:
-        if re.search(pattern, collector_combined, re.IGNORECASE):
-            failures.append(
-                "metric_collector contains capability branching "
-                f"(pattern: {pattern!r}). The checkpoint operation must "
-                "unconditionally invoke the polymorphic visibility-trigger "
-                "on the abstract recorder reference. Capability predicates "
-                "(e.g. IsBuffered, SupportsFlush) break substitutability "
-                "by making the caller aware of implementation details."
-            )
-            break  # Report once
+    matching_capability_patterns = find_matching_patterns(
+        capability_patterns, collector_combined, flags=re.IGNORECASE
+    )
+    if matching_capability_patterns:
+        failures.append(
+            "metric_collector contains capability branching "
+            f"(pattern: {matching_capability_patterns[0]!r}). The checkpoint operation must "
+            "unconditionally invoke the polymorphic visibility-trigger "
+            "on the abstract recorder reference. Capability predicates "
+            "(e.g. IsBuffered, SupportsFlush) break substitutability "
+            "by making the caller aware of implementation details."
+        )
 
-    if failures:
-        print("Substitutability check failed:")
-        for f in failures:
-            print(f"[STRUCTURE FAIL] {f}")
-        return 1
-
-    print("Substitutability check passed.")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

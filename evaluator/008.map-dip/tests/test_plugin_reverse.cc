@@ -1,6 +1,7 @@
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include "map_snapshot.h"
 
@@ -8,21 +9,6 @@
 namespace nitr::case008 {
 void RegisterReversePayloadLayer();
 }  // namespace nitr::case008
-
-static int g_failures = 0;
-
-static void ExpectEq(const std::string& got, const std::string& expected,
-                     const char* name) {
-  if (got != expected) {
-    std::cerr << "[FAIL] " << name << "\n"
-              << "  got:\n"
-              << got << "  expected:\n"
-              << expected;
-    g_failures++;
-  } else {
-    std::cerr << "[ OK ] " << name << "\n";
-  }
-}
 
 static nlohmann::json MakeCfg() {
   nlohmann::json::object_t cfg;
@@ -36,7 +22,7 @@ static nlohmann::json MakeCfg() {
   return nlohmann::json(std::move(cfg));
 }
 
-int main() {
+TEST(Case008MapDip, PluginReversePayload) {
   using nitr::case008::MapSnapshotService;
 
   nitr::case008::RegisterReversePayloadLayer();
@@ -48,12 +34,6 @@ int main() {
   const std::string expected =
       "SNAPSHOT\n"
       "reverse_payload:dcba\n";
-  ExpectEq(out, expected, "plugin_reverse_payload");
 
-  if (g_failures != 0) {
-    std::cerr << g_failures << " test(s) failed.\n";
-    return 1;
-  }
-  std::cerr << "All tests passed.\n";
-  return 0;
+  EXPECT_EQ(out, expected);
 }

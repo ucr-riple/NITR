@@ -7,55 +7,19 @@ import os
 import re
 import sys
 import subprocess
+import argparse
 from pathlib import Path
 from typing import Iterable, List, Tuple, Optional
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
-    regex_matches,
-    read_text as shared_read_text,
+    find_missing_paths,
+    read_text,
     repo_root_from_script,
     scan_files,
 )
-
-
-# ----------------------------
-# Utilities
-# ----------------------------
-
-
-def die(msg: str, code: int = 1) -> None:
-    """Print a fatal error message and exit the evaluator immediately."""
-    print(msg, file=sys.stderr)
-    sys.exit(code)
-
-
-def case_root() -> Path:
-    """Resolve the case directory that this evaluator should inspect."""
-    return case_root_from_script(__file__)
-
-
-def repo_root() -> Path:
-    """Return the repository root inferred from this evaluator's location."""
-    return repo_root_from_script(__file__)
-
-
-def read_text(path: Path) -> str:
-    """Read a text file or abort with a descriptive error."""
-    try:
-        return shared_read_text(
-            path,
-            encoding="utf-8",
-            errors="replace",
-            missing_ok=False,
-        )
-    except Exception as e:
-        die(f"Failed to read {path}: {e}")
-
-
-def list_files(base: Path, exts: Tuple[str, ...]) -> List[Path]:
-    """Recursively collect files under a base directory that match the given suffixes."""
-    return scan_files(base, exts)
+from evaluator.shared.source_analysis import find_matching_patterns, regex_matches
+from evaluator.shared.check_output import emit_check_result
 
 
 def run(cmd: List[str]) -> Tuple[int, str, str]:
@@ -77,6 +41,53 @@ def rel(p: Path, root: Path) -> str:
         return str(p.relative_to(root))
     except Exception:
         return str(p)
+
+
+def existing_paths(paths: Iterable[Path]) -> list[Path]:
+    """Return the subset of paths that currently exist on disk."""
+    missing = set(find_missing_paths(paths))
+    return [path for path in paths if path not in missing]
+
+
+def scan_disallowed_patterns(
+    root: Path,
+    *,
+    paths: Iterable[Path],
+    allowed_relative_paths: set[str],
+    patterns: Iterable[tuple[re.Pattern[str], str]],
+) -> None:
+    """Scan source files for forbidden patterns, skipping an allowlist."""
+    for path in paths:
+        relative_path = rel(path, root).replace("\\", "/")
+        if relative_path in allowed_relative_paths:
+            continue
+        text = read_text(path, encoding="utf-8", errors="replace", missing_ok=False)
+        for pattern, error_template in patterns:
+            if regex_matches(pattern, text):
+                raise RuntimeError(error_template.format(path=relative_path))
+
+
+def binary_candidates(root: Path, name: str) -> list[Path]:
+    """Enumerate common build-output paths for a named binary."""
+    repo = repo_root_from_script(__file__)
+    case_name = root.name
+    base_candidates = [
+        root / "build" / name,
+        root / "build" / "Release" / name,
+        root / "build" / "Debug" / name,
+        root / name,
+        repo / "build" / name,
+        repo / "build" / "Release" / name,
+        repo / "build" / "Debug" / name,
+        repo / "build" / "cases" / case_name / name,
+        repo / "build" / "cases" / case_name / "Release" / name,
+        repo / "build" / "cases" / case_name / "Debug" / name,
+    ]
+    windows_candidates = [
+        path.parent / f"{path.name}.exe" if path.suffix != ".exe" else path
+        for path in base_candidates
+    ]
+    return base_candidates + windows_candidates
 
 
 # ----------------------------
@@ -109,7 +120,9 @@ def check_legacy_not_modified(root: Path) -> None:
 
     for lf in legacy_files:
         if lf.exists() and str(lf.relative_to(root)) in modified:
-            die(f"Legacy file must NOT be modified: {lf.relative_to(root)}")
+            raise RuntimeError(
+                f"Legacy file must NOT be modified: {lf.relative_to(root)}"
+            )
 
 
 def check_no_legacy_includes(root: Path) -> None:
@@ -121,16 +134,17 @@ def check_no_legacy_includes(root: Path) -> None:
         "src/legacy_monolith.h",
         "evaluator/oracle_main.cc",
     }
-
-    pat = re.compile(r'^\s*#\s*include\s*"legacy_monolith\.h"\s*$', re.MULTILINE)
-
-    for p in list_files(root, (".cc", ".h")):
-        rp = rel(p, root).replace("\\", "/")
-        if rp in allowed:
-            continue
-        txt = read_text(p)
-        if regex_matches(pat, txt):
-            die(f"Forbidden include of legacy_monolith.h in {rp}")
+    scan_disallowed_patterns(
+        root,
+        paths=scan_files(root, suffixes=(".cc", ".h")),
+        allowed_relative_paths=allowed,
+        patterns=[
+            (
+                re.compile(r'^\s*#\s*include\s*"legacy_monolith\.h"\s*$', re.MULTILINE),
+                "Forbidden include of legacy_monolith.h in {path}",
+            )
+        ],
+    )
 
 
 def check_no_legacy_symbol_references_in_source(root: Path) -> None:
@@ -142,15 +156,17 @@ def check_no_legacy_symbol_references_in_source(root: Path) -> None:
         "src/legacy_monolith.h",
         "evaluator/oracle_main.cc",
     }
-    pat = re.compile(r"\bRunLegacyMonolith\b")
-
-    for p in list_files(root, (".cc", ".h")):
-        rp = rel(p, root).replace("\\", "/")
-        if rp in allowed:
-            continue
-        txt = read_text(p)
-        if regex_matches(pat, txt):
-            die(f"Forbidden reference to RunLegacyMonolith in {rp}")
+    scan_disallowed_patterns(
+        root,
+        paths=scan_files(root, suffixes=(".cc", ".h")),
+        allowed_relative_paths=allowed,
+        patterns=[
+            (
+                re.compile(r"\bRunLegacyMonolith\b"),
+                "Forbidden reference to RunLegacyMonolith in {path}",
+            )
+        ],
+    )
 
 
 def check_json_restrictions(root: Path) -> None:
@@ -169,14 +185,12 @@ def check_json_restrictions(root: Path) -> None:
         r'nlohmann\s*/\s*json|<\s*nlohmann/json\.hpp\s*>|"\s*nlohmann/json\.hpp\s*"'
     )
 
-    for p in forbidden_files:
-        if not p.exists():
-            continue
-        txt = read_text(p)
+    for p in existing_paths(forbidden_files):
+        txt = read_text(p, encoding="utf-8", errors="replace", missing_ok=False)
         if regex_matches(forbid_io_include, txt):
-            die(f"Forbidden include io_json.h in {rel(p, root)}")
+            raise RuntimeError(f"Forbidden include io_json.h in {rel(p, root)}")
         if regex_matches(forbid_json_include, txt):
-            die(f"Forbidden JSON usage/include in {rel(p, root)}")
+            raise RuntimeError(f"Forbidden JSON usage/include in {rel(p, root)}")
 
 
 def check_policy_dependency_restrictions(root: Path) -> None:
@@ -184,9 +198,9 @@ def check_policy_dependency_restrictions(root: Path) -> None:
     Enforce: src/policy.cc must not include normalize.h or estimator*.h
     """
     p = root / "src" / "policy.cc"
-    if not p.exists():
+    if not existing_paths([p]):
         return
-    txt = read_text(p)
+    txt = read_text(p, encoding="utf-8", errors="replace", missing_ok=False)
     forbid = [
         re.compile(r'^\s*#\s*include\s*"normalize\.h"\s*$', re.MULTILINE),
         re.compile(r'^\s*#\s*include\s*"estimator.*\.h"\s*$', re.MULTILINE),
@@ -194,7 +208,7 @@ def check_policy_dependency_restrictions(root: Path) -> None:
     ]
     for pat in forbid:
         if regex_matches(pat, txt):
-            die(
+            raise RuntimeError(
                 f"policy.cc must not include estimator/normalize headers: {rel(p, root)}"
             )
 
@@ -203,44 +217,19 @@ def find_binary(root: Path, name: str) -> Path:
     """
     Try common build output locations.
     """
-    repo = repo_root()
-    case_name = root.name
-    candidates = [
-        root / "build" / name,
-        root / "build" / "Release" / name,
-        root / "build" / "Debug" / name,
-        root / name,
-        repo / "build" / name,
-        repo / "build" / "Release" / name,
-        repo / "build" / "Debug" / name,
-        repo / "build" / "cases" / case_name / name,
-        repo / "build" / "cases" / case_name / "Release" / name,
-        repo / "build" / "cases" / case_name / "Debug" / name,
-    ]
-    # Windows candidates
-    candidates += [
-        root / "build" / f"{name}.exe",
-        root / "build" / "Release" / f"{name}.exe",
-        root / "build" / "Debug" / f"{name}.exe",
-        root / f"{name}.exe",
-        repo / "build" / f"{name}.exe",
-        repo / "build" / "Release" / f"{name}.exe",
-        repo / "build" / "Debug" / f"{name}.exe",
-        repo / "build" / "cases" / case_name / f"{name}.exe",
-        repo / "build" / "cases" / case_name / "Release" / f"{name}.exe",
-        repo / "build" / "cases" / case_name / "Debug" / f"{name}.exe",
-    ]
-    for c in candidates:
+    for c in binary_candidates(root, name):
         if c.exists() and c.is_file():
             return c
-    die(f"Cannot find binary '{name}' in common locations. Build it first.")
+    raise RuntimeError(
+        f"Cannot find binary '{name}' in common locations. Build it first."
+    )
 
 
 def maybe_find_binary(root: Path, name: str) -> Optional[Path]:
     """Find a build artifact if available, but tolerate it being absent."""
     try:
         return find_binary(root, name)
-    except SystemExit:
+    except RuntimeError:
         return None
 
 
@@ -278,7 +267,7 @@ def extract_symbols(bin_path: Path) -> str:
         s = fn(bin_path)
         if s is not None:
             return s
-    die(
+    raise RuntimeError(
         "No symbol tool available (nm/objdump/dumpbin). Cannot enforce symbol isolation."
     )
 
@@ -298,53 +287,63 @@ def check_binary_symbol_isolation(root: Path) -> None:
         r"\blegacy_monolith\b",
     ]
 
-    for pat in forbidden:
-        if re.search(pat, sym):
-            die(f"Binary isolation failed: '{pat}' found in {cv_bin}")
-
-
-def run_named_check(name: str, fn, *args) -> None:
-    """Run one check function and print a PASS banner if it succeeds."""
-    fn(*args)
-    print(f"PASS {name}")
+    for pat in find_matching_patterns(forbidden, sym):
+        raise RuntimeError(f"Binary isolation failed: '{pat}' found in {cv_bin}")
 
 
 def main() -> int:
     """Run source and binary isolation checks for the SRP case."""
-    root = case_root()
-
-    # Basic sanity
-    if not (root / "src").exists():
-        die("Missing src/ directory.")
-    if not (root / "app").exists():
-        die("Missing app/ directory.")
-    # Static / source-level checks
-    run_named_check("check_legacy_not_modified", check_legacy_not_modified, root)
-    run_named_check("check_no_legacy_includes", check_no_legacy_includes, root)
-    run_named_check(
-        "check_no_legacy_symbol_references_in_source",
-        check_no_legacy_symbol_references_in_source,
-        root,
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+        help="Path to the case root (defaults to the case inferred from this script).",
     )
-    run_named_check("check_json_restrictions", check_json_restrictions, root)
-    run_named_check(
-        "check_policy_dependency_restrictions",
-        check_policy_dependency_restrictions,
-        root,
-    )
+    args = parser.parse_args()
 
-    # Binary-level check (link isolation)
-    cv_bin = maybe_find_binary(root, "cv_srp")
-    if cv_bin is None:
-        print("SKIP check_binary_symbol_isolation (cv_srp was not built)")
-        print("OK")
-        return 0
-    run_named_check(
-        "check_binary_symbol_isolation", check_binary_symbol_isolation, root
-    )
+    root = args.case_root.resolve()
+    checks_run: list[str] = []
+    skipped_checks: list[str] = []
 
-    print("OK")
-    return 0
+    try:
+        missing_required_dirs = find_missing_paths([root / "src", root / "app"])
+        if root / "src" in missing_required_dirs:
+            raise RuntimeError("Missing src/ directory.")
+        if root / "app" in missing_required_dirs:
+            raise RuntimeError("Missing app/ directory.")
+
+        check_legacy_not_modified(root)
+        checks_run.append("check_legacy_not_modified")
+        check_no_legacy_includes(root)
+        checks_run.append("check_no_legacy_includes")
+        check_no_legacy_symbol_references_in_source(root)
+        checks_run.append("check_no_legacy_symbol_references_in_source")
+        check_json_restrictions(root)
+        checks_run.append("check_json_restrictions")
+        check_policy_dependency_restrictions(root)
+        checks_run.append("check_policy_dependency_restrictions")
+
+        cv_bin = maybe_find_binary(root, "cv_srp")
+        if cv_bin is None:
+            skipped_checks.append("check_binary_symbol_isolation")
+        else:
+            check_binary_symbol_isolation(root)
+            checks_run.append("check_binary_symbol_isolation")
+
+        return emit_check_result(
+            passed=True,
+            findings=[],
+            checks_run=checks_run,
+            skipped_checks=skipped_checks,
+        )
+    except RuntimeError as exc:
+        return emit_check_result(
+            passed=False,
+            findings=[str(exc)],
+            checks_run=checks_run,
+            skipped_checks=skipped_checks,
+        )
 
 
 if __name__ == "__main__":

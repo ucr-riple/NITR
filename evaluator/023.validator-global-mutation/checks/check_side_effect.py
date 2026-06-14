@@ -5,10 +5,16 @@ import argparse
 import re
 from pathlib import Path
 
-from evaluator.shared.check_utils import (
+from evaluator.shared.path_checks import (
     case_root_from_script,
-    include_paths,
+    classify_relative_paths_against_baseline,
     read_text,
+    scan_files,
+)
+from evaluator.shared.check_output import emit_check_result
+from evaluator.shared.source_analysis import (
+    has_any_pattern,
+    include_paths,
     strip_comments_and_strings,
 )
 
@@ -21,7 +27,9 @@ PROTECTED_FILES = [
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=Path, default=case_root_from_script(__file__))
+    parser.add_argument(
+        "--case_root", type=Path, default=case_root_from_script(__file__)
+    )
     parser.add_argument(
         "--baseline_case_root", type=Path, default=case_root_from_script(__file__)
     )
@@ -70,12 +78,12 @@ def main() -> int:
                 "include style."
             )
 
-        if re.search(r"\btotal_processed\b", scanned_text):
+        if has_any_pattern([r"\btotal_processed\b"], scanned_text):
             failures.append(
                 f"{path.name}: Validator must not reference total_processed."
             )
 
-    source_files = sorted(src_root.glob("*.h")) + sorted(src_root.glob("*.cc"))
+    source_files = scan_files(src_root, suffixes=(".h", ".cc"))
     source_files.append(app_root / "main.cc")
     for path in source_files:
         raw_text = read_text(path)
@@ -88,8 +96,8 @@ def main() -> int:
         scanned_text = strip_comments_and_strings(raw_text)
         includes = include_paths(raw_text)
 
-        if path not in allowed_total_processed_refs and re.search(
-            r"\btotal_processed\b", scanned_text
+        if path not in allowed_total_processed_refs and has_any_pattern(
+            [r"\btotal_processed\b"], scanned_text
         ):
             failures.append(
                 f"{path.relative_to(case_root)}: total_processed must stay owned by stats/reporter/main only."
@@ -102,40 +110,21 @@ def main() -> int:
                 f"{path.relative_to(case_root)}: stats.h may only be included by reporter.cc, stats.cc, or app/main.cc."
             )
 
-    for relative_path in PROTECTED_FILES:
-        path = case_root / relative_path
-        baseline_path = baseline_root / relative_path
-        if not path.exists():
-            failures.append(
-                f"{path.relative_to(case_root)}: missing required starter file."
-            )
-            continue
+    protected_status = classify_relative_paths_against_baseline(
+        case_root, baseline_root, PROTECTED_FILES
+    )
+    for relative_path in protected_status.missing_in_root:
+        failures.append(f"{relative_path}: missing required starter file.")
 
-        if not baseline_path.exists():
-            failures.append(
-                f"{relative_path}: missing required baseline starter file."
-            )
-            continue
+    for relative_path in protected_status.missing_in_baseline:
+        failures.append(f"{relative_path}: missing required baseline starter file.")
 
-        if path.read_bytes() != baseline_path.read_bytes():
-            failures.append(
-                f"{path.relative_to(case_root)}: must remain unchanged from the starter code."
-            )
-
-    if failures:
-        print("Maintainability check failed:")
-        for failure in failures:
-            print(f"- {failure}")
-        print(
-            "Validator should only inspect Submission and return a boolean. "
-            "The total_processed counter belongs in app/main.cc, while "
-            "Reporter only reads it. Do not move counter ownership into "
-            "validator or other helpers."
+    for relative_path in protected_status.modified:
+        failures.append(
+            f"{relative_path}: must remain unchanged from the starter code."
         )
-        return 1
 
-    print("Side-effect check passed: Validator remains decoupled from global stats.")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

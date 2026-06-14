@@ -1,40 +1,56 @@
 #!/usr/bin/env python3
 
+import argparse
 from pathlib import Path
-import sys
 
+from evaluator.shared.path_checks import (
+    case_root_from_script,
+    scan_files,
+)
+from evaluator.shared.source_analysis import has_all_substrings, has_any_substring
+from evaluator.shared.check_output import emit_check_result
 
-CASE_REL = Path("cases/021.inline-filter-entrypoint-reuse/src")
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h"}
 
 
 def main() -> int:
     """Reject duplicate numeric value validation outside the shared validation module."""
-    workspace_root = Path.cwd()
-    src_dir = workspace_root / CASE_REL
-    for source_file in sorted(src_dir.glob("*.[ch]c*")):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    src_dir = case_root / "src"
+
+    for source_file in scan_files(src_dir, suffixes=(".h", ".cc", ".cpp")):
         if source_file.name in ALLOWED_FILES:
             continue
 
         content = source_file.read_text(encoding="utf-8", errors="replace")
-        has_stoi = "std::stoi" in content
-        has_isdigit = "std::isdigit" in content
-        has_integer_value = "FilterValueKind::kInteger" in content
-        has_inline_parser = "ParseInlineFilter" in content
 
-        if has_stoi or has_isdigit:
-            print(
-                f"Suspicious duplicate numeric validation outside filter_validation: {source_file}"
+        if has_any_substring(["std::stoi", "std::isdigit"], content):
+            return emit_check_result(
+                passed=False,
+                findings=[
+                    f"Suspicious duplicate numeric validation outside filter_validation: {source_file}"
+                ],
             )
-            return 1
 
-        if has_integer_value and has_inline_parser:
-            print(
-                f"Suspicious inline-only rule construction with integer value handling in {source_file}"
+        if has_all_substrings(
+            ["FilterValueKind::kInteger", "ParseInlineFilter"], content
+        ):
+            return emit_check_result(
+                passed=False,
+                findings=[
+                    f"Suspicious inline-only rule construction with integer value handling in {source_file}"
+                ],
             )
-            return 1
 
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

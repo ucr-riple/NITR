@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-import pathlib
-import re
-import sys
 
-from evaluator.shared.check_utils import (
+import argparse
+from pathlib import Path
+
+from evaluator.shared.path_checks import (
     case_root_from_script,
     evaluator_root_from_script,
+    find_missing_paths,
     scan_files,
 )
-
-ROOT = case_root_from_script(__file__)
-EVALUATOR_ROOT = evaluator_root_from_script(__file__)
-SRC_DIR = ROOT / "src"
-TEST_DIR = EVALUATOR_ROOT / "tests"
+from evaluator.shared.source_analysis import find_matching_patterns, has_any_pattern
+from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN_SRC_PATTERNS = [
     r"system_clock::now",
@@ -45,65 +43,67 @@ SUSPICIOUS_API_PATTERNS = [
 ]
 
 
-def contains_any(patterns, text):
-    """Return the subset of regex patterns that match the given text."""
-    matches = []
-    for pattern in patterns:
-        if re.search(pattern, text):
-            matches.append(pattern)
-    return matches
-
-
 def main() -> int:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    parser.add_argument(
+        "--evaluator_root",
+        type=Path,
+        default=evaluator_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    evaluator_root = args.evaluator_root.resolve()
+    src_dir = case_root / "src"
+    test_dir = evaluator_root / "tests"
+
     failures = []
 
-    for path in scan_files(SRC_DIR, (".h", ".cc", ".cpp")):
+    for path in scan_files(src_dir, suffixes=(".h", ".cc", ".cpp")):
         if path.name == "time_source.cc":
             continue
         text = path.read_text()
-        forbidden = contains_any(FORBIDDEN_SRC_PATTERNS, text)
-        suspicious = contains_any(SUSPICIOUS_API_PATTERNS, text)
+        forbidden = find_matching_patterns(FORBIDDEN_SRC_PATTERNS, text)
+        suspicious = find_matching_patterns(SUSPICIOUS_API_PATTERNS, text)
         if forbidden:
             failures.append(
-                f"forbidden time coupling in {path.relative_to(ROOT)}: {forbidden}"
+                f"forbidden time coupling in {path.relative_to(case_root)}: {forbidden}"
             )
         if suspicious:
             failures.append(
-                f"evaluation-only API smell in {path.relative_to(ROOT)}: {suspicious}"
+                f"evaluation-only API smell in {path.relative_to(case_root)}: {suspicious}"
             )
 
-    for path in scan_files(TEST_DIR, (".h", ".cc", ".cpp")):
+    for path in scan_files(test_dir, suffixes=(".h", ".cc", ".cpp")):
         text = path.read_text()
-        forbidden = contains_any(FORBIDDEN_TEST_PATTERNS, text)
+        forbidden = find_matching_patterns(FORBIDDEN_TEST_PATTERNS, text)
         if forbidden:
             failures.append(
-                f"sleep-based test detected in {path.relative_to(EVALUATOR_ROOT)}: {forbidden}"
+                f"sleep-based test detected in {path.relative_to(evaluator_root)}: {forbidden}"
             )
 
-    header_path = SRC_DIR / "session_manager.h"
-    if not header_path.exists():
+    header_path = src_dir / "session_manager.h"
+    if find_missing_paths([header_path]):
         failures.append(
             "session_manager.h is missing from cases/009.session-expiry-testability/src/"
         )
     else:
         header_text = header_path.read_text()
-        seam_ctor = re.search(
-            r"SessionManager\s*\([^)]*TimeSource[^)]*\)",
-            header_text,
-        )
-        if seam_ctor is None:
+        if not has_any_pattern(
+            [r"SessionManager\s*\([^)]*TimeSource[^)]*\)"], header_text
+        ):
             failures.append(
                 "session_manager.h must keep a SessionManager constructor that "
                 "accepts a TimeSource (the test seam)."
             )
 
-    if failures:
-        for failure in failures:
-            print(failure)
-        return 1
-
-    print("maintainability checks passed")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

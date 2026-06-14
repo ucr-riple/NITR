@@ -1,34 +1,61 @@
-from pathlib import Path
+import argparse
 import re
-import sys
+from pathlib import Path
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.path_checks import (
+    case_root_from_script,
+    read_text,
+)
+from evaluator.shared.source_analysis import find_missing_patterns
+from evaluator.shared.check_output import emit_check_result
+
+FORBIDDEN_FLAGS = [
+    "include_archived",
+    "show_archived",
+    "archived_mode",
+    "includeArchived",
+]
+
+REQUIRED_SIGNATURES = {
+    "FindAvailableTitles signature": r"std::vector<std::string>\s+FindAvailableTitles\s*\(\s*const std::vector<Book>& books,\s*const std::string& prefix\s*\)\s*const;",
+    "BuildCatalogDigest signature": r"std::string\s+BuildCatalogDigest\s*\(\s*const std::vector<Book>& books\s*\)\s*const;",
+}
+
 
 def main() -> int:
-    header = case_root_from_script(__file__) / "src" / "library_catalog.h"
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    header = case_root / "src" / "library_catalog.h"
     text = read_text(header, missing_ok=False)
-    for forbidden in [
-        "include_archived",
-        "show_archived",
-        "archived_mode",
-        "includeArchived",
-    ]:
-        if forbidden in text:
-            print(f"Forbidden public API control flag detected: {forbidden}")
-            return 1
+    violations = []
 
-    patterns = [
-        r"std::vector<std::string>\s+FindAvailableTitles\s*\(\s*const std::vector<Book>& books,\s*const std::string& prefix\s*\)\s*const;",
-        r"std::string\s+BuildCatalogDigest\s*\(\s*const std::vector<Book>& books\s*\)\s*const;",
-    ]
+    for flag in FORBIDDEN_FLAGS:
+        if flag in text:
+            violations.append(f"Forbidden public API control flag detected: {flag}")
 
-    for pattern in patterns:
-        if re.search(pattern, text, re.MULTILINE) is None:
-            print("Public API signature changed unexpectedly.")
-            return 1
+    missing_signatures = find_missing_patterns(
+        REQUIRED_SIGNATURES.values(), text, flags=re.MULTILINE
+    )
+    if missing_signatures:
+        missing_descriptions = [
+            description
+            for description, pattern in REQUIRED_SIGNATURES.items()
+            if pattern in missing_signatures
+        ]
+        violations.append(
+            "Public API signature changed unexpectedly: "
+            + ", ".join(missing_descriptions)
+        )
 
-    print("API stability check passed.")
-    return 0
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

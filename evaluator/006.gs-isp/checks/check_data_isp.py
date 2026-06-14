@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import pathlib
-import re
+import argparse
+from pathlib import Path
 
-from evaluator.shared.check_utils import case_root_from_script, die_message, read_text
-
-ROOT = case_root_from_script(__file__)
-SRC = ROOT / "src"
+from evaluator.shared.path_checks import (
+    case_root_from_script,
+    find_missing_paths,
+    read_text,
+)
+from evaluator.shared.source_analysis import has_any_substring
+from evaluator.shared.check_output import emit_check_result
 
 REQUIRED_HEADERS = [
-    SRC / "sort_hits.h",
-    SRC / "eval_shading.h",
-    SRC / "composite.h",
+    "sort_hits.h",
+    "eval_shading.h",
+    "composite.h",
 ]
 
 FORBIDDEN_INCLUDE = '#include "hit_buffer.h"'
@@ -44,40 +47,55 @@ VIEW_TOKEN_FAMILIES = {
     ],
 }
 
-def main() -> int:
-    for header in REQUIRED_HEADERS:
-        if not header.exists():
-            die_message(f"Missing required header: {header}")
 
-    sort_text = read_text(SRC / "sort_hits.h", missing_ok=False)
-    shade_text = read_text(SRC / "eval_shading.h", missing_ok=False)
-    comp_text = read_text(SRC / "composite.h", missing_ok=False)
+def main() -> int:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+
+    src_dir = case_root / "src"
+
+    findings: list[str] = []
+    required_headers = [src_dir / header for header in REQUIRED_HEADERS]
+    for header in find_missing_paths(required_headers):
+        findings.append(f"Missing required header: {header}")
+
+    sort_text = read_text(src_dir / "sort_hits.h", missing_ok=False)
+    shade_text = read_text(src_dir / "eval_shading.h", missing_ok=False)
+    comp_text = read_text(src_dir / "composite.h", missing_ok=False)
 
     for token in FORBIDDEN_IN_SORT_HEADER:
         if token in sort_text:
-            die_message("sort_hits.h still exposes legacy HitBuffer/Hit types.")
+            findings.append("sort_hits.h still exposes legacy HitBuffer/Hit types.")
+            break
 
     for path in [
-        SRC / "sort_hits.h",
-        SRC / "eval_shading.h",
-        SRC / "composite.h",
-        SRC / "sort_hits.cc",
-        SRC / "eval_shading.cc",
-        SRC / "composite.cc",
+        src_dir / "sort_hits.h",
+        src_dir / "eval_shading.h",
+        src_dir / "composite.h",
+        src_dir / "sort_hits.cc",
+        src_dir / "eval_shading.cc",
+        src_dir / "composite.cc",
     ]:
         text = read_text(path, missing_ok=False)
         if FORBIDDEN_INCLUDE in text:
-            die_message(f"{path.name} still includes hit_buffer.h directly.")
+            findings.append(f"{path.name} still includes hit_buffer.h directly.")
 
     joined = sort_text + shade_text + comp_text
     for group_name, tokens in VIEW_TOKEN_FAMILIES.items():
-        if not any(token in joined for token in tokens):
-            die_message(
+        if not has_any_substring(tokens, joined):
+            findings.append(
                 f"Expected {group_name} interface/view token not found: one of {tokens}"
             )
 
-    print("Structural ISP checks passed.")
-    return 0
+    return emit_check_result(passed=not findings, findings=findings)
 
 
 if __name__ == "__main__":

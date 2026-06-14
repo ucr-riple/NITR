@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-
+import argparse
 from pathlib import Path
-import re
-import sys
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.path_checks import case_root_from_script, read_text
+from evaluator.shared.source_analysis import has_any_pattern
+from evaluator.shared.check_output import emit_check_result
 
 CREATION_PATTERNS = [
     r"\bstd::make_unique\s*<\s*StaticPolicyProvider\s*>",
@@ -19,22 +19,32 @@ CREATION_PATTERNS = [
 
 def main() -> int:
     """Ensure the allowed boundary actually owns provider creation or selection."""
-    case_root = case_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
     boundary_files = [case_root / "src/build_pipeline.cc", case_root / "app/main.cc"]
     boundary_has_wiring = False
 
     for path in boundary_files:
         text = read_text(path, missing_ok=False)
-        if any(re.search(pattern, text) for pattern in CREATION_PATTERNS):
+        if has_any_pattern(CREATION_PATTERNS, text):
             boundary_has_wiring = True
             break
 
     if not boundary_has_wiring:
-        print(
-            "Expected provider creation/selection to appear in src/build_pipeline.cc or app/main.cc."
+        return emit_check_result(
+            passed=False,
+            findings=[
+                "Expected provider creation/selection to appear in src/build_pipeline.cc or app/main.cc."
+            ],
         )
-        return 1
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

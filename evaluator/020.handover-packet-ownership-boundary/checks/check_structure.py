@@ -1,30 +1,35 @@
 #!/usr/bin/env python3
 
+import argparse
 import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.path_checks import (
+    case_root_from_script,
+    read_text,
+    scan_files,
+)
+from evaluator.shared.source_analysis import (
+    count_matching_patterns,
+    has_any_substring,
+    regex_matches,
+)
 
-
-ROOT = case_root_from_script(__file__)
-SRC_DIR = ROOT / "src"
-APP_FILE = ROOT / "app" / "main.cc"
 
 CONSUMER_FILES = {
-    SRC_DIR / "handover_packet_preview.cc",
-    SRC_DIR / "handover_packet_preview.h",
-    SRC_DIR / "handover_packet_writer.cc",
-    SRC_DIR / "handover_packet_writer.h",
-    APP_FILE,
+    "handover_packet_preview.cc",
+    "handover_packet_preview.h",
+    "handover_packet_writer.cc",
+    "handover_packet_writer.h",
 }
 
 DOMAIN_CORE_FILES = {
-    SRC_DIR / "shift_tracker.cc",
-    SRC_DIR / "shift_tracker.h",
-    SRC_DIR / "handover_packet.cc",
-    SRC_DIR / "handover_packet.h",
+    "shift_tracker.cc",
+    "shift_tracker.h",
+    "handover_packet.cc",
+    "handover_packet.h",
 }
 
 CONSUMER_NAME_HINTS = ("preview", "writer", "render", "output", "main")
@@ -55,19 +60,14 @@ class Finding:
     message: str
 
 
-def count_matches(patterns: list[re.Pattern], text: str) -> int:
-    """Count how many structural signal patterns appear in the text."""
-    return sum(1 for pattern in patterns if pattern.search(text))
-
-
 def has_tracker_param(text: str) -> bool:
     """Detect APIs that directly accept a ShiftTracker dependency."""
-    return bool(TRACKER_PARAM_PATTERN.search(text))
+    return regex_matches(TRACKER_PARAM_PATTERN, text)
 
 
 def has_packet_mentions(text: str) -> bool:
     """Detect whether a file mentions the HandoverPacket domain type."""
-    return bool(PACKET_RETURN_PATTERN.search(text))
+    return regex_matches(PACKET_RETURN_PATTERN, text)
 
 
 def is_consumer_side(path: Path) -> bool:
@@ -78,7 +78,7 @@ def is_consumer_side(path: Path) -> bool:
     return any(hint in name for hint in CONSUMER_NAME_HINTS)
 
 
-def find_domain_assembly_candidates(files: list[Path]) -> list[str]:
+def find_domain_assembly_candidates(files: list[Path], src_dir: Path, case_root: Path) -> list[str]:
     """Find likely domain-side files that own packet assembly responsibilities."""
     candidates: list[str] = []
     for path in files:
@@ -87,41 +87,57 @@ def find_domain_assembly_candidates(files: list[Path]) -> list[str]:
         if is_consumer_side(path):
             continue
 
-        if path in {SRC_DIR / "handover_packet.cc", SRC_DIR / "handover_packet.h"}:
+        if path in {src_dir / "handover_packet.cc", src_dir / "handover_packet.h"}:
             if has_tracker_param(text) and has_packet_mentions(text):
-                candidates.append(str(path.relative_to(ROOT)))
+                candidates.append(str(path.relative_to(case_root)))
             continue
 
-        if path in {SRC_DIR / "shift_tracker.cc", SRC_DIR / "shift_tracker.h"}:
+        if path in {src_dir / "shift_tracker.cc", src_dir / "shift_tracker.h"}:
             if "HandoverPacket" in text:
-                candidates.append(str(path.relative_to(ROOT)))
+                candidates.append(str(path.relative_to(case_root)))
             continue
 
         if has_tracker_param(text) and has_packet_mentions(text):
-            candidates.append(str(path.relative_to(ROOT)))
+            candidates.append(str(path.relative_to(case_root)))
     return candidates
 
 
 def main() -> int:
     """Report whether packet assembly logic leaked into consumer-side files."""
-    findings: list[Finding] = []
-    source_files = sorted(list(SRC_DIR.glob("*.h")) + list(SRC_DIR.glob("*.cc"))) + [
-        APP_FILE
-    ]
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    src_dir = case_root / "src"
+
+    app_file = case_root / "app" / "main.cc"
+
+    findings: list[Finding] = []
+    source_files = scan_files(src_dir, suffixes=(".h", ".cc")) + [app_file]
+
+    consumer_files: list[Path] = [src_dir / consumer_file for consumer_file in CONSUMER_FILES] + [app_file]
+    
     consumer_assembly_sites: list[str] = []
+
+    domain_core_files = {src_dir / core_file for core_file in DOMAIN_CORE_FILES}
 
     for path in source_files:
         text = read_text(path, missing_ok=False)
-        rel_path = str(path.relative_to(ROOT))
-        assembly_score = count_matches(ASSEMBLY_SIGNAL_PATTERNS, text)
-        summary_score = count_matches(SUMMARY_SIGNAL_PATTERNS, text)
+        rel_path = str(path.relative_to(case_root))
+        assembly_score = count_matching_patterns(ASSEMBLY_SIGNAL_PATTERNS, text)
+        summary_score = count_matching_patterns(SUMMARY_SIGNAL_PATTERNS, text)
         tracker_param = has_tracker_param(text)
         packet_mentions = has_packet_mentions(text)
 
-        if path in CONSUMER_FILES:
-            if assembly_score >= 2 and (
-                "current_tote" in text or "completed_totes" in text
+        if path in consumer_files:
+            if assembly_score >= 2 and has_any_substring(
+                ["current_tote", "completed_totes"], text
             ):
                 consumer_assembly_sites.append(rel_path)
                 findings.append(
@@ -131,7 +147,9 @@ def main() -> int:
                         message="consumer-side file inspects tracker state and assembles packet rows",
                     )
                 )
-            if summary_score >= 2 and ("summary" in text or "total_packages" in text):
+            if summary_score >= 2 and has_any_substring(
+                ["summary", "total_packages"], text
+            ):
                 findings.append(
                     Finding(
                         code="consumer_summary_logic",
@@ -141,7 +159,7 @@ def main() -> int:
                 )
             continue
 
-        if path in DOMAIN_CORE_FILES:
+        if path in domain_core_files:
             continue
 
         if tracker_param and packet_mentions and is_consumer_side(path):
@@ -177,7 +195,7 @@ def main() -> int:
             )
         )
 
-    domain_candidates = find_domain_assembly_candidates(source_files)
+    domain_candidates = find_domain_assembly_candidates(source_files, src_dir, case_root)
     if not domain_candidates:
         findings.append(
             Finding(
@@ -193,7 +211,7 @@ def main() -> int:
         "passed": passed,
         "findings": [finding.__dict__ for finding in findings],
         "domain_candidates": domain_candidates,
-        "checked_files": [str(path.relative_to(ROOT)) for path in source_files],
+        "checked_files": [str(path.relative_to(case_root)) for path in source_files],
     }
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0 if passed else 1

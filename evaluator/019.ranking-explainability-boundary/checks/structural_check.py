@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import argparse
-import pathlib
+from pathlib import Path
 import re
 from typing import List
 
-from evaluator.shared.check_utils import read_text, strip_comments
+from evaluator.shared.path_checks import case_root_from_script, read_text
+from evaluator.shared.source_analysis import has_any_substring, strip_comments
+from evaluator.shared.check_output import emit_check_result
 
 
 def remove_include_lines(text: str) -> str:
@@ -43,7 +45,9 @@ def count_field_lines(body: str) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=pathlib.Path, default=pathlib.Path.cwd())
+    parser.add_argument(
+        "--case_root", type=Path, default=case_root_from_script(__file__)
+    )
     args = parser.parse_args()
 
     root = args.case_root.resolve()
@@ -57,13 +61,16 @@ def main() -> int:
     )
     ranker_literals = string_literals(ranker_text)
     if ranker_literals:
-        failures.append("ranker core should not contain display-oriented string literals")
+        failures.append(
+            "ranker core should not contain display-oriented string literals"
+        )
 
     forbidden_ranker_includes = ["<sstream>", "<format>", "<iostream>"]
     ranker_sources = read_text(src / "ranker.cc") + "\n" + read_text(src / "ranker.h")
-    for header in forbidden_ranker_includes:
-        if header in ranker_sources:
-            failures.append(f"ranker core should not include {header}")
+    if has_any_substring(forbidden_ranker_includes, ranker_sources):
+        for header in forbidden_ranker_includes:
+            if header in ranker_sources:
+                failures.append(f"ranker core should not include {header}")
 
     suspicious_ranker_tokens = [
         "debug",
@@ -75,11 +82,12 @@ def main() -> int:
         "format",
     ]
     ranker_lower = ranker_text.lower()
-    for token in suspicious_ranker_tokens:
-        if token in ranker_lower:
-            failures.append(
-                f"ranker core contains suspicious consumer-oriented token: {token}"
-            )
+    if has_any_substring(suspicious_ranker_tokens, ranker_lower):
+        for token in suspicious_ranker_tokens:
+            if token in ranker_lower:
+                failures.append(
+                    f"ranker core contains suspicious consumer-oriented token: {token}"
+                )
 
     ranking_result_text = strip_comments(read_text(src / "ranking_result.h"))
     ranked_body = struct_body(ranking_result_text, "RankedItem")
@@ -88,28 +96,28 @@ def main() -> int:
     else:
         field_count = count_field_lines(ranked_body)
         if field_count > 3:
-            failures.append("RankedItem should stay compact and not accumulate many fields")
+            failures.append(
+                "RankedItem should stay compact and not accumulate many fields"
+            )
 
-    if "std::string" in ranking_result_text:
-        failures.append("ranking_result.h should not store display-oriented string fields")
+    if has_any_substring(["std::string"], ranking_result_text):
+        failures.append(
+            "ranking_result.h should not store display-oriented string fields"
+        )
 
-    if "std::vector" in ranking_result_text:
+    if has_any_substring(["std::vector"], ranking_result_text):
         failures.append("ranking_result.h should not store bulk diagnostic containers")
 
     item_text = strip_comments(read_text(src / "item.h")).lower()
-    for token in ["reason", "inspection", "diagnostic", "debug", "trace", "comparison"]:
-        if token in item_text:
-            failures.append(
-                f"item domain type should not absorb observer-oriented token: {token}"
-            )
+    item_tokens = ["reason", "inspection", "diagnostic", "debug", "trace", "comparison"]
+    if has_any_substring(item_tokens, item_text):
+        for token in item_tokens:
+            if token in item_text:
+                failures.append(
+                    f"item domain type should not absorb observer-oriented token: {token}"
+                )
 
-    if failures:
-        for failure in failures:
-            print(failure)
-        return 1
-
-    print("structural checks passed")
-    return 0
+    return emit_check_result(passed=not failures, findings=failures)
 
 
 if __name__ == "__main__":

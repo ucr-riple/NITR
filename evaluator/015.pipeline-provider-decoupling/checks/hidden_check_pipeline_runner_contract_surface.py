@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-
+import argparse
 from pathlib import Path
-import re
-import sys
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.path_checks import (
+    case_root_from_script,
+    read_text,
+)
+from evaluator.shared.source_analysis import find_matching_patterns
+from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN = [
     r"\bPolicyMode\b",
@@ -24,19 +27,26 @@ FORBIDDEN = [
 
 def main() -> int:
     """Ensure PipelineRunner does not expose provider-selection concerns in its contract."""
-    case_root = case_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    violations = []
     for path in [
         case_root / "src/pipeline_runner.h",
         case_root / "src/pipeline_runner.cc",
     ]:
         text = read_text(path, missing_ok=False)
-        for pattern in FORBIDDEN:
-            if re.search(pattern, text):
-                print(
-                    f"PipelineRunner contract leaks provider selection detail in {path}: {pattern}"
-                )
-                return 1
-    return 0
+        for pattern in find_matching_patterns(FORBIDDEN, text):
+            violations.append(
+                f"PipelineRunner contract leaks provider selection detail in {path}: {pattern}"
+            )
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-
+import argparse
 from pathlib import Path
-import re
-import sys
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
+from evaluator.shared.path_checks import (
+    case_root_from_script,
+    read_text,
+)
+from evaluator.shared.source_analysis import find_matching_patterns
+from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN_PATTERNS = [
     r"\bStaticPolicyProvider\b",
@@ -24,20 +27,27 @@ FORBIDDEN_PATTERNS = [
 
 def main() -> int:
     """Reject provider selection or construction logic inside core pipeline files."""
-    case_root = case_root_from_script(__file__)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
     core_files = [
         case_root / "src/pipeline_runner.h",
         case_root / "src/pipeline_runner.cc",
     ]
+    violations = []
     for path in core_files:
         text = read_text(path, missing_ok=False)
-        for pattern in FORBIDDEN_PATTERNS:
-            if re.search(pattern, text):
-                print(
-                    f"Forbidden provider creation/selection hint in core file {path}: {pattern}"
-                )
-                return 1
-    return 0
+        for pattern in find_matching_patterns(FORBIDDEN_PATTERNS, text):
+            violations.append(
+                f"Forbidden provider creation/selection hint in core file {path}: {pattern}"
+            )
+    return emit_check_result(passed=not violations, findings=violations)
 
 
 if __name__ == "__main__":

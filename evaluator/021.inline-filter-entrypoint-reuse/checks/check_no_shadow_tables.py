@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 
+import argparse
 from pathlib import Path
-import sys
 
+from evaluator.shared.path_checks import (
+    case_root_from_script,
+    scan_files,
+)
+from evaluator.shared.source_analysis import (
+    count_matching_substrings,
+    has_any_substring,
+)
+from evaluator.shared.check_output import emit_check_result
 
-CASE_REL = Path("cases/021.inline-filter-entrypoint-reuse/src")
 ALLOWED_FILES = {"filter_validation.cc", "filter_validation.h", "filter_rule.cc"}
 FIELD_LITERALS = ['"status"', '"priority"', '"owner"']
 ERROR_LITERALS = [
@@ -16,30 +24,42 @@ ERROR_LITERALS = [
 
 def main() -> int:
     """Reject duplicated field/error lookup tables outside the shared validation layer."""
-    workspace_root = Path.cwd()
-    src_dir = workspace_root / CASE_REL
-    for source_file in sorted(src_dir.glob("*.[ch]c*")):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--case_root",
+        type=Path,
+        default=case_root_from_script(__file__),
+    )
+    args = parser.parse_args()
+
+    case_root = args.case_root.resolve()
+    src_dir = case_root / "src"
+    for source_file in scan_files(src_dir, suffixes=(".h", ".cc", ".cpp")):
         if source_file.name in ALLOWED_FILES:
             continue
 
         content = source_file.read_text(encoding="utf-8", errors="replace")
-        field_hits = sum(literal in content for literal in FIELD_LITERALS)
-        error_hits = sum(literal in content for literal in ERROR_LITERALS)
-        has_inline_parser = "ParseInlineFilter" in content
+        field_hits = count_matching_substrings(FIELD_LITERALS, content)
+        error_hits = count_matching_substrings(ERROR_LITERALS, content)
+        has_inline_parser = has_any_substring(["ParseInlineFilter"], content)
 
         if field_hits > 1:
-            print(
-                f"Suspicious duplicated field interpretation outside filter_validation: {source_file}"
+            return emit_check_result(
+                passed=False,
+                findings=[
+                    f"Suspicious duplicated field interpretation outside filter_validation: {source_file}"
+                ],
             )
-            return 1
 
         if has_inline_parser and field_hits > 0 and error_hits > 1:
-            print(
-                f"Suspicious duplicated error classification outside filter_validation: {source_file}"
+            return emit_check_result(
+                passed=False,
+                findings=[
+                    f"Suspicious duplicated error classification outside filter_validation: {source_file}"
+                ],
             )
-            return 1
 
-    return 0
+    return emit_check_result(passed=True, findings=[])
 
 
 if __name__ == "__main__":

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 import argparse
-import pathlib
-import sys
+from pathlib import Path
 
-from evaluator.shared.check_utils import case_root_from_script, read_text
-
-ROOT = case_root_from_script(__file__)
+from evaluator.shared.path_checks import (
+    classify_relative_paths_against_baseline,
+    case_root_from_script,
+    find_missing_paths,
+    find_missing_relative_paths,
+    read_text,
+    scan_files,
+)
+from evaluator.shared.source_analysis import find_matching_substrings
+from evaluator.shared.check_output import emit_check_result
 
 PROTECTED_FILES = [
     "src/feature_transform.h",
@@ -40,55 +46,51 @@ CONCRETE_TOKENS = [
     "L2NormalizeTransform",
 ]
 
+
 def main() -> int:
     """Validate protected files, required artifacts, and generic pipeline boundaries."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--case_root", type=pathlib.Path, default=ROOT)
-    parser.add_argument("--baseline_case_root", type=pathlib.Path, default=ROOT)
+    parser.add_argument(
+        "--case_root", type=Path, default=case_root_from_script(__file__)
+    )
+    parser.add_argument(
+        "--baseline_case_root", type=Path, default=case_root_from_script(__file__)
+    )
     args = parser.parse_args()
 
     case_root = args.case_root.resolve()
     baseline_root = args.baseline_case_root.resolve()
 
-    ok = True
-    for rel in REQUIRED_FILES:
-        if not (case_root / rel).exists():
-            print(f"missing required file: {rel}")
-            ok = False
-    for rel in PROTECTED_FILES:
-        path = case_root / rel
-        baseline_path = baseline_root / rel
-        if not path.exists():
-            print(f"missing protected file: {rel}")
-            ok = False
-            continue
-        if not baseline_path.exists():
-            print(f"missing baseline protected file: {rel}")
-            ok = False
-            continue
-        if path.read_bytes() != baseline_path.read_bytes():
-            print(f"protected file modified: {rel}")
-            ok = False
-    for path in case_root.glob("src/*"):
-        if path.suffix not in {".h", ".cc"}:
-            continue
+    findings: list[str] = []
+    for rel in find_missing_relative_paths(case_root, REQUIRED_FILES):
+        findings.append(f"missing required file: {rel}")
+
+    protected_status = classify_relative_paths_against_baseline(
+        case_root, baseline_root, PROTECTED_FILES
+    )
+    for rel in protected_status.missing_in_root:
+        findings.append(f"missing protected file: {rel}")
+
+    for rel in protected_status.missing_in_baseline:
+        findings.append(f"missing baseline protected file: {rel}")
+
+    for rel in protected_status.modified:
+        findings.append(f"protected file modified: {rel}")
+    for path in scan_files(case_root / "src", suffixes=(".h", ".cc")):
         text = read_text(path, missing_ok=False)
         for pattern in FORBIDDEN_PATTERNS:
             if pattern in text:
-                print(
+                findings.append(
                     f"forbidden pattern {pattern} found in {path.relative_to(case_root)}"
                 )
-                ok = False
     for rel in GENERIC_FILES:
         path = case_root / rel
-        if not path.exists():
+        if find_missing_paths([path]):
             continue
         text = read_text(path, missing_ok=False)
-        for token in CONCRETE_TOKENS:
-            if token in text:
-                print(f"generic path leaked concrete type {token} in {rel}")
-                ok = False
-    return 0 if ok else 1
+        for token in find_matching_substrings(CONCRETE_TOKENS, text):
+            findings.append(f"generic path leaked concrete type {token} in {rel}")
+    return emit_check_result(passed=not findings, findings=findings)
 
 
 if __name__ == "__main__":

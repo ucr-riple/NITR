@@ -1,6 +1,7 @@
-#include <cassert>
 #include <cmath>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "inventory_report_service.h"
 #include "summary_engine.h"
@@ -32,7 +33,7 @@ bool NearlyEqual(double a, double b) {
   return std::fabs(a - b) < 1e-9;
 }
 
-void TestGetSummaryCachesRepeatedRead() {
+TEST(Case012ReportCache, CachesRepeatedSummaryReads) {
   CountingSummaryEngine engine;
   nitr::case012::InventoryReportService service(&engine);
 
@@ -44,16 +45,16 @@ void TestGetSummaryCachesRepeatedRead() {
   const nitr::case012::InventorySummary first = service.GetSummary();
   const nitr::case012::InventorySummary second = service.GetSummary();
 
-  assert(engine.compute_calls == 1);
-  assert(first.product_count == 2);
-  assert(first.low_stock_count == 1);
-  assert(NearlyEqual(first.inventory_value, 45.0));
-  assert(second.product_count == first.product_count);
-  assert(second.low_stock_count == first.low_stock_count);
-  assert(NearlyEqual(second.inventory_value, first.inventory_value));
+  EXPECT_EQ(engine.compute_calls, 1);
+  EXPECT_EQ(first.product_count, 2);
+  EXPECT_EQ(first.low_stock_count, 1);
+  EXPECT_TRUE(NearlyEqual(first.inventory_value, 45.0));
+  EXPECT_EQ(second.product_count, first.product_count);
+  EXPECT_EQ(second.low_stock_count, first.low_stock_count);
+  EXPECT_TRUE(NearlyEqual(second.inventory_value, first.inventory_value));
 }
 
-void TestReplaceProductsInvalidatesCache() {
+TEST(Case012ReportCache, ReplacingProductsInvalidatesCache) {
   CountingSummaryEngine engine;
   nitr::case012::InventoryReportService service(&engine);
 
@@ -68,13 +69,13 @@ void TestReplaceProductsInvalidatesCache() {
   });
   const nitr::case012::InventorySummary summary = service.GetSummary();
 
-  assert(engine.compute_calls == 2);
-  assert(summary.product_count == 1);
-  assert(summary.low_stock_count == 1);
-  assert(NearlyEqual(summary.inventory_value, 7.0));
+  EXPECT_EQ(engine.compute_calls, 2);
+  EXPECT_EQ(summary.product_count, 1);
+  EXPECT_EQ(summary.low_stock_count, 1);
+  EXPECT_TRUE(NearlyEqual(summary.inventory_value, 7.0));
 }
 
-void TestUpsertProductInvalidatesCache() {
+TEST(Case012ReportCache, UpsertingProductInvalidatesCache) {
   CountingSummaryEngine engine;
   nitr::case012::InventoryReportService service(&engine);
 
@@ -87,13 +88,13 @@ void TestUpsertProductInvalidatesCache() {
   service.UpsertProduct({"B-200", 8, 5, 10.0});
   const nitr::case012::InventorySummary summary = service.GetSummary();
 
-  assert(engine.compute_calls == 2);
-  assert(summary.product_count == 2);
-  assert(summary.low_stock_count == 0);
-  assert(NearlyEqual(summary.inventory_value, 105.0));
+  EXPECT_EQ(engine.compute_calls, 2);
+  EXPECT_EQ(summary.product_count, 2);
+  EXPECT_EQ(summary.low_stock_count, 0);
+  EXPECT_TRUE(NearlyEqual(summary.inventory_value, 105.0));
 }
 
-void TestClearCacheForcesRecompute() {
+TEST(Case012ReportCache, ClearCacheForcesRecompute) {
   CountingSummaryEngine engine;
   nitr::case012::InventoryReportService service(&engine);
 
@@ -105,15 +106,7 @@ void TestClearCacheForcesRecompute() {
   service.ClearCache();
   (void)service.GetSummary();
 
-  assert(engine.compute_calls == 2);
+  EXPECT_EQ(engine.compute_calls, 2);
 }
 
 }  // namespace
-
-int main() {
-  TestGetSummaryCachesRepeatedRead();
-  TestReplaceProductsInvalidatesCache();
-  TestUpsertProductInvalidatesCache();
-  TestClearCacheForcesRecompute();
-  return 0;
-}

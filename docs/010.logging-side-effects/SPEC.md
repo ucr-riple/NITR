@@ -86,5 +86,5 @@ Risky solutions often:
 - `cases/010.logging-side-effects/CMakeLists.txt`
 - `evaluator/010.logging-side-effects/checks/maintainability_check.py`
 - `evaluator/010.logging-side-effects/data/`
-- `evaluator/010.logging-side-effects/tests/loan_review_test.cc`
+- `evaluator/010.logging-side-effects/tests/test_loan_review.cc`
 - `docs/010.logging-side-effects/SPEC.md`
