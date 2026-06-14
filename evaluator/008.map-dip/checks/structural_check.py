@@ -1,4 +1,21 @@
 #!/usr/bin/env python3
+
+"""Enforce DIP-like structural constraints for case 008.
+
+Rule:
+  - Reject hardcoded geometry/semantics provider references and type-string dispatch
+    inside `src/map_snapshot.cc`.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root).
+
+Inputs checked:
+  - `src/map_snapshot.cc`
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[pattern-based violations]).
+"""
+
 import argparse
 from pathlib import Path
 
