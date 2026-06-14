@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 """Limit touched paths to expected top-level case paths for case 015.
 

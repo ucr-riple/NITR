@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Detect compact-mode leakage into the report renderer API for case 011.
 
 Rule:

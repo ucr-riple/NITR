@@ -16,8 +16,6 @@ expected starter-state failures from evaluator infrastructure failures such as
 missing registration or broken configuration paths.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import shutil

@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# evaluator/checks/check.py
-
 """Structural enforcement for case 004 (CV/SRP decomposition and dependency constraints).
 
 Rules:
@@ -24,11 +22,7 @@ Output:
     optional execution reporting from the discovered test binary.
 """
 
-from __future__ import annotations
-
-import os
 import re
-import sys
 import subprocess
 import argparse
 from pathlib import Path

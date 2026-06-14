@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 """Enforce thermostat decoupling boundary for case 022.
 

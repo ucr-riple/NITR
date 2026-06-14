@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 """Validate data-ISP interface extraction constraints for case 006.
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """Structural check for case 024: substitutability under interface evolution.
 
 Verifies that the agent evolved the abstract MetricRecorder base to admit
@@ -8,8 +9,6 @@ existing console implementation.
 These are semantic, type-relationship-level assertions. There is no
 function-name blacklist; the check verifies the architecture, not syntax.
 """
-
-from __future__ import annotations
 
 import argparse
 import re

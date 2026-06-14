@@ -18,8 +18,6 @@ coherently and whether expected evaluator files are reachable through the
 repo-local public evaluation path.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re

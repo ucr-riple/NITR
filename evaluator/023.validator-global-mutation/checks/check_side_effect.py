@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 """Guard global-mutation side-effect boundaries for case 023.
 

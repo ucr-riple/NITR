@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Enforce logging-side-effects constraints for case 010.
 
 Rules:

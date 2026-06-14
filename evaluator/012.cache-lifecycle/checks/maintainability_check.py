@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Enforce cache-lifecycle separation constraints for case 012.
 
 Rules:

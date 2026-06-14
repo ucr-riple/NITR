@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 """Ensure concrete provider wiring stays within designated boundary files.
 

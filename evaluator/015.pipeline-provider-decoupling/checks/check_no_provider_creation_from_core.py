@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 """Reject provider creation/selection logic inside core pipeline files.
 

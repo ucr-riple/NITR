@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Check structural format-agnostic boundaries for case 014 report export.
 
 Rule:

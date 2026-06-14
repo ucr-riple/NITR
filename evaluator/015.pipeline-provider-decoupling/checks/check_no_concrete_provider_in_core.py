@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 """Disallow concrete provider dependencies in pipeline runner core files.
 
