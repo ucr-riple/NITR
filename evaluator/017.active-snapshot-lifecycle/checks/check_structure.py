@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 
+"""Enforce active snapshot lifecycle ownership boundaries for case 017.
+
+Rule:
+  - Centralize mutable active-snapshot lifecycle state in the intended core owner.
+  - Prevent duplicated writable tracker interfaces across multiple headers.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - `src/` and `app/main.cc`.
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[violation messages]).
+"""
+
 import argparse
 from pathlib import Path
 
@@ -48,7 +62,7 @@ def main() -> int:
     # Check for value-type Snapshot members or data structure ownership (not just pointer caching)
     query_state_hits = find_matching_paths(
         r"(Snapshot\s+\w+_;|std::unordered_map<.*>\s+\w+_;)",
-        root_dir / "src/query_service.h",
+        src_dir / "query_service.h",
     )
     if query_state_hits:
         failures.append(

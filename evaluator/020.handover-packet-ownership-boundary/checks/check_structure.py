@@ -1,5 +1,24 @@
 #!/usr/bin/env python3
 
+"""Detect handover-packet ownership boundary violations for case 020.
+
+Rule:
+  - Packet assembly/summarization must be owned by domain-side core files.
+  - Consumer-side files should not ingest tracker state and assemble packet rows or
+    summary data directly.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - Source files under `src/` plus `app/main.cc`.
+
+Behavior:
+  - Scores files against assembly/summary signal patterns and tracker/packet coupling.
+  - Emits structured findings with file classification and code.
+
+Output:
+  - Prints a JSON summary and returns 0/1 via process exit.
+"""
+
 import argparse
 import json
 import re
@@ -16,6 +35,7 @@ from evaluator.shared.source_analysis import (
     has_any_substring,
     regex_matches,
 )
+from evaluator.shared.check_output import CHECK_FAILED, CHECK_PASSED
 
 
 CONSUMER_FILES = {
@@ -214,7 +234,7 @@ def main() -> int:
         "checked_files": [str(path.relative_to(case_root)) for path in source_files],
     }
     print(json.dumps(summary, indent=2, sort_keys=True))
-    return 0 if passed else 1
+    return CHECK_PASSED if passed else CHECK_FAILED
 
 
 if __name__ == "__main__":

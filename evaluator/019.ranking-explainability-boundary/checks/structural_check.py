@@ -1,4 +1,23 @@
 #!/usr/bin/env python3
+
+"""Enforce explainability-boundary separation for case 019.
+
+Rule:
+  - Ranker core (`ranker.{cc,h}`) should stay pure logic and free from
+    presentation/debug/IO-oriented couplings.
+  - Ranking-result/domain types should remain compact and not absorb observer concerns.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root)
+  - Source files under `src/`:
+      - `ranker.cc`, `ranker.h`
+      - `ranking_result.h`
+      - `item.h`
+
+Output:
+  - `{"passed": bool, "findings": [violations]}` via emit_check_result.
+"""
+
 import argparse
 from pathlib import Path
 import re

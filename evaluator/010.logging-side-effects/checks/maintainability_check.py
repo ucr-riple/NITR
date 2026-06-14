@@ -1,3 +1,25 @@
+#!/usr/bin/env python3
+
+"""Enforce logging-side-effects constraints for case 010.
+
+Rules:
+  - `loan_policy.{h,cc}` must not depend on logging infrastructure headers (`audit_logger.h`).
+  - `loan_policy.h` must expose `EvaluateApplicant` with a dependency-safe signature
+    (no logger/audit dependency parameters).
+  - `loan_policy.cc` must avoid direct I/O and direct audit emission.
+  - `loan_review_service.cc` should be the place where audit emission is localized.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root)
+  - Files:
+      - `src/loan_policy.h`
+      - `src/loan_policy.cc`
+      - `src/loan_review_service.cc`
+
+Output:
+  - `{"passed": bool, "findings": [rule violation strings]}` via emit_check_result.
+"""
+
 import argparse
 from pathlib import Path
 import re

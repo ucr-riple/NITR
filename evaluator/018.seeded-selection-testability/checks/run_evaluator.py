@@ -1,5 +1,22 @@
 #!/usr/bin/env python3
 
+"""Enforce seeded-selection testability constraints for case 018.
+
+Rule:
+  - Reject test-only hooks and nondeterministic selection mechanisms in production source.
+  - Block hidden replay/seed knobs leaking into `src/`.
+  - Require `selector.cc` to reference the expected sampler contract (`SamplerV1`).
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root)
+  - Source directory:
+      - `src/` (including `candidate.h`, `selector.cc`)
+
+Output:
+  - On clean pass: `{"passed": true, "findings": []}` via emit_check_result.
+  - On violation: fail helper output from shared check output contract.
+"""
+
 import argparse
 from pathlib import Path
 

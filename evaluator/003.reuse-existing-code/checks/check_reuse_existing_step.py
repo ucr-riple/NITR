@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 
+"""Enforce reuse boundaries for case 003 cosine-similarity refactor.
+
+Rule:
+  - Protect non-target source files against unexpected add/rename/delete.
+  - Only allow reuse-oriented changes in `src/cosine_similarity.cc`.
+  - Require direct reuse calls to `DotProduct` and `L2Norm`.
+  - Forbid inlined re-implementation of those math utilities in the same file.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - `--baseline_case_root` (defaults to script location).
+
+Output:
+  - fail via fail_message(...) or emit_check_result(passed=True/False, findings=...).
+"""
+
 import argparse
 import re
 from pathlib import Path

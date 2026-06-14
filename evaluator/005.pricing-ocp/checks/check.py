@@ -1,4 +1,23 @@
 #!/usr/bin/env python3
+
+"""Detect control-flow dispatch patterns that violate OCP style in pricing case.
+
+Rule:
+  - Reject branch-based coupon dispatching (`if/else-if/switch/case`) in the
+    configured core files.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case directory).
+  - `--core_files` (default: `src/pricing.cc`).
+
+Behavior:
+  - Strips comments/strings, scans for coupon-like keywords, and reports the first
+    matching snippets for visibility.
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[rule/snippet messages]).
+"""
+
 import argparse
 import re
 from pathlib import Path

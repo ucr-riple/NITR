@@ -18,8 +18,6 @@ coherently and whether expected evaluator files are reachable through the
 repo-local public evaluation path.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 import re
@@ -35,6 +33,7 @@ from benchmark_check_utils import (
     discover_evaluator_case_slugs,
     read_text,
 )
+from evaluator.shared.check_output import CHECK_FAILED, CHECK_PASSED
 
 
 CMAKE_FILE = EVALUATOR_ROOT / "CMakeLists.txt"
@@ -351,7 +350,7 @@ def main() -> int:
                     f"- [{finding.finding_type}] {finding.case} {finding.path}: {finding.message}"
                 )
 
-    return 0 if not findings else 1
+    return CHECK_PASSED if not findings else CHECK_FAILED
 
 
 if __name__ == "__main__":

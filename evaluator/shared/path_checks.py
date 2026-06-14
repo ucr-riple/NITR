@@ -1,4 +1,4 @@
-from __future__ import annotations
+#!/usr/bin/env python3
 
 """Shared evaluator helpers grouped by check intent.
 

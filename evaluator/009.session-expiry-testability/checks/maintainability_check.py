@@ -1,5 +1,25 @@
 #!/usr/bin/env python3
 
+"""Enforce session expiry testability constraints for case 009.
+
+Rules:
+  - Reject production time sources that couple logic to real time APIs.
+  - Reject sleep-based waiting in evaluator unit tests.
+  - Ensure `session_manager.h` keeps a constructor seam that accepts `TimeSource`.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root)
+  - `--evaluator_root` (defaults to script-inferred evaluator root)
+
+Checks performed:
+  - Scan `src/` for forbidden time APIs and evaluation-only time-control APIs.
+  - Scan `evaluator/tests/` for sleep-related calls.
+  - Verify `session_manager.h` exists and contains a `SessionManager` ctor that accepts `TimeSource`.
+
+Output:
+  - `{"passed": bool, "findings": [<rule_violation_strings>]}` via emit_check_result.
+"""
+
 import argparse
 from pathlib import Path
 

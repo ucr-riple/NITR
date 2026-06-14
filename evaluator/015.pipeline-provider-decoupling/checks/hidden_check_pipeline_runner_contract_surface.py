@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
-from __future__ import annotations
+
+"""Verify PipelineRunner contract has no provider-selection leakage (case 015).
+
+Rule:
+  - `pipeline_runner.{h,cc}` should not expose provider-selection or wiring details.
+    Specifically, forbid policy-mode/provider-construction symbols in the runner contract.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root)
+  - Files:
+      - `src/pipeline_runner.h`
+      - `src/pipeline_runner.cc`
+
+Output:
+  - `{"passed": bool, "findings": [pattern-based violations]}` via emit_check_result.
+"""
+
 import argparse
 from pathlib import Path
 

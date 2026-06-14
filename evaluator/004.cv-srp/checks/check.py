@@ -1,15 +1,32 @@
 #!/usr/bin/env python3
-# evaluator/checks/check.py
+"""Structural enforcement for case 004 (CV/SRP decomposition and dependency constraints).
 
-from __future__ import annotations
+Rules:
+  - Prevent legacy monolith from being modified or referenced from unrelated files.
+  - Restrict `nlohmann` JSON includes to permitted locations.
+  - Enforce policy dependency boundary (no normalize/estimator includes in
+    `src/policy.cc`).
+  - Enforce binary symbol isolation for `cv_srp`.
 
-import os
+Inputs:
+  - `--case_root` (defaults to script's case directory).
+
+Inputs checked:
+  - `src/legacy_monolith.*`
+  - `evaluator/oracle_main.cc`
+  - `src/io_json.*`
+  - `src/estimator_e.cc`, `src/scoring.cc`, `src/policy.cc`, and related headers.
+
+Output:
+  - emit_check_result(passed=<bool>, findings=<messages list>) and
+    optional execution reporting from the discovered test binary.
+"""
+
 import re
-import sys
 import subprocess
 import argparse
 from pathlib import Path
-from typing import Iterable, List, Tuple, Optional
+from typing import Iterable, List, Optional, Tuple
 
 from evaluator.shared.path_checks import (
     case_root_from_script,
@@ -19,7 +36,7 @@ from evaluator.shared.path_checks import (
     scan_files,
 )
 from evaluator.shared.source_analysis import find_matching_patterns, regex_matches
-from evaluator.shared.check_output import emit_check_result
+from evaluator.shared.check_output import RunResult, emit_check_result
 
 
 def run(cmd: List[str]) -> Tuple[int, str, str]:
@@ -30,9 +47,9 @@ def run(cmd: List[str]) -> Tuple[int, str, str]:
         )
         return proc.returncode, proc.stdout, proc.stderr
     except FileNotFoundError:
-        return 127, "", f"Command not found: {cmd[0]}"
+        return RunResult.COMMAND_NOT_FOUND, "", f"Command not found: {cmd[0]}"
     except Exception as e:
-        return 1, "", f"Failed to run {cmd}: {e}"
+        return RunResult.FAILED, "", f"Failed to run {cmd}: {e}"
 
 
 def rel(p: Path, root: Path) -> str:
@@ -225,14 +242,6 @@ def find_binary(root: Path, name: str) -> Path:
     )
 
 
-def maybe_find_binary(root: Path, name: str) -> Optional[Path]:
-    """Find a build artifact if available, but tolerate it being absent."""
-    try:
-        return find_binary(root, name)
-    except RuntimeError:
-        return None
-
-
 def symbols_via_nm(bin_path: Path) -> Optional[str]:
     """Try extracting symbols with nm."""
     rc, out, err = run(["nm", "-a", str(bin_path)])
@@ -324,12 +333,8 @@ def main() -> int:
         check_policy_dependency_restrictions(root)
         checks_run.append("check_policy_dependency_restrictions")
 
-        cv_bin = maybe_find_binary(root, "cv_srp")
-        if cv_bin is None:
-            skipped_checks.append("check_binary_symbol_isolation")
-        else:
-            check_binary_symbol_isolation(root)
-            checks_run.append("check_binary_symbol_isolation")
+        check_binary_symbol_isolation(root)
+        checks_run.append("check_binary_symbol_isolation")
 
         return emit_check_result(
             passed=True,

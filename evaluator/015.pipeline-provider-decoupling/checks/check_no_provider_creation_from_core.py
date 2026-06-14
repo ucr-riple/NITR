@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
-from __future__ import annotations
+
+"""Reject provider creation/selection logic inside core pipeline files.
+
+Rule:
+  - Core runner files should not construct, select, or include provider factory
+    machinery.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - Source files:
+    - `src/pipeline_runner.h`
+    - `src/pipeline_runner.cc`
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[violation messages]).
+"""
+
 import argparse
 from pathlib import Path
 

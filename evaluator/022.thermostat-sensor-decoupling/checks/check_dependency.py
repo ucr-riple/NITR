@@ -1,8 +1,23 @@
 #!/usr/bin/env python3
-from __future__ import annotations
+
+"""Enforce thermostat decoupling boundary for case 022.
+
+Rule:
+  - Core thermostat/domain files must not include sensor hardware headers or
+    hardware-only symbols directly.
+  - App entrypoint must keep temperature acquisition via `Evaluate()` no-arg
+    contract.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - Core `src/*.h|*.cc` excluding sensor implementation files.
+  - `src/tmp26_sensor.cc` and `app/main.cc`.
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[violation messages]).
+"""
 
 import argparse
-import re
 from pathlib import Path
 
 from evaluator.shared.path_checks import (

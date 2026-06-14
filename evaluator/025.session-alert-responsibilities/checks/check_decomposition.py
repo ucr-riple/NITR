@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Structural check for case 025: session alert responsibilities.
 
 This case probes D3 (responsibility decomposition).  The functional task asks

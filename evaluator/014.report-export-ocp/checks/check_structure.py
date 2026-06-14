@@ -1,3 +1,25 @@
+#!/usr/bin/env python3
+
+"""Check structural format-agnostic boundaries for case 014 report export.
+
+Rule:
+  - report_export_service should avoid markdown-specific implementation details and
+    direct markdown exporter dependencies.
+
+Inputs:
+  - `--case_root` (defaults to script's case directory).
+  - `src/report_export_service.cc`
+  - `src/report_export_service.h`
+  - `src/exporter_factory.cc`
+
+Checks:
+  - Flag markdown mentions in service implementation/header text.
+  - Ensure factory exposes default exporter creation entry point.
+
+Output:
+  - emit_check_result with pass/fail findings.
+"""
+
 import argparse
 from pathlib import Path
 

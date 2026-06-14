@@ -1,3 +1,27 @@
+#!/usr/bin/env python3
+
+"""Enforce cache-lifecycle separation constraints for case 012.
+
+Rules:
+  - `SummaryEngine` should not own cache-related state or cache-control semantics.
+  - Detect and reject static/global cached summary artifacts in service/engine implementation.
+  - Reject cache-control parameters leaking into `InventoryReportService` public API.
+  - Require explicit cache reset + pure compute seam:
+      - `ClearCache()` must be declared on `inventory_report_service.h`.
+      - `Compute(...)` must remain declared on `summary_engine.h`.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root)
+  - Files:
+      - `src/inventory_report_service.h`
+      - `src/inventory_report_service.cc`
+      - `src/summary_engine.h`
+      - `src/summary_engine.cc`
+
+Output:
+  - `{"passed": bool, "findings": [rule violation strings]}` via emit_check_result.
+"""
+
 import argparse
 from pathlib import Path
 
