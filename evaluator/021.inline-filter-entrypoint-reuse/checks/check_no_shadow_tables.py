@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 
+"""Reject duplicated filter shadow tables outside the shared validation module.
+
+Rule:
+  - Disallow repeated field/error lookup/table patterns in non-validation files.
+  - Ensure field constants and error mapping helpers are centralized.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - All source files under `src/` (except allowed validation files).
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[offending path and reason]).
+"""
+
 import argparse
 from pathlib import Path
 

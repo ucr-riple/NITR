@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 
+"""Guard against duplicate numeric validation logic in case 021.
+
+Rule:
+  - Numeric parsing/validation patterns (e.g. std::stoi / std::isdigit) and
+    inline integer-rule construction must be centralized in `filter_validation.*`.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - All source files under `src/` (except allowed filter validation files).
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[first offending file path message]).
+"""
+
 import argparse
 from pathlib import Path
 

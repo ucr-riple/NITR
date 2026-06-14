@@ -1,6 +1,22 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+"""Guard global-mutation side-effect boundaries for case 023.
+
+Rule:
+  - Keep validator free from global counter ownership and direct stats coupling.
+  - Limit allowed include/readers of `stats.h`.
+  - Ensure protected baseline files stay present and unchanged.
+
+Inputs:
+  - `--case_root` and optional `--baseline_case_root`.
+  - `src/` files and `app/main.cc`.
+  - Baseline case directory (for protected file checks).
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[path-level violations]).
+"""
+
 import argparse
 import re
 from pathlib import Path

@@ -1,3 +1,22 @@
+"""Enforce public API stability constraints for case 013.
+
+Rules:
+  - Reject common public-control flags that couple callers to hidden behavior:
+    include_archived / show_archived / archived_mode / includeArchived.
+  - Require mandatory API signatures in `library_catalog.h` to remain stable.
+
+Inputs:
+  - `--case_root` (defaults to case directory derived from script path).
+
+Checks performed:
+  - Read `src/library_catalog.h`.
+  - Scan for forbidden flags.
+  - Verify required API signature patterns are present.
+
+Output:
+  - Returns `{"passed": bool, "findings": [messages...]}` via emit_check_result.
+"""
+
 import argparse
 import re
 from pathlib import Path

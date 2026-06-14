@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+"""Limit touched paths to expected top-level case paths for case 015.
+
+Rule:
+  - Only allow file touches inside approved top-level directories/files.
+  - Fail when a reported path is outside the boundary or missing.
+
+Inputs:
+  - Positional CLI arguments: candidate touched paths.
+  - Repo root inferred from script location.
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[...]).
+"""
+
 import argparse
 from pathlib import Path
 
@@ -17,7 +31,6 @@ ALLOWED_ROOT_FILES = {"CMakeLists.txt", "TASK.md", "SPEC.md"}
 
 
 def main() -> int:
-    """Limit touched paths to the expected top-level case files and directories."""
     repo_root = repo_root_from_script(__file__)
     parser = argparse.ArgumentParser()
     parser.add_argument("paths", nargs="*")

@@ -1,6 +1,22 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+"""Disallow concrete provider dependencies in pipeline runner core files.
+
+Rule:
+  - `pipeline_runner.h` and `pipeline_runner.cc` must not reference concrete
+    provider headers or concrete provider class names.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - Source files:
+    - `src/pipeline_runner.h`
+    - `src/pipeline_runner.cc`
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[one or more violation strings]).
+"""
+
 import argparse
 from pathlib import Path
 

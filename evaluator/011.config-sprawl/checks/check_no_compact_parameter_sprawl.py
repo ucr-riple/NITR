@@ -1,3 +1,22 @@
+"""Detect compact-mode leakage into the report renderer API for case 011.
+
+Rule:
+  - Flag function signatures that still expose a `compact_mode` parameter in
+    report rendering APIs, because this case expects compact-mode behavior to be
+    removed from core renderer signatures.
+
+Inputs:
+  - `--case_root` (defaults to script-location case directory).
+
+Inputs checked:
+  - cases/011.config-sprawl/src/report_renderer.h
+  - cases/011.config-sprawl/src/report_renderer.cc
+
+Output:
+  - Uses emit_check_result(passed=<bool>, findings=<list[str]>)
+    with one finding per matching signature.
+"""
+
 import argparse
 import re
 from pathlib import Path

@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
+"""Ensure concrete provider wiring stays within designated boundary files.
+
+Rule:
+  - Concrete provider construction patterns are only permitted in a small allowed
+    set of wiring files.
+  - All other source files must remain free of those construction references.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - All `*.cc` / `*.h` under that case (except explicit whitelist).
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[disallowed offender file paths]).
+"""
+
 import argparse
 from pathlib import Path
 
