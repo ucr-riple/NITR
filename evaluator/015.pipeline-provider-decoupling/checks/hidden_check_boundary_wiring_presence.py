@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
-from __future__ import annotations
+
+"""Enforce boundary wiring presence for case 015.
+
+Rule:
+  - The dependency boundary (build_pipeline or main entry) must host provider creation/selection.
+
+Inputs:
+  - `--case_root` (defaults to script-inferred case root)
+  - Source files:
+      - `src/build_pipeline.cc`
+      - `app/main.cc`
+
+Output:
+  - `{"passed": bool, "findings": [rule violation strings]}` via emit_check_result.
+"""
+
 import argparse
 from pathlib import Path
 
