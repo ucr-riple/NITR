@@ -35,6 +35,7 @@ from evaluator.shared.source_analysis import (
     has_any_substring,
     regex_matches,
 )
+from evaluator.shared.check_output import CHECK_FAILED, CHECK_PASSED
 
 
 CONSUMER_FILES = {
@@ -233,7 +234,7 @@ def main() -> int:
         "checked_files": [str(path.relative_to(case_root)) for path in source_files],
     }
     print(json.dumps(summary, indent=2, sort_keys=True))
-    return 0 if passed else 1
+    return CHECK_PASSED if passed else CHECK_FAILED
 
 
 if __name__ == "__main__":

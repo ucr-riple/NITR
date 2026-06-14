@@ -23,6 +23,7 @@ import sys
 import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from evaluator.shared.check_output import CHECK_FAILED, CHECK_PASSED
 
 from benchmark_check_utils import REPO_ROOT, discover_case_slugs, run_command
 
@@ -178,7 +179,7 @@ def main() -> int:
             for result in failed:
                 print(f"- {result.case}: {result.message}")
 
-    return 0 if not failed else 1
+    return CHECK_PASSED if not failed else CHECK_FAILED
 
 
 if __name__ == "__main__":
