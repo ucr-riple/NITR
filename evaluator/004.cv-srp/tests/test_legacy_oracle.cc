@@ -71,10 +71,6 @@ TEST(LegacyOracle, OutputsForSimpleValidCase) {
     EXPECT_FALSE(output.is_open());
   }
 
-  EXPECT_TRUE(code == nitr::case004::ErrorCode::kOk ||
-              code == nitr::case004::ErrorCode::kRejected ||
-              code == nitr::case004::ErrorCode::kEstimationFailed);
-
   RemoveIfExists(out);
 }
 
@@ -103,10 +99,6 @@ TEST(LegacyOracle, RejectCase) {
     EXPECT_EQ(code, nitr::case004::ErrorCode::kEstimationFailed);
   }
 
-  EXPECT_TRUE(code == nitr::case004::ErrorCode::kOk ||
-              code == nitr::case004::ErrorCode::kRejected ||
-              code == nitr::case004::ErrorCode::kEstimationFailed);
-
   RemoveIfExists(out);
 }
 
@@ -125,25 +117,29 @@ TEST(LegacyOracle, InvalidSchemaAndJsonInputs) {
   const std::string invalid_schema_input =
       TemporaryInputPath("invalid_schema");
   const std::string invalid_json_input = TemporaryInputPath("invalid_json");
-  const std::string out = TemporaryOutputPath("invalid");
+  const std::string invalid_schema_out = TemporaryOutputPath("invalid_schema_out");
+  const std::string invalid_json_out = TemporaryOutputPath("invalid_json_out");
 
   {
     std::ofstream input(invalid_schema_input);
     input << "{}";
   }
   EXPECT_EQ(
-      nitr::case004::RunLegacyMonolith(invalid_schema_input, out),
+      nitr::case004::RunLegacyMonolith(invalid_schema_input, invalid_schema_out),
       nitr::case004::ErrorCode::kInvalidSchema);
+  EXPECT_FALSE(std::filesystem::exists(invalid_schema_out));
 
   {
     std::ofstream input(invalid_json_input);
     input << "{ this is invalid }";
   }
   EXPECT_EQ(
-      nitr::case004::RunLegacyMonolith(invalid_json_input, out),
+      nitr::case004::RunLegacyMonolith(invalid_json_input, invalid_json_out),
       nitr::case004::ErrorCode::kInvalidJson);
+  EXPECT_FALSE(std::filesystem::exists(invalid_json_out));
 
   RemoveIfExists(invalid_schema_input);
   RemoveIfExists(invalid_json_input);
-  RemoveIfExists(out);
+  RemoveIfExists(invalid_schema_out);
+  RemoveIfExists(invalid_json_out);
 }
