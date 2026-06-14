@@ -1,5 +1,26 @@
 #!/usr/bin/env python3
 
+"""Structural check for case 002 geometry refactor boundaries.
+
+Rule:
+  - Keep only intended file-level modifications for `src/geometry.cc`.
+  - Preserve other starter files under `src/` and `app/`.
+  - Validate that both fundamental and essential 8-point paths include expected
+    numerical-geometry signals.
+
+Inputs:
+  - `--case_root` (defaults to script's case root).
+  - `--baseline_case_root` (defaults to script location).
+
+Checks:
+  - Baseline file drift/new/deleted detection.
+  - `EstimateFundamental8Point` and `EstimateEssential8Point` function bodies exist.
+  - Presence of normalization and essential-constraint evidence in `src/geometry.cc`.
+
+Output:
+  - emit_check_result(passed=<bool>, findings=[diagnostic messages]).
+"""
+
 import argparse
 from pathlib import Path
 
