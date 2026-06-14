@@ -18,7 +18,6 @@ Output:
 """
 
 import argparse
-import re
 from pathlib import Path
 
 from evaluator.shared.path_checks import (
