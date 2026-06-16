@@ -1,0 +1,46 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/023.validator-global-mutation",
+  "baseline_case_root": "../../cases/023.validator-global-mutation",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case023_validator_tests",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "case023_validator_tests",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case023_validator_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case023_validator_tests$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "case023_side_effect_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_side_effect.py",
+        "--case_root",
+        "{case_root}",
+        "--baseline_case_root",
+        "{baseline_case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

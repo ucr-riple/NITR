@@ -23,13 +23,13 @@ Output:
 import argparse
 from pathlib import Path
 
-from evaluator.shared.path_checks import (
+from evaluator.shared.module.path_checks import (
     case_root_from_script,
     evaluator_root_from_script,
     find_missing_paths,
     scan_files,
 )
-from evaluator.shared.source_analysis import find_matching_patterns, has_any_pattern
+from evaluator.shared.module.source_analysis import find_matching_patterns, has_any_pattern
 from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN_SRC_PATTERNS = [

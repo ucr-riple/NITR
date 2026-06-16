@@ -18,8 +18,8 @@ Output:
 from pathlib import Path
 import re
 
-from evaluator.shared.path_checks import scan_files
-from evaluator.shared.source_analysis import find_matching_patterns
+from evaluator.shared.module.path_checks import scan_files
+from evaluator.shared.module.source_analysis import find_matching_patterns
 from evaluator.shared.check_output import emit_check_result
 
 FORBIDDEN_PATTERNS = [

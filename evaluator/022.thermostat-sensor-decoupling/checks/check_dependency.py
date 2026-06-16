@@ -20,13 +20,13 @@ Output:
 import argparse
 from pathlib import Path
 
-from evaluator.shared.path_checks import (
+from evaluator.shared.module.path_checks import (
     case_root_from_script,
     read_text,
     scan_files,
 )
 from evaluator.shared.check_output import emit_check_result
-from evaluator.shared.source_analysis import (
+from evaluator.shared.module.source_analysis import (
     has_any_pattern,
     include_paths,
     strip_comments_and_strings,

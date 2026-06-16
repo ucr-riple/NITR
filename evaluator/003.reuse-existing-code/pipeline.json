@@ -1,0 +1,46 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/003.reuse-existing-code",
+  "baseline_case_root": "../../cases/003.reuse-existing-code",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case003_functional_tests",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "case003_functional_tests",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case003_functional_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case003_functional_tests$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "nitr_reuse_existing_step",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_reuse_existing_step.py",
+        "--case_root",
+        "{case_root}",
+        "--baseline_case_root",
+        "{baseline_case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

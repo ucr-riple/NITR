@@ -1,0 +1,46 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/002.refactor-and-reuse",
+  "baseline_case_root": "../../cases/002.refactor-and-reuse",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_geometry_tests",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "geometry_tests",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "geometry_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^geometry_tests$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "geometry_structure_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_geometry_structure.py",
+        "--case_root",
+        "{case_root}",
+        "--baseline_case_root",
+        "{baseline_case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

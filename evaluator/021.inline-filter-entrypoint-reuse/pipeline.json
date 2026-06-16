@@ -1,0 +1,147 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/021.inline-filter-entrypoint-reuse",
+  "baseline_case_root": "../../cases/021.inline-filter-entrypoint-reuse",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case021_functional_tests",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "case021_functional_tests",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case021_functional_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case021_functional_tests$"
+      ]
+    },
+    {
+      "module_name": "required_paths",
+      "name": "case021_required_layout",
+      "paths": [
+        "src/filter_parser.h",
+        "src/filter_parser.cc",
+        "src/filter_rule.h",
+        "src/filter_rule.cc",
+        "src/filter_validation.h",
+        "src/filter_validation.cc"
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case021_no_duplicate_value_validation",
+      "scan_roots": [
+        "src"
+      ],
+      "suffixes": [
+        ".h",
+        ".cc",
+        ".cpp"
+      ],
+      "exclude_files": [
+        "filter_validation.cc",
+        "filter_validation.h"
+      ],
+      "stop_on_first_match": true,
+      "rules": [
+        {
+          "id": "duplicate_numeric_validation",
+          "message": "Suspicious duplicate numeric validation outside filter_validation: {path}",
+          "any_substrings": [
+            "std::stoi",
+            "std::isdigit"
+          ]
+        },
+        {
+          "id": "duplicate_integer_rule_construction",
+          "message": "Suspicious inline-only rule construction with integer value handling in {path}",
+          "all_substrings": [
+            "FilterValueKind::kInteger",
+            "ParseInlineFilter"
+          ]
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case021_no_shadow_tables",
+      "scan_roots": [
+        "src"
+      ],
+      "suffixes": [
+        ".h",
+        ".cc",
+        ".cpp"
+      ],
+      "exclude_files": [
+        "filter_validation.cc",
+        "filter_validation.h",
+        "filter_rule.cc"
+      ],
+      "stop_on_first_match": true,
+      "rules": [
+        {
+          "id": "duplicate_field_interpretation",
+          "message": "Suspicious duplicated field interpretation outside filter_validation: {path}",
+          "substring_hit_thresholds": [
+            {
+              "needles": [
+                "\"status\"",
+                "\"priority\"",
+                "\"owner\""
+              ],
+              "at_least": 2
+            }
+          ]
+        },
+        {
+          "id": "duplicate_error_classification",
+          "message": "Suspicious duplicated error classification outside filter_validation: {path}",
+          "all_of": [
+            {
+              "any_substrings": [
+                "ParseInlineFilter"
+              ]
+            },
+            {
+              "substring_hit_thresholds": [
+                {
+                  "needles": [
+                    "\"status\"",
+                    "\"priority\"",
+                    "\"owner\""
+                  ],
+                  "at_least": 1
+                }
+              ]
+            },
+            {
+              "substring_hit_thresholds": [
+                {
+                  "needles": [
+                    "FilterErrorCode::kInvalidField",
+                    "FilterErrorCode::kInvalidOperator",
+                    "FilterErrorCode::kInvalidValue"
+                  ],
+                  "at_least": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

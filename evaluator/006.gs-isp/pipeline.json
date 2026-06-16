@@ -1,0 +1,44 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/006.gs-isp",
+  "baseline_case_root": "../../cases/006.gs-isp",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_public_smoke_test",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "public_smoke_test",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "public_smoke_test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^public_smoke_test$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "case006_structural_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_data_isp.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

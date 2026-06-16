@@ -20,11 +20,11 @@ Output:
 import argparse
 from pathlib import Path
 
-from evaluator.shared.path_checks import (
+from evaluator.shared.module.path_checks import (
     case_root_from_script,
     read_text,
 )
-from evaluator.shared.source_analysis import find_matching_paths
+from evaluator.shared.module.source_analysis import find_matching_paths
 from evaluator.shared.check_output import emit_check_result, fail_message
 
 

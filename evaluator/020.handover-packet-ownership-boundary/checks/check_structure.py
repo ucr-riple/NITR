@@ -25,12 +25,12 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from evaluator.shared.path_checks import (
+from evaluator.shared.module.path_checks import (
     case_root_from_script,
     read_text,
     scan_files,
 )
-from evaluator.shared.source_analysis import (
+from evaluator.shared.module.source_analysis import (
     count_matching_patterns,
     has_any_substring,
     regex_matches,

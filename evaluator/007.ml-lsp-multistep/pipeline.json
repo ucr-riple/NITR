@@ -1,0 +1,59 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/007.ml-lsp-multistep",
+  "baseline_case_root": "../../cases/007.ml-lsp-multistep",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case007_targets",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "case007_public_tests",
+        "case007_hidden_tests",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case007_public_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case007_public_tests$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case007_hidden_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case007_hidden_tests$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "case007_constraint_checks",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check.py",
+        "--case_root",
+        "{case_root}",
+        "--baseline_case_root",
+        "{baseline_case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}
