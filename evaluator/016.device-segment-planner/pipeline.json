@@ -1,0 +1,120 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/016.device-segment-planner",
+  "baseline_case_root": "../../cases/016.device-segment-planner",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case016_targets",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "test_config_loader_smoke",
+        "test_runner_smoke",
+        "test_execution_plan_legacy",
+        "test_execution_plan_updated",
+        "test_execution_plan_unseen",
+        "test_runner_respects_segmentation",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_config_loader_smoke",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_config_loader_smoke$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_runner_smoke",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_runner_smoke$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_execution_plan_legacy",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_execution_plan_legacy$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_execution_plan_updated",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_execution_plan_updated$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_execution_plan_unseen",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_execution_plan_unseen$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_runner_respects_segmentation",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_runner_respects_segmentation$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "require_planner_usage_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_require_planner_usage.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    },
+    {
+      "module_name": "command",
+      "name": "no_step_index_special_case_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_no_step_index_special_case.py"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

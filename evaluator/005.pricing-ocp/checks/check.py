@@ -22,12 +22,12 @@ import argparse
 import re
 from pathlib import Path
 
-from evaluator.shared.path_checks import (
+from evaluator.shared.module.path_checks import (
     case_root_from_script,
     find_missing_paths,
     read_text,
 )
-from evaluator.shared.source_analysis import (
+from evaluator.shared.module.source_analysis import (
     find_pattern_snippets,
     has_any_pattern,
     strip_comments_and_strings,

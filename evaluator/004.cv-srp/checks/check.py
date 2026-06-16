@@ -28,14 +28,14 @@ import argparse
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
 
-from evaluator.shared.path_checks import (
+from evaluator.shared.module.path_checks import (
     case_root_from_script,
     find_missing_paths,
     read_text,
     repo_root_from_script,
     scan_files,
 )
-from evaluator.shared.source_analysis import find_matching_patterns, regex_matches
+from evaluator.shared.module.source_analysis import find_matching_patterns, regex_matches
 from evaluator.shared.check_output import RunResult, emit_check_result
 
 

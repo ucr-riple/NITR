@@ -1,0 +1,46 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/009.session-expiry-testability",
+  "baseline_case_root": "../../cases/009.session-expiry-testability",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_session_manager_test",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "session_manager_test",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "session_manager_test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^session_manager_test$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "maintainability_check_case009",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check.py",
+        "--case_root",
+        "{case_root}",
+        "--evaluator_root",
+        "{evaluator_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

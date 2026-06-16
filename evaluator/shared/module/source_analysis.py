@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 from typing import Iterable
 
-from evaluator.shared.path_checks import CPP_LIKE_SUFFIXES, read_text
+from evaluator.shared.module.path_checks import CPP_LIKE_SUFFIXES, read_text
 
 _INCLUDE_RE = re.compile(r'^\s*#\s*include\s*[<"]([^">]+)[">]', re.MULTILINE)
 PatternLike = str | re.Pattern[str]

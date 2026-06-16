@@ -43,12 +43,12 @@ Output:
 import argparse
 from pathlib import Path
 
-from evaluator.shared.path_checks import (
+from evaluator.shared.module.path_checks import (
     case_root_from_script,
     find_missing_paths,
     read_text,
 )
-from evaluator.shared.source_analysis import has_any_substring
+from evaluator.shared.module.source_analysis import has_any_substring
 from evaluator.shared.check_output import emit_check_result
 
 REQUIRED_HEADERS = [

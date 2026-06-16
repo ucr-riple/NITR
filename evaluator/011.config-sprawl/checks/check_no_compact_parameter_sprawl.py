@@ -23,7 +23,7 @@ import argparse
 import re
 from pathlib import Path
 
-from evaluator.shared.path_checks import case_root_from_script, read_text
+from evaluator.shared.module.path_checks import case_root_from_script, read_text
 from evaluator.shared.check_output import emit_check_result
 
 SIGNATURE_RE = re.compile(r"^[^\n;{}]*\([^\n)]*\bcompact_mode\b[^\n)]*\)")

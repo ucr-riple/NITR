@@ -1,0 +1,44 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/022.thermostat-sensor-decoupling",
+  "baseline_case_root": "../../cases/022.thermostat-sensor-decoupling",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case022_thermostat_tests",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "case022_thermostat_tests",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case022_thermostat_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case022_thermostat_tests$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "case022_dependency_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_dependency.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

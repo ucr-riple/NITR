@@ -18,12 +18,12 @@ import re
 from pathlib import Path
 
 from evaluator.shared.check_output import emit_check_result
-from evaluator.shared.path_checks import (
+from evaluator.shared.module.path_checks import (
     normalize_text,
     read_text,
     scan_files,
 )
-from evaluator.shared.source_analysis import count_matching_patterns
+from evaluator.shared.module.source_analysis import count_matching_patterns
 
 MACRO_ADD_PATTERN = re.compile(r"^\s*#\s*define\s+add\b", re.MULTILINE)
 

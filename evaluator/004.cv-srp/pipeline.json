@@ -1,0 +1,45 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/004.cv-srp",
+  "baseline_case_root": "../../cases/004.cv-srp",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case004_targets",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "cv_srp",
+        "cv_srp_tests",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "cv_srp_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^cv_srp_tests$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "cv_srp_structural_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

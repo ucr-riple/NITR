@@ -1,0 +1,157 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/015.pipeline-provider-decoupling",
+  "baseline_case_root": "../../cases/015.pipeline-provider-decoupling",
+  "build_dir": "../../build",
+  "variables": {
+    "enable_hidden_evaluator": false
+  },
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case015_visible_targets",
+      "configure_args": [
+        "-DNITR_BUILD_EVALUATOR=ON",
+        "-DCASE015_ENABLE_HIDDEN_EVALUATOR={enable_hidden_evaluator}"
+      ],
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "test_pipeline_behavior",
+        "test_policy_enrichment_static",
+        "test_policy_enrichment_file",
+        "test_provider_switching",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "check_allowed_file_touches",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_allowed_file_touches.py",
+        "--repo_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_pipeline_behavior",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_pipeline_behavior$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_policy_enrichment_static",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_policy_enrichment_static$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_policy_enrichment_file",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_policy_enrichment_file$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_provider_switching",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_provider_switching$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "check_no_concrete_provider_in_core",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_no_concrete_provider_in_core.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    },
+    {
+      "module_name": "command",
+      "name": "check_no_provider_creation_from_core",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_no_provider_creation_from_core.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    },
+    {
+      "module_name": "command",
+      "name": "check_single_wiring_boundary",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_single_wiring_boundary.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    },
+    {
+      "module_name": "command",
+      "name": "check_hidden_boundary_wiring_presence",
+      "enabled_if": "enable_hidden_evaluator",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_hidden_boundary_wiring_presence.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    },
+    {
+      "module_name": "command",
+      "name": "check_hidden_pipeline_runner_contract_surface",
+      "enabled_if": "enable_hidden_evaluator",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check_hidden_pipeline_runner_contract_surface.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

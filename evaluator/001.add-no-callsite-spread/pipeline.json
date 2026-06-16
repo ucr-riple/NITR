@@ -1,0 +1,100 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/001.add-no-callsite-spread",
+  "baseline_case_root": "../../cases/001.add-no-callsite-spread",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_add_tests",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "add_tests",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "add_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^add_tests$"
+      ]
+    },
+    {
+      "module_name": "frozen_paths",
+      "name": "case001_frozen_app_main",
+      "paths": [
+        "app/main.cc"
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case001_no_add_macro",
+      "scan_roots": [
+        "src",
+        "app"
+      ],
+      "suffixes": [
+        ".h",
+        ".hpp",
+        ".cc",
+        ".cpp",
+        ".cxx"
+      ],
+      "stop_on_first_match": true,
+      "rules": [
+        {
+          "id": "forbid_add_macro",
+          "message": "ERR_ADD_MACRO_FORBIDDEN: {path}",
+          "any_patterns": [
+            "^\\s*#\\s*define\\s+add\\b"
+          ]
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case001_maintainable_structure",
+      "scan_roots": [
+        "src",
+        "app"
+      ],
+      "suffixes": [
+        ".h",
+        ".hpp",
+        ".cc",
+        ".cpp",
+        ".cxx"
+      ],
+      "global_rules": [
+        {
+          "id": "require_centralized_generic_core",
+          "message": "ERR_NON_MAINTAINABLE_STRUCTURE",
+          "min_matching_files": 1,
+          "any_patterns": [
+            "\\btemplate\\s*<[^>]*>\\s*(?:requires\\s+[^\\{;]+)?\\s*(?:constexpr\\s+|inline\\s+|static\\s+)*(?:auto|[\\w:<>]+)\\s+(?:\\w+\\s*::\\s*)?add\\s*\\(",
+            "\\bauto\\s+(?:\\w+\\s*::\\s*)?add\\s*\\(\\s*auto(?:\\s+\\w+)?\\s*,\\s*auto(?:\\s+\\w+)?\\s*\\)"
+          ]
+        },
+        {
+          "id": "forbid_too_many_explicit_overload_defs",
+          "message": "ERR_DUPLICATED_IMPLEMENTATION",
+          "max_matching_files": 1,
+          "any_patterns": [
+            "\\bint\\s+(?:\\w+\\s*::\\s*)?add\\s*\\(\\s*int(?:\\s+\\w+)?\\s*,\\s*int(?:\\s+\\w+)?\\s*\\)\\s*\\{",
+            "\\bdouble\\s+(?:\\w+\\s*::\\s*)?add\\s*\\(\\s*double(?:\\s+\\w+)?\\s*,\\s*double(?:\\s+\\w+)?\\s*\\)\\s*\\{",
+            "\\bfloat\\s+(?:\\w+\\s*::\\s*)?add\\s*\\(\\s*float(?:\\s+\\w+)?\\s*,\\s*float(?:\\s+\\w+)?\\s*\\)\\s*\\{",
+            "\\blong\\s+long\\s+(?:\\w+\\s*::\\s*)?add\\s*\\(\\s*long\\s+long(?:\\s+\\w+)?\\s*,\\s*long\\s+long(?:\\s+\\w+)?\\s*\\)\\s*\\{"
+          ]
+        }
+      ]
+    }
+  ]
+}

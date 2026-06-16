@@ -1,0 +1,57 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/008.map-dip",
+  "baseline_case_root": "../../cases/008.map-dip",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case008_targets",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "test_basic",
+        "case008_plugin_reverse_test",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_basic",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_basic$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case008_plugin_reverse_test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case008_plugin_reverse_test$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "case008_structural_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

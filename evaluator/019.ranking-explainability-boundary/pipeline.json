@@ -1,0 +1,70 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/019.ranking-explainability-boundary",
+  "baseline_case_root": "../../cases/019.ranking-explainability-boundary",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_case019_targets",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "case019_baseline_test",
+        "case019_feature_reason_test",
+        "case019_inspect_compare_test",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case019_baseline_test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case019_baseline_test$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case019_feature_reason_test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case019_feature_reason_test$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case019_inspect_compare_test",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case019_inspect_compare_test$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "case019_structural_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

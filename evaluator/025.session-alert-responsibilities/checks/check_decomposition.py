@@ -30,8 +30,8 @@ import argparse
 from pathlib import Path
 import re
 
-from evaluator.shared.path_checks import scan_files
-from evaluator.shared.source_analysis import strip_comments_and_strings
+from evaluator.shared.module.path_checks import scan_files
+from evaluator.shared.module.source_analysis import strip_comments_and_strings
 from evaluator.shared.check_output import emit_check_result
 
 _FAMILIES = ("range", "drift", "leak")

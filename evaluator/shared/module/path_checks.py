@@ -6,7 +6,7 @@
 2. File creation / touch boundaries
 3. File content stability / freeze checks
 
-Structural / semantic signal checks live in `evaluator.shared.source_analysis`.
+Structural / semantic signal checks live in `evaluator.shared.module.source_analysis`.
 """
 
 from dataclasses import dataclass

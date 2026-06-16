@@ -1,0 +1,44 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/012.cache-lifecycle",
+  "baseline_case_root": "../../cases/012.cache-lifecycle",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "build",
+      "name": "build_test_report_cache",
+      "command": [
+        "cmake",
+        "--build",
+        "{build_dir}",
+        "--target",
+        "test_report_cache",
+        "-j4"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "test_report_cache",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^test_report_cache$"
+      ]
+    },
+    {
+      "module_name": "command",
+      "name": "maintainability_check_case012",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/check.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}
