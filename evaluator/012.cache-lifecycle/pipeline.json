@@ -28,17 +28,152 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "maintainability_check_case012",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check.py",
-        "--case_root",
-        "{case_root}"
+      "module_name": "source_analysis",
+      "name": "case012_summary_engine_purity_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/summary_engine.h",
+        "src/summary_engine.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "normalize": "none",
+      "rules": [
+        {
+          "id": "no_cache_token_in_summary_engine",
+          "any_patterns": [
+            "(?i)cache"
+          ],
+          "message": "SummaryEngine should remain a pure computation dependency and must not own cache state"
+        },
+        {
+          "id": "no_cached_token_in_summary_engine",
+          "any_patterns": [
+            "(?i)cached"
+          ],
+          "message": "SummaryEngine should remain a pure computation dependency and must not own cache state"
+        },
+        {
+          "id": "no_last_summary_token_in_summary_engine",
+          "any_patterns": [
+            "(?i)last_summary"
+          ],
+          "message": "SummaryEngine should remain a pure computation dependency and must not own cache state"
+        },
+        {
+          "id": "no_last_products_token_in_summary_engine",
+          "any_patterns": [
+            "(?i)last_products"
+          ],
+          "message": "SummaryEngine should remain a pure computation dependency and must not own cache state"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case012_no_static_cache_state_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/inventory_report_service.cc",
+        "src/summary_engine.cc"
+      ],
+      "rules": [
+        {
+          "id": "no_static_inventory_summary",
+          "any_patterns": [
+            "static\\s+.*InventorySummary"
+          ],
+          "message": "Do not introduce global or static cached summary state"
+        },
+        {
+          "id": "no_static_product_vector",
+          "any_patterns": [
+            "static\\s+std::vector\\s*<\\s*Product\\s*>"
+          ],
+          "message": "Do not introduce global or static cached summary state"
+        },
+        {
+          "id": "no_static_auto_summary",
+          "any_patterns": [
+            "static\\s+auto\\s+.*summary"
+          ],
+          "message": "Do not introduce global or static cached summary state"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case012_service_public_api_cache_control_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/inventory_report_service.h"
+      ],
+      "rules": [
+        {
+          "id": "no_use_cache_param",
+          "any_substrings": [
+            "use_cache"
+          ],
+          "message": "Public API should not grow extra cache-control parameters"
+        },
+        {
+          "id": "no_force_refresh_param",
+          "any_substrings": [
+            "force_refresh"
+          ],
+          "message": "Public API should not grow extra cache-control parameters"
+        },
+        {
+          "id": "no_cache_key_param",
+          "any_substrings": [
+            "cache_key"
+          ],
+          "message": "Public API should not grow extra cache-control parameters"
+        },
+        {
+          "id": "no_bypass_cache_param",
+          "any_substrings": [
+            "bypass_cache"
+          ],
+          "message": "Public API should not grow extra cache-control parameters"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case012_clear_cache_seam_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/inventory_report_service.h"
+      ],
+      "rules": [
+        {
+          "id": "require_clear_cache",
+          "not": {
+            "any_substrings": [
+              "ClearCache"
+            ]
+          },
+          "message": "inventory_report_service.h must declare ClearCache()"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case012_compute_seam_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/summary_engine.h"
+      ],
+      "rules": [
+        {
+          "id": "require_compute",
+          "not": {
+            "any_substrings": [
+              "Compute("
+            ]
+          },
+          "message": "summary_engine.h must continue to expose Compute(...)"
+        }
+      ]
     }
   ]
 }

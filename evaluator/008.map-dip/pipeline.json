@@ -41,17 +41,42 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "case008_structural_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/map_snapshot.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "no_geometry_provider_knowledge",
+          "any_patterns": [
+            "\\bGeometryProvider\\b"
+          ],
+          "message": "forbidden pattern in {relative_path}: GeometryProvider"
+        },
+        {
+          "id": "no_semantics_provider_knowledge",
+          "any_patterns": [
+            "\\bSemanticsProvider\\b"
+          ],
+          "message": "forbidden pattern in {relative_path}: SemanticsProvider"
+        },
+        {
+          "id": "no_type_string_dispatch",
+          "any_patterns": [
+            "type\\s*==\\s*\\\""
+          ],
+          "message": "forbidden pattern in {relative_path}: type-string dispatch"
+        },
+        {
+          "id": "no_hardcoded_provider_factory",
+          "any_patterns": [
+            "CreateProviderHardcoded"
+          ],
+          "message": "forbidden pattern in {relative_path}: CreateProviderHardcoded"
+        }
+      ]
     }
   ]
 }

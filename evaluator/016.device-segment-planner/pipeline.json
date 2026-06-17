@@ -93,28 +93,71 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "require_planner_usage_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_require_planner_usage.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/pipeline_runner.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "require_build_execution_plan_call",
+          "not": {
+            "any_substrings": [
+              "BuildExecutionPlan("
+            ]
+          },
+          "message": "pipeline_runner.cc does not appear to call BuildExecutionPlan(...)"
+        }
+      ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "no_step_index_special_case_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_no_step_index_special_case.py"
+      "root": "case_root",
+      "scan_roots": [
+        "src"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "suffixes": [
+        ".cc"
+      ],
+      "rules": [
+        {
+          "id": "no_hardcoded_step_4",
+          "any_patterns": [
+            "==\\s*4"
+          ],
+          "message": "{relative_path}: matched ==\\s*4"
+        },
+        {
+          "id": "no_hardcoded_step_6",
+          "any_patterns": [
+            "==\\s*6"
+          ],
+          "message": "{relative_path}: matched ==\\s*6"
+        },
+        {
+          "id": "no_hardcoded_step_3",
+          "any_patterns": [
+            "==\\s*3"
+          ],
+          "message": "{relative_path}: matched ==\\s*3"
+        },
+        {
+          "id": "no_hardcoded_step_5",
+          "any_patterns": [
+            "==\\s*5"
+          ],
+          "message": "{relative_path}: matched ==\\s*5"
+        },
+        {
+          "id": "no_legacy_gpu_through_step_branch",
+          "any_patterns": [
+            "legacy_gpu_through_step\\(\\)\\.value\\(\\)\\s*=="
+          ],
+          "message": "{relative_path}: matched legacy_gpu_through_step\\(\\)\\.value\\(\\)\\s*=="
+        }
+      ]
     }
   ]
 }

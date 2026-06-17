@@ -28,17 +28,60 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "case013_api_stability_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_api_stability.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/library_catalog.h"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "forbidden_include_archived",
+          "any_substrings": [
+            "include_archived"
+          ],
+          "message": "Forbidden public API control flag detected: include_archived"
+        },
+        {
+          "id": "forbidden_show_archived",
+          "any_substrings": [
+            "show_archived"
+          ],
+          "message": "Forbidden public API control flag detected: show_archived"
+        },
+        {
+          "id": "forbidden_archived_mode",
+          "any_substrings": [
+            "archived_mode"
+          ],
+          "message": "Forbidden public API control flag detected: archived_mode"
+        },
+        {
+          "id": "forbidden_includeArchived",
+          "any_substrings": [
+            "includeArchived"
+          ],
+          "message": "Forbidden public API control flag detected: includeArchived"
+        },
+        {
+          "id": "require_find_available_titles_signature",
+          "not": {
+            "any_patterns": [
+              "std::vector<std::string>\\s+FindAvailableTitles\\s*\\(\\s*const std::vector<Book>& books,\\s*const std::string& prefix\\s*\\)\\s*const;"
+            ]
+          },
+          "message": "Public API signature changed unexpectedly: FindAvailableTitles signature"
+        },
+        {
+          "id": "require_build_catalog_digest_signature",
+          "not": {
+            "any_patterns": [
+              "std::string\\s+BuildCatalogDigest\\s*\\(\\s*const std::vector<Book>& books\\s*\\)\\s*const;"
+            ]
+          },
+          "message": "Public API signature changed unexpectedly: BuildCatalogDigest signature"
+        }
+      ]
     }
   ]
 }

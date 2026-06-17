@@ -28,19 +28,211 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "maintainability_check_case009",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check.py",
-        "--case_root",
-        "{case_root}",
-        "--evaluator_root",
-        "{evaluator_root}"
+      "module_name": "required_paths",
+      "name": "case009_required_header_check",
+      "root": "case_root",
+      "paths": [
+        "src/session_manager.h"
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case009_production_time_coupling_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "suffixes": [
+        ".h",
+        ".cc",
+        ".cpp"
+      ],
+      "exclude_files": [
+        "time_source.cc"
+      ],
+      "rules": [
+        {
+          "id": "forbidden_system_clock_now",
+          "any_patterns": [
+            "system_clock::now"
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['system_clock::now']"
+        },
+        {
+          "id": "forbidden_steady_clock_now",
+          "any_patterns": [
+            "steady_clock::now"
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['steady_clock::now']"
+        },
+        {
+          "id": "forbidden_high_resolution_clock_now",
+          "any_patterns": [
+            "high_resolution_clock::now"
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['high_resolution_clock::now']"
+        },
+        {
+          "id": "forbidden_std_time",
+          "any_patterns": [
+            "\\bstd::time\\s*\\("
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['\\\\bstd::time\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_sleep_for",
+          "any_patterns": [
+            "\\bsleep_for\\s*\\("
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['\\\\bsleep_for\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_sleep_until",
+          "any_patterns": [
+            "\\bsleep_until\\s*\\("
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['\\\\bsleep_until\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_gettimeofday",
+          "any_patterns": [
+            "\\bgettimeofday\\s*\\("
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['\\\\bgettimeofday\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_clock_gettime",
+          "any_patterns": [
+            "\\bclock_gettime\\s*\\("
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['\\\\bclock_gettime\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_gmtime",
+          "any_patterns": [
+            "\\bgmtime\\s*\\("
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['\\\\bgmtime\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_localtime",
+          "any_patterns": [
+            "\\blocaltime\\s*\\("
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['\\\\blocaltime\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_mktime",
+          "any_patterns": [
+            "\\bmktime\\s*\\("
+          ],
+          "message": "forbidden time coupling in {relative_path}: ['\\\\bmktime\\\\s*\\\\(']"
+        },
+        {
+          "id": "suspicious_set_current_time_for_test",
+          "any_patterns": [
+            "SetCurrentTimeForTest"
+          ],
+          "message": "evaluation-only API smell in {relative_path}: ['SetCurrentTimeForTest']"
+        },
+        {
+          "id": "suspicious_force_now_for_test",
+          "any_patterns": [
+            "ForceNowForTest"
+          ],
+          "message": "evaluation-only API smell in {relative_path}: ['ForceNowForTest']"
+        },
+        {
+          "id": "suspicious_set_now_for_test",
+          "any_patterns": [
+            "SetNowForTest"
+          ],
+          "message": "evaluation-only API smell in {relative_path}: ['SetNowForTest']"
+        },
+        {
+          "id": "suspicious_inject_now_for_test",
+          "any_patterns": [
+            "InjectNowForTest"
+          ],
+          "message": "evaluation-only API smell in {relative_path}: ['InjectNowForTest']"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case009_sleep_based_test_check",
+      "root": "evaluator_root",
+      "scan_roots": [
+        "tests"
+      ],
+      "suffixes": [
+        ".h",
+        ".cc",
+        ".cpp"
+      ],
+      "rules": [
+        {
+          "id": "forbidden_test_sleep_for",
+          "any_patterns": [
+            "\\bsleep_for\\s*\\("
+          ],
+          "message": "sleep-based test detected in {relative_path}: ['\\\\bsleep_for\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_test_sleep_until",
+          "any_patterns": [
+            "\\bsleep_until\\s*\\("
+          ],
+          "message": "sleep-based test detected in {relative_path}: ['\\\\bsleep_until\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_test_this_thread_sleep_for",
+          "any_patterns": [
+            "\\bthis_thread::sleep_for\\s*\\("
+          ],
+          "message": "sleep-based test detected in {relative_path}: ['\\\\bthis_thread::sleep_for\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_test_usleep",
+          "any_patterns": [
+            "\\busleep\\s*\\("
+          ],
+          "message": "sleep-based test detected in {relative_path}: ['\\\\busleep\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_test_nanosleep",
+          "any_patterns": [
+            "\\bnanosleep\\s*\\("
+          ],
+          "message": "sleep-based test detected in {relative_path}: ['\\\\bnanosleep\\\\s*\\\\(']"
+        },
+        {
+          "id": "forbidden_test_sleep",
+          "any_patterns": [
+            "(?<!_)\\bsleep\\s*\\("
+          ],
+          "message": "sleep-based test detected in {relative_path}: ['(?<!_)\\\\bsleep\\\\s*\\\\(']"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case009_time_source_ctor_seam_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/session_manager.h"
+      ],
+      "rules": [
+        {
+          "id": "require_time_source_ctor",
+          "not": {
+            "any_patterns": [
+              "SessionManager\\s*\\([^)]*TimeSource[^)]*\\)"
+            ]
+          },
+          "message": "session_manager.h must keep a SessionManager constructor that accepts a TimeSource (the test seam)."
+        }
+      ]
     }
   ]
 }

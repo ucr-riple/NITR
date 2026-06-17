@@ -1,6 +1,29 @@
 #!/usr/bin/env python3
 
-"""Frozen-path evaluation module."""
+"""Enforce that specific paths remain identical to the baseline.
+
+This module is the strict version of baseline comparison: every configured path
+must exist in both the current case root and the baseline root, and none of
+them may be created, deleted, or modified.
+
+Typical use cases:
+- protecting starter public interfaces from any edits
+- freezing known reference files while allowing work elsewhere
+- keeping evaluator-sensitive wiring files byte-for-byte unchanged
+
+Configuration shape:
+- `module_name`: must be `"frozen_paths"`
+- `name`: human-readable module instance name used in reports
+- `paths`: required non-empty list of relative paths to freeze
+
+Execution behavior:
+- requires `baseline_case_root` in the evaluation context
+- compares the configured paths against the baseline case
+- reports missing, newly created, deleted, or modified paths as failures
+
+Prefer `baseline_diff` when the rule needs nuanced allowlists. Use
+`frozen_paths` when the intent is simpler: these exact files must not change.
+"""
 
 from __future__ import annotations
 

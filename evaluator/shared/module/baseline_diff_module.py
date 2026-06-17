@@ -1,6 +1,41 @@
 #!/usr/bin/env python3
 
-"""Baseline-diff evaluation module."""
+"""Compare a generated case tree against its baseline counterpart.
+
+This module enforces file-boundary constraints by diffing the current case root
+against `baseline_case_root`. It is useful when a task is only supposed to
+touch a small, explicit subset of files, or when certain paths must not be
+created, deleted, or modified relative to the starter code.
+
+Typical use cases:
+- freezing most of `src/` while allowing edits in one implementation file
+- allowing new files only under selected top-level directories
+- enforcing that starter app wiring files remain unchanged
+
+Configuration shape:
+- `module_name`: must be `"baseline_diff"`
+- `name`: human-readable module instance name used in reports
+- either:
+  - `paths`: explicit relative paths to compare, or
+  - `include_globs`: file globs collected from both current and baseline roots
+- `exclude_globs`: optional paths/globs to ignore
+- `allow_created`: optional explicit allowlist for newly created files
+- `allow_deleted`: optional explicit allowlist for deleted files
+- `allow_modified`: optional explicit allowlist for modified files
+- `allow_missing_in_root`: optional allowlist for paths absent from case root
+- `allow_missing_in_baseline`: optional allowlist for paths absent from baseline
+- `allowed_created_top_levels`: optional top-level directory allowlist for new files
+
+Execution behavior:
+- requires `baseline_case_root` in the evaluation context
+- collects the target file set from `paths` or `include_globs`
+- classifies each path as missing, created, deleted, or modified
+- reports any change not covered by the configured allowlists
+
+This module is broader than `frozen_paths`: it supports partial allowlists and
+glob-driven collection instead of enforcing a strict no-change policy for a
+fixed path list.
+"""
 
 from __future__ import annotations
 

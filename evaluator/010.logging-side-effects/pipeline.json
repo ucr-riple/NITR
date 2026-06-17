@@ -28,17 +28,134 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "maintainability_check_case010",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check.py",
-        "--case_root",
-        "{case_root}"
+      "module_name": "source_analysis",
+      "name": "case010_policy_dependency_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/loan_policy.h",
+        "src/loan_policy.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "no_audit_logger_header_dependency",
+          "any_substrings": [
+            "audit_logger.h"
+          ],
+          "message": "loan_policy must not depend on audit_logger.h"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case010_policy_signature_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/loan_policy.h"
+      ],
+      "rules": [
+        {
+          "id": "require_evaluate_applicant_signature",
+          "not": {
+            "any_patterns": [
+              "ReviewDecision\\s+EvaluateApplicant\\s*\\(([^)]*)\\)"
+            ]
+          },
+          "message": "Could not find EvaluateApplicant signature in loan_policy.h"
+        },
+        {
+          "id": "forbid_logger_or_audit_dependency_in_signature",
+          "any_patterns": [
+            "ReviewDecision\\s+EvaluateApplicant\\s*\\([^)]*(logger|audit)[^)]*\\)"
+          ],
+          "message": "EvaluateApplicant must not accept a logger or audit dependency"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case010_policy_side_effect_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/loan_policy.cc"
+      ],
+      "rules": [
+        {
+          "id": "no_std_cout",
+          "any_substrings": [
+            "std::cout"
+          ],
+          "message": "loan_policy.cc must not perform direct IO: found std::cout"
+        },
+        {
+          "id": "no_std_cerr",
+          "any_substrings": [
+            "std::cerr"
+          ],
+          "message": "loan_policy.cc must not perform direct IO: found std::cerr"
+        },
+        {
+          "id": "no_printf",
+          "any_substrings": [
+            "printf("
+          ],
+          "message": "loan_policy.cc must not perform direct IO: found printf("
+        },
+        {
+          "id": "no_fprintf",
+          "any_substrings": [
+            "fprintf("
+          ],
+          "message": "loan_policy.cc must not perform direct IO: found fprintf("
+        },
+        {
+          "id": "no_ofstream",
+          "any_substrings": [
+            "ofstream"
+          ],
+          "message": "loan_policy.cc must not perform direct IO: found ofstream"
+        },
+        {
+          "id": "no_fstream",
+          "any_substrings": [
+            "fstream"
+          ],
+          "message": "loan_policy.cc must not perform direct IO: found fstream"
+        },
+        {
+          "id": "no_direct_log_dot",
+          "any_substrings": [
+            ".Log("
+          ],
+          "message": "loan_policy.cc must not emit audit logs directly"
+        },
+        {
+          "id": "no_direct_log_arrow",
+          "any_substrings": [
+            "->Log("
+          ],
+          "message": "loan_policy.cc must not emit audit logs directly"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case010_service_localized_audit_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/loan_review_service.cc"
+      ],
+      "rules": [
+        {
+          "id": "require_service_log_call",
+          "not": {
+            "any_substrings": [
+              ".Log(",
+              "->Log("
+            ]
+          },
+          "message": "loan_review_service.cc should localize audit emission"
+        }
+      ]
     }
   ]
 }

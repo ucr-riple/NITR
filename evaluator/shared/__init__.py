@@ -7,7 +7,7 @@ from evaluator.shared.context import (
 from evaluator.shared.module import (
     BaselineDiffModule,
     BuildModule,
-    CommandModule,
+    CustomizedCheckModule,
     EvaluationModule,
     FrozenPathsModule,
     ModuleResult,
@@ -20,7 +20,7 @@ from evaluator.shared.module import (
 __all__ = [
     "BaselineDiffModule",
     "BuildModule",
-    "CommandModule",
+    "CustomizedCheckModule",
     "DefaultEvaluationContext",
     "EvaluationContext",
     "EvaluationModule",

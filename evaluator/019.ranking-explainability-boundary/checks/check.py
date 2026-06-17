@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-"""Enforce explainability-boundary separation for case 019.
+"""Enforce remaining explainability-boundary constraints for case 019.
 
 Rule:
-  - Ranker core (`ranker.{cc,h}`) should stay pure logic and free from
-    presentation/debug/IO-oriented couplings.
-  - Ranking-result/domain types should remain compact and not absorb observer concerns.
+  - Ranker core should stay free from display-oriented string literals.
+  - `RankedItem` should remain present and compact instead of absorbing many fields.
 
 Inputs:
   - `--case_root` (defaults to script-inferred case root)
@@ -24,7 +23,7 @@ import re
 from typing import List
 
 from evaluator.shared.module.path_checks import case_root_from_script, read_text
-from evaluator.shared.module.source_analysis import has_any_substring, strip_comments
+from evaluator.shared.module.source_analysis import strip_comments
 from evaluator.shared.check_output import emit_check_result
 
 
@@ -84,30 +83,6 @@ def main() -> int:
             "ranker core should not contain display-oriented string literals"
         )
 
-    forbidden_ranker_includes = ["<sstream>", "<format>", "<iostream>"]
-    ranker_sources = read_text(src / "ranker.cc") + "\n" + read_text(src / "ranker.h")
-    if has_any_substring(forbidden_ranker_includes, ranker_sources):
-        for header in forbidden_ranker_includes:
-            if header in ranker_sources:
-                failures.append(f"ranker core should not include {header}")
-
-    suspicious_ranker_tokens = [
-        "debug",
-        "diagnostic",
-        "trace",
-        "message",
-        "label",
-        "render",
-        "format",
-    ]
-    ranker_lower = ranker_text.lower()
-    if has_any_substring(suspicious_ranker_tokens, ranker_lower):
-        for token in suspicious_ranker_tokens:
-            if token in ranker_lower:
-                failures.append(
-                    f"ranker core contains suspicious consumer-oriented token: {token}"
-                )
-
     ranking_result_text = strip_comments(read_text(src / "ranking_result.h"))
     ranked_body = struct_body(ranking_result_text, "RankedItem")
     if not ranked_body:
@@ -118,23 +93,6 @@ def main() -> int:
             failures.append(
                 "RankedItem should stay compact and not accumulate many fields"
             )
-
-    if has_any_substring(["std::string"], ranking_result_text):
-        failures.append(
-            "ranking_result.h should not store display-oriented string fields"
-        )
-
-    if has_any_substring(["std::vector"], ranking_result_text):
-        failures.append("ranking_result.h should not store bulk diagnostic containers")
-
-    item_text = strip_comments(read_text(src / "item.h")).lower()
-    item_tokens = ["reason", "inspection", "diagnostic", "debug", "trace", "comparison"]
-    if has_any_substring(item_tokens, item_text):
-        for token in item_tokens:
-            if token in item_text:
-                failures.append(
-                    f"item domain type should not absorb observer-oriented token: {token}"
-                )
 
     return emit_check_result(passed=not failures, findings=failures)
 

@@ -28,17 +28,53 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "pricing_ocp_structural_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/pricing.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "normalize": "strip_comments_and_strings",
+      "stop_on_first_match": false,
+      "rules": [
+        {
+          "id": "no_if_on_coupon",
+          "any_patterns": [
+            "\\bif\\s*\\(([^)]*(coupon|coupon_code|couponCode|coupon_type|couponType|promo|promo_code|promoCode)[^)]*)\\)"
+          ],
+          "message": "coupon dispatch branching found in {path}"
+        },
+        {
+          "id": "no_elseif_on_coupon",
+          "any_patterns": [
+            "\\belse\\s+if\\s*\\(([^)]*(coupon|coupon_code|couponCode|coupon_type|couponType|promo|promo_code|promoCode)[^)]*)\\)"
+          ],
+          "message": "coupon dispatch branching found in {path}"
+        },
+        {
+          "id": "no_switch_on_coupon",
+          "any_patterns": [
+            "\\bswitch\\s*\\(([^)]*(coupon|coupon_code|couponCode|coupon_type|couponType|promo|promo_code|promoCode)[^)]*)\\)"
+          ],
+          "message": "coupon dispatch branching found in {path}"
+        },
+        {
+          "id": "no_case_dispatch_in_coupon_context",
+          "all_of": [
+            {
+              "any_patterns": [
+                "(coupon|coupon_code|couponCode|coupon_type|couponType|promo|promo_code|promoCode)"
+              ]
+            },
+            {
+              "any_patterns": [
+                "\\bcase\\s+[^:]+:"
+              ]
+            }
+          ],
+          "message": "coupon dispatch branching found in {path}"
+        }
+      ]
     }
   ]
 }
