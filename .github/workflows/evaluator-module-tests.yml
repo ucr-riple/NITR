@@ -16,6 +16,8 @@ on:
 jobs:
   evaluator-module-tests:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
 
     steps:
       - name: Check out repository

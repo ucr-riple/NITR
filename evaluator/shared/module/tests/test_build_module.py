@@ -10,10 +10,10 @@ import textwrap
 from pathlib import Path
 
 from evaluator.shared.module.build_module import BuildModule
-from evaluator.shared.module.tests.base import ModuleTestCase
+from evaluator.shared.module.tests.base import ProcessModuleTestCase
 
 
-class BuildModuleTest(ModuleTestCase):
+class BuildModuleTest(ProcessModuleTestCase):
     def _run_module(
         self,
         *,

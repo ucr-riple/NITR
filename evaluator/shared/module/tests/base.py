@@ -21,8 +21,6 @@ class ModuleTestCase(unittest.TestCase):
         self.bin_dir = (self.repo_root / "bin").resolve()
         self.case_root.mkdir(parents=True, exist_ok=True)
         self.baseline_root.mkdir(parents=True, exist_ok=True)
-        self.build_dir.mkdir(parents=True, exist_ok=True)
-        self.bin_dir.mkdir(parents=True, exist_ok=True)
 
     def tearDown(self) -> None:
         self._tmpdir.cleanup()
@@ -53,3 +51,10 @@ class ModuleTestCase(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
         path.chmod(0o755)
+
+
+class ProcessModuleTestCase(ModuleTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.build_dir.mkdir(parents=True, exist_ok=True)
+        self.bin_dir.mkdir(parents=True, exist_ok=True)
