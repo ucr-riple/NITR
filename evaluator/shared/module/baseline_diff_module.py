@@ -66,9 +66,13 @@ class BaselineDiffModule(EvaluationModule):
 
         findings: list[str] = []
         for path in status.missing_in_root:
+            if path in status.deleted_from_root:
+                continue
             if path not in allow_missing_in_root:
                 findings.append(f"Path missing from case root: {path}")
         for path in status.missing_in_baseline:
+            if path in status.created_in_root:
+                continue
             if path not in allow_missing_in_baseline:
                 findings.append(f"Path missing from baseline root: {path}")
         for path in status.created_in_root:
