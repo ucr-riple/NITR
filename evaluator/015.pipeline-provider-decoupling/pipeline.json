@@ -26,7 +26,7 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "customized_check",
       "name": "check_allowed_file_touches",
       "command": [
         "python3",
@@ -87,71 +87,156 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "check_no_concrete_provider_in_core",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_no_concrete_provider_in_core.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/pipeline_runner.h",
+        "src/pipeline_runner.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "no_static_provider_header_in_core",
+          "any_substrings": [
+            "static_policy_provider.h"
+          ],
+          "message": "Forbidden concrete provider dependency in {relative_path}: static_policy_provider.h"
+        },
+        {
+          "id": "no_file_provider_header_in_core",
+          "any_substrings": [
+            "file_policy_provider.h"
+          ],
+          "message": "Forbidden concrete provider dependency in {relative_path}: file_policy_provider.h"
+        },
+        {
+          "id": "no_static_provider_type_in_core",
+          "any_substrings": [
+            "StaticPolicyProvider"
+          ],
+          "message": "Forbidden concrete provider dependency in {relative_path}: StaticPolicyProvider"
+        },
+        {
+          "id": "no_file_provider_type_in_core",
+          "any_substrings": [
+            "FilePolicyProvider"
+          ],
+          "message": "Forbidden concrete provider dependency in {relative_path}: FilePolicyProvider"
+        }
+      ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "check_no_provider_creation_from_core",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_no_provider_creation_from_core.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/pipeline_runner.h",
+        "src/pipeline_runner.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "no_provider_creation_in_core",
+          "any_patterns": [
+            "\\bStaticPolicyProvider\\b",
+            "\\bFilePolicyProvider\\b",
+            "\\bBuildPolicyProvider\\b",
+            "\\bMakePolicyProvider\\b",
+            "\\bCreatePolicyProvider\\b",
+            "\\bProviderFactory\\b",
+            "\\bSelectPolicyProvider\\b",
+            "\\bpolicy_mode\\b",
+            "\\bpolicy_file_path\\b",
+            "\\bBuildPipeline\\b",
+            "#include\\s+\\\"build_pipeline\\.h\\\""
+          ],
+          "message": "Forbidden provider creation/selection hint in core file {location}"
+        }
+      ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "check_single_wiring_boundary",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_single_wiring_boundary.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src",
+        "app"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "exclude_files": [
+        "build_pipeline.cc",
+        "main.cc",
+        "static_policy_provider.cc",
+        "file_policy_provider.cc"
+      ],
+      "rules": [
+        {
+          "id": "single_wiring_boundary",
+          "any_patterns": [
+            "\\bStaticPolicyProvider\\s+[A-Za-z_]",
+            "\\bFilePolicyProvider\\s+[A-Za-z_]",
+            "\\bstd::make_unique\\s*<\\s*StaticPolicyProvider\\s*>",
+            "\\bstd::make_unique\\s*<\\s*FilePolicyProvider\\s*>",
+            "\\bstd::unique_ptr\\s*<\\s*StaticPolicyProvider\\s*>",
+            "\\bstd::unique_ptr\\s*<\\s*FilePolicyProvider\\s*>",
+            "\\bnew\\s+StaticPolicyProvider\\b",
+            "\\bnew\\s+FilePolicyProvider\\b"
+          ],
+          "message": "{relative_path}"
+        }
+      ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "check_hidden_boundary_wiring_presence",
       "enabled_if": "enable_hidden_evaluator",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_hidden_boundary_wiring_presence.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/build_pipeline.cc",
+        "app/main.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "global_rules": [
+        {
+          "id": "boundary_wiring_presence",
+          "any_patterns": [
+            "\\bstd::make_unique\\s*<\\s*StaticPolicyProvider\\s*>",
+            "\\bstd::make_unique\\s*<\\s*FilePolicyProvider\\s*>",
+            "\\bnew\\s+StaticPolicyProvider\\b",
+            "\\bnew\\s+FilePolicyProvider\\b",
+            "\\bStaticPolicyProvider\\s+[A-Za-z_]",
+            "\\bFilePolicyProvider\\s+[A-Za-z_]"
+          ],
+          "min_matching_files": 1,
+          "message": "Expected provider creation/selection to appear in src/build_pipeline.cc or app/main.cc."
+        }
+      ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "check_hidden_pipeline_runner_contract_surface",
       "enabled_if": "enable_hidden_evaluator",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_hidden_pipeline_runner_contract_surface.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/pipeline_runner.h",
+        "src/pipeline_runner.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "no_provider_selection_leakage_in_runner_contract",
+          "any_patterns": [
+            "\\bPolicyMode\\b",
+            "\\bpolicy_mode\\b",
+            "\\bpolicy_file_path\\b",
+            "\\bStaticPolicyProvider\\b",
+            "\\bFilePolicyProvider\\b",
+            "\\bBuildPipeline\\b",
+            "\\bBuildPolicyProvider\\b",
+            "\\bMakePolicyProvider\\b",
+            "\\bCreatePolicyProvider\\b",
+            "\\bProviderFactory\\b",
+            "\\bSelectPolicyProvider\\b"
+          ],
+          "message": "PipelineRunner contract leaks provider selection detail in {location}"
+        }
+      ]
     }
   ]
 }

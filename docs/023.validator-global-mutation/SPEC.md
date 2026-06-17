@@ -90,7 +90,8 @@ The evaluator penalizes:
 - `total_processed` reflects the correct count after all submissions are processed
 
 ### Structural
-- enforced by `evaluator/023.validator-global-mutation/checks/check_side_effect.py`
+- enforced by `evaluator/023.validator-global-mutation/pipeline.json`
+  using `baseline_diff` and `source_analysis` modules
 - `validator.h` / `validator.cc` must not reference `total_processed`
 - `validator.h` / `validator.cc` must not include `stats.h`
 - `app/main.cc`, `reporter.cc`, and `grader.cc` must not be modified

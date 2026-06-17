@@ -28,17 +28,207 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "case006_structural_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_data_isp.py",
-        "--case_root",
-        "{case_root}"
+      "module_name": "required_paths",
+      "name": "case006_required_headers_check",
+      "root": "case_root",
+      "paths": [
+        "src/sort_hits.h",
+        "src/eval_shading.h",
+        "src/composite.h"
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case006_sort_header_boundary_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/sort_hits.h"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "no_hit_buffer_in_sort_header",
+          "any_substrings": [
+            "HitBuffer"
+          ],
+          "message": "sort_hits.h still exposes legacy HitBuffer/Hit types."
+        },
+        {
+          "id": "no_hit_type_in_sort_header",
+          "any_substrings": [
+            "Hit "
+          ],
+          "message": "sort_hits.h still exposes legacy HitBuffer/Hit types."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case006_no_direct_hit_buffer_include_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/sort_hits.h",
+        "src/eval_shading.h",
+        "src/composite.h",
+        "src/sort_hits.cc",
+        "src/eval_shading.cc",
+        "src/composite.cc"
+      ],
+      "rules": [
+        {
+          "id": "no_direct_hit_buffer_include",
+          "any_substrings": [
+            "#include \"hit_buffer.h\""
+          ],
+          "message": "{filename} still includes hit_buffer.h directly."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case006_sort_view_token_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/sort_hits.h",
+        "src/eval_shading.h",
+        "src/composite.h"
+      ],
+      "global_rules": [
+        {
+          "id": "require_sort_view_family",
+          "any_of": [
+            {
+              "any_substrings": [
+                "SortView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "SortHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "SortableHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "MutableHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "HitSortView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "IHitSorting"
+              ]
+            }
+          ],
+          "min_matching_files": 1,
+          "message": "Expected sort interface/view token not found: one of ['SortView', 'SortHitView', 'SortableHitView', 'MutableHitView', 'HitSortView', 'IHitSorting']"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case006_shade_view_token_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/sort_hits.h",
+        "src/eval_shading.h",
+        "src/composite.h"
+      ],
+      "global_rules": [
+        {
+          "id": "require_shade_view_family",
+          "any_of": [
+            {
+              "any_substrings": [
+                "ShadeView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "ShadingView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "ShadeHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "ShadingHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "MutableHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "IHitShading"
+              ]
+            }
+          ],
+          "min_matching_files": 1,
+          "message": "Expected shade interface/view token not found: one of ['ShadeView', 'ShadingView', 'ShadeHitView', 'ShadingHitView', 'MutableHitView', 'IHitShading']"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case006_composite_view_token_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/sort_hits.h",
+        "src/eval_shading.h",
+        "src/composite.h"
+      ],
+      "global_rules": [
+        {
+          "id": "require_composite_view_family",
+          "any_of": [
+            {
+              "any_substrings": [
+                "CompositeView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "CompositeHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "CompositingView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "ReadonlyHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "ConstHitView"
+              ]
+            },
+            {
+              "any_substrings": [
+                "IHitComposite"
+              ]
+            }
+          ],
+          "min_matching_files": 1,
+          "message": "Expected composite interface/view token not found: one of ['CompositeView', 'CompositeHitView', 'CompositingView', 'ReadonlyHitView', 'ConstHitView', 'IHitComposite']"
+        }
+      ]
     }
   ]
 }

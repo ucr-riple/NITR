@@ -54,7 +54,178 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
+      "name": "case019_ranker_include_boundary_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/ranker.cc",
+        "src/ranker.h"
+      ],
+      "rules": [
+        {
+          "id": "no_sstream_in_ranker",
+          "any_substrings": [
+            "<sstream>"
+          ],
+          "message": "ranker core should not include <sstream>"
+        },
+        {
+          "id": "no_format_in_ranker",
+          "any_substrings": [
+            "<format>"
+          ],
+          "message": "ranker core should not include <format>"
+        },
+        {
+          "id": "no_iostream_in_ranker",
+          "any_substrings": [
+            "<iostream>"
+          ],
+          "message": "ranker core should not include <iostream>"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case019_ranker_consumer_token_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/ranker.cc",
+        "src/ranker.h"
+      ],
+      "normalize": "strip_comments",
+      "rules": [
+        {
+          "id": "no_debug_token_in_ranker",
+          "any_patterns": [
+            "\\bdebug\\b"
+          ],
+          "message": "ranker core contains suspicious consumer-oriented token: debug"
+        },
+        {
+          "id": "no_diagnostic_token_in_ranker",
+          "any_patterns": [
+            "\\bdiagnostic\\b"
+          ],
+          "message": "ranker core contains suspicious consumer-oriented token: diagnostic"
+        },
+        {
+          "id": "no_trace_token_in_ranker",
+          "any_patterns": [
+            "\\btrace\\b"
+          ],
+          "message": "ranker core contains suspicious consumer-oriented token: trace"
+        },
+        {
+          "id": "no_message_token_in_ranker",
+          "any_patterns": [
+            "\\bmessage\\b"
+          ],
+          "message": "ranker core contains suspicious consumer-oriented token: message"
+        },
+        {
+          "id": "no_label_token_in_ranker",
+          "any_patterns": [
+            "\\blabel\\b"
+          ],
+          "message": "ranker core contains suspicious consumer-oriented token: label"
+        },
+        {
+          "id": "no_render_token_in_ranker",
+          "any_patterns": [
+            "\\brender\\b"
+          ],
+          "message": "ranker core contains suspicious consumer-oriented token: render"
+        },
+        {
+          "id": "no_format_token_in_ranker",
+          "any_patterns": [
+            "\\bformat\\b"
+          ],
+          "message": "ranker core contains suspicious consumer-oriented token: format"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case019_ranking_result_boundary_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/ranking_result.h"
+      ],
+      "normalize": "strip_comments",
+      "rules": [
+        {
+          "id": "no_string_fields_in_ranking_result",
+          "any_substrings": [
+            "std::string"
+          ],
+          "message": "ranking_result.h should not store display-oriented string fields"
+        },
+        {
+          "id": "no_vector_fields_in_ranking_result",
+          "any_substrings": [
+            "std::vector"
+          ],
+          "message": "ranking_result.h should not store bulk diagnostic containers"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case019_item_boundary_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/item.h"
+      ],
+      "normalize": "strip_comments",
+      "rules": [
+        {
+          "id": "no_reason_token_in_item",
+          "any_patterns": [
+            "\\breason\\b"
+          ],
+          "message": "item domain type should not absorb observer-oriented token: reason"
+        },
+        {
+          "id": "no_inspection_token_in_item",
+          "any_patterns": [
+            "\\binspection\\b"
+          ],
+          "message": "item domain type should not absorb observer-oriented token: inspection"
+        },
+        {
+          "id": "no_diagnostic_token_in_item",
+          "any_patterns": [
+            "\\bdiagnostic\\b"
+          ],
+          "message": "item domain type should not absorb observer-oriented token: diagnostic"
+        },
+        {
+          "id": "no_debug_token_in_item",
+          "any_patterns": [
+            "\\bdebug\\b"
+          ],
+          "message": "item domain type should not absorb observer-oriented token: debug"
+        },
+        {
+          "id": "no_trace_token_in_item",
+          "any_patterns": [
+            "\\btrace\\b"
+          ],
+          "message": "item domain type should not absorb observer-oriented token: trace"
+        },
+        {
+          "id": "no_comparison_token_in_item",
+          "any_patterns": [
+            "\\bcomparison\\b"
+          ],
+          "message": "item domain type should not absorb observer-oriented token: comparison"
+        }
+      ]
+    },
+    {
+      "module_name": "customized_check",
       "name": "case019_structural_check",
       "command": [
         "python3",

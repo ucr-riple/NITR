@@ -1,6 +1,37 @@
 #!/usr/bin/env python3
 
-"""Build evaluation module."""
+"""Build case targets as a pipeline module.
+
+This module is responsible for compiling the case and evaluator binaries needed
+by downstream modules, usually before `unit_test` or other checks that depend
+on produced executables or compiled objects.
+
+Typical use cases:
+- building one or more case-specific test targets before running `ctest`
+- compiling evaluator helper binaries required by a case
+- lazily configuring a staged workspace when no CMake cache exists yet
+
+Configuration shape:
+- `module_name`: must be `"build"`
+- `name`: human-readable module instance name used in reports
+- `command`: required build command; may be a string or argv-style list
+- `cwd`: optional working directory; defaults to `context.repo_root`
+- `env`: optional environment variable overrides
+- `configure_args`: optional extra arguments for the initial `cmake -S/-B`
+  configure step; defaults to `-DNITR_BUILD_EVALUATOR=ON`
+
+Execution behavior:
+- resolves placeholders in command arguments, configure args, and environment
+- if `context.build_dir` exists but has no `CMakeCache.txt`, runs an initial
+  `cmake -S <repo_root> -B <build_dir>` configure step first
+- then runs the configured build command as a subprocess
+- treats any non-zero configure/build exit code as a module failure
+- includes the tail of stdout/stderr in findings when configure/build fails
+
+This module is intentionally focused on build orchestration only. It does not
+try to interpret test outcomes or structural constraints; those belong in
+`unit_test`, `source_analysis`, or other dedicated modules.
+"""
 
 from __future__ import annotations
 

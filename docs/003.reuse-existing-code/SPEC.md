@@ -50,7 +50,8 @@ Acceptable solutions typically:
 - `evaluator/003.reuse-existing-code/tests/test_cosine_similarity.cc` must pass.
 
 ### 5.2 Structural
-- `evaluator/003.reuse-existing-code/checks/check_reuse_existing_step.cc` enforces:
+- `evaluator/003.reuse-existing-code/pipeline.json` enforces the structural rule
+  through pipeline modules:
   - `src/cosine_similarity.cc` includes and calls `solid::case003::DotProduct` and `solid::case003::L2Norm` (or unqualified calls within the same namespace).
   - Heuristics flag likely duplicated implementations (e.g., direct `sqrt(...)` or manual accumulator patterns).
 

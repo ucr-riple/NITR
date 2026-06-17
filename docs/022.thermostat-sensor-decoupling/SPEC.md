@@ -94,7 +94,8 @@ The evaluator penalizes:
 - behavior remains correct in app execution tests
 
 ### Structural
-- enforced by `evaluator/022.thermostat-sensor-decoupling/checks/check_dependency.py`
+- enforced by `evaluator/022.thermostat-sensor-decoupling/pipeline.json`
+  using `source_analysis` modules
 - `thermostat_controller.h` / `.cc` must not include `tmp26_sensor.h`
 - thermostat core files must not reference `Tmp26Sensor`, `getenv`, or `TMP26_SIMULATOR_TEMP`
 - `tmp26_sensor.cc` must preserve the `TMP26_SIMULATOR_TEMP` simulator behavior

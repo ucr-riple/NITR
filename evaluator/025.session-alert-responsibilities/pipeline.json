@@ -28,7 +28,7 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "customized_check",
       "name": "case025_decomposition_check",
       "command": [
         "python3",

@@ -84,7 +84,7 @@ Risky solutions often:
 - `cases/010.logging-side-effects/src/`
 - `cases/010.logging-side-effects/TASK.md`
 - `cases/010.logging-side-effects/CMakeLists.txt`
-- `evaluator/010.logging-side-effects/checks/check.py`
+- `evaluator/010.logging-side-effects/pipeline.json`
 - `evaluator/010.logging-side-effects/data/`
 - `evaluator/010.logging-side-effects/tests/test_loan_review.cc`
 - `docs/010.logging-side-effects/SPEC.md`

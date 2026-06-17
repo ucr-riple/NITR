@@ -28,17 +28,73 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "case018_structural_checks",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_seeded_selection.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "stop_on_first_match": true,
+      "scan_roots": [
+        "src"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "no_test_only_control_hooks",
+          "any_patterns": [
+            "test_mode|ForceNextPick|force_next_pick|debug_only"
+          ],
+          "message": "Forbidden test-only control hook found in src/"
+        },
+        {
+          "id": "no_global_mutable_rng",
+          "any_patterns": [
+            "static\\s+std::(mt19937|default_random_engine)|global.*rng|singleton.*rng"
+          ],
+          "message": "Potential global mutable RNG pattern found"
+        },
+        {
+          "id": "no_time_sleep_nondeterminism",
+          "any_patterns": [
+            "sleep_for|sleep_until|std::chrono|time\\(|clock\\("
+          ],
+          "message": "Time/sleep-based nondeterminism detected in src/"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case018_candidate_header_boundary_check",
+      "root": "case_root",
+      "stop_on_first_match": true,
+      "scan_roots": [
+        "src/candidate.h"
+      ],
+      "rules": [
+        {
+          "id": "no_seed_or_replay_control_in_candidate_header",
+          "any_patterns": [
+            "seed|sampler|replay"
+          ],
+          "message": "Seed/replay control leaked into candidate model header"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case018_sampler_contract_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/selector.cc"
+      ],
+      "rules": [
+        {
+          "id": "require_sampler_v1_contract",
+          "not": {
+            "any_substrings": [
+              "SamplerV1"
+            ]
+          },
+          "message": "Replay path does not appear to use SamplerV1 contract"
+        }
+      ]
     }
   ]
 }

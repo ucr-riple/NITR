@@ -1,6 +1,36 @@
 #!/usr/bin/env python3
 
-"""Unit-test evaluation module."""
+"""Run unit or integration tests as a pipeline module.
+
+This module executes a test command, usually a `ctest` invocation, and turns
+its process result into a structured module result. It also performs a small
+amount of sanity checking to catch misconfigured or undiscovered tests.
+
+Typical use cases:
+- running one named `ctest` target after a `build` step
+- verifying hidden/public evaluator test binaries were discovered correctly
+- failing fast when a command reports that zero tests were found
+
+Configuration shape:
+- `module_name`: must be `"unit_test"`
+- `name`: human-readable module instance name used in reports
+- `command`: required test command; may be a string or argv-style list
+- `cwd`: optional working directory; defaults to `context.repo_root`
+- `env`: optional environment variable overrides
+
+Execution behavior:
+- resolves placeholders in command arguments and environment values
+- runs the command as a subprocess without raising on non-zero exit
+- treats any non-zero exit code as a module failure
+- attempts to infer the expected number of tests from the command shape
+- flags cases where the command appears to discover no tests, or fewer tests
+  than expected, even if the process exit alone is ambiguous
+- includes the tail of stdout/stderr in findings when the command fails
+
+This module is intentionally focused on test execution and lightweight
+discovery sanity checks. Build orchestration remains the responsibility of
+`build`, and structural reasoning belongs in other modules.
+"""
 
 from __future__ import annotations
 

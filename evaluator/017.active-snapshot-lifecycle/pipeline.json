@@ -28,17 +28,100 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "case017_structure_checks",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_structure.py",
-        "--case_root",
-        "{case_root}"
+      "module_name": "source_analysis",
+      "name": "case017_no_global_active_state_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "global_rules": [
+        {
+          "id": "no_global_active_state_names",
+          "any_patterns": [
+            "\\b(g_active|global_active|g_active_snapshot|g_active_version)\\b"
+          ],
+          "max_matching_files": 0,
+          "message": "Detected global mutable active-state variable naming pattern in src."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case017_single_tracker_header_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src"
+      ],
+      "suffixes": [
+        ".h"
+      ],
+      "global_rules": [
+        {
+          "id": "single_tracker_header",
+          "any_patterns": [
+            "active_version_|has_active_|current_active_|active_snapshot_"
+          ],
+          "max_matching_files": 1,
+          "message": "Multiple headers contain writable active-state tracker fields."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case017_query_service_ownership_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/query_service.h"
+      ],
+      "rules": [
+        {
+          "id": "query_service_no_snapshot_ownership",
+          "any_patterns": [
+            "Snapshot\\s+\\w+_;",
+            "std::unordered_map<.*>\\s+\\w+_;"
+          ],
+          "message": "QueryService appears to own snapshot payload/state instead of depending on lifecycle owner."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case017_no_lifecycle_control_in_main_check",
+      "root": "case_root",
+      "scan_roots": [
+        "app/main.cc"
+      ],
+      "rules": [
+        {
+          "id": "no_lifecycle_control_in_main",
+          "any_patterns": [
+            "(if|for|while)\\s*\\(.*(RegisterSnapshot|ActivateSnapshot|ResetActiveSnapshot)"
+          ],
+          "message": "Lifecycle control flow appears in app/main.cc; keep it in core src owner."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case017_reset_owner_boundary_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src"
+      ],
+      "exclude_files": [
+        "snapshot_store.h",
+        "snapshot_store.cc"
+      ],
+      "global_rules": [
+        {
+          "id": "reset_only_in_snapshot_store",
+          "any_patterns": [
+            "ResetActiveSnapshot\\s*\\("
+          ],
+          "max_matching_files": 0,
+          "message": "ResetActiveSnapshot logic appears outside snapshot_store.*"
+        }
+      ]
     }
   ]
 }

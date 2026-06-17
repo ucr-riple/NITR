@@ -28,17 +28,70 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "case014_structural_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_structure.py",
-        "--case_root",
-        "{case_root}"
+      "module_name": "source_analysis",
+      "name": "case014_service_format_agnostic_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/report_export_service.cc",
+        "src/report_export_service.h"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "normalize": "none",
+      "rules": [
+        {
+          "id": "no_markdown_mentions",
+          "any_patterns": [
+            "(?i)markdown"
+          ],
+          "message": "report_export_service should remain format-agnostic and must not mention markdown."
+        },
+        {
+          "id": "no_md_specific_handling",
+          "any_substrings": [
+            "md"
+          ],
+          "message": "report_export_service should not add md-specific handling."
+        },
+        {
+          "id": "no_markdown_exporter_type_dependency",
+          "any_substrings": [
+            "MarkdownReportExporter"
+          ],
+          "message": "report_export_service should not depend directly on markdown exporter implementation."
+        },
+        {
+          "id": "no_markdown_exporter_header_dependency",
+          "any_substrings": [
+            "markdown_report_exporter.h"
+          ],
+          "message": "report_export_service should not depend directly on markdown exporter implementation."
+        },
+        {
+          "id": "no_markdown_exporter_cc_dependency",
+          "any_substrings": [
+            "markdown_report_exporter.cc"
+          ],
+          "message": "report_export_service should not depend directly on markdown exporter implementation."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case014_factory_shape_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/exporter_factory.cc"
+      ],
+      "rules": [
+        {
+          "id": "require_create_default_exporters",
+          "not": {
+            "any_substrings": [
+              "CreateDefaultExporters"
+            ]
+          },
+          "message": "factory file looks malformed."
+        }
+      ]
     }
   ]
 }

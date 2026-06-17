@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 
+# Legacy/compatibility note:
+# - `evaluator/run_evaluation_pipeline.py` is the primary evaluator entrypoint.
+# - This CMake file still exists because pipeline `build` / `unit_test` modules
+#   depend on the evaluator test targets registered here when
+#   `-DNITR_BUILD_EVALUATOR=ON` is enabled.
+# - In other words, this file is still the target-registration layer for
+#   evaluator builds, even though evaluation orchestration now lives in the
+#   pipeline runner rather than in direct CTest invocation alone.
+
 add_subdirectory(
   ${CMAKE_SOURCE_DIR}/third_party/googletest
   ${CMAKE_BINARY_DIR}/_deps/googletest-build
@@ -87,12 +96,6 @@ function(nitr_register_case_003)
   )
   target_link_libraries(case003_functional_tests PRIVATE case003_lib gtest_main)
   add_test(NAME case003_functional_tests COMMAND case003_functional_tests)
-
-  nitr_add_python_test(
-    nitr_reuse_existing_step
-    ${EVAL_DIR}/checks/check_reuse_existing_step.py
-    --case_root ${CASE_DIR}
-  )
 endfunction()
 
 function(nitr_register_case_004)
@@ -132,7 +135,6 @@ endfunction()
 function(nitr_register_case_006)
   nitr_case_evaluator_dir(EVAL_DIR 006.gs-isp)
   nitr_add_gtest(public_smoke_test case006_lib ${EVAL_DIR}/tests/test_public_smoke.cc)
-  nitr_add_python_test(case006_structural_check ${EVAL_DIR}/checks/check_data_isp.py)
 endfunction()
 
 function(nitr_register_case_007)
@@ -186,10 +188,6 @@ endfunction()
 function(nitr_register_case_011)
   nitr_case_evaluator_dir(EVAL_DIR 011.config-sprawl)
   nitr_add_gtest(case011_tests case011_lib ${EVAL_DIR}/tests/test_config_sprawl.cc)
-  nitr_add_python_test(
-    case011_structural_check
-    ${EVAL_DIR}/checks/check_no_compact_parameter_sprawl.py
-  )
 endfunction()
 
 function(nitr_register_case_012)
@@ -204,10 +202,6 @@ endfunction()
 function(nitr_register_case_013)
   nitr_case_evaluator_dir(EVAL_DIR 013.stable-public-api)
   nitr_add_gtest(test_catalog case013_lib ${EVAL_DIR}/tests/test_catalog.cc)
-  nitr_add_python_test(
-    case013_api_stability_check
-    ${EVAL_DIR}/checks/check_api_stability.py
-  )
 endfunction()
 
 function(nitr_register_case_014)
@@ -240,21 +234,6 @@ function(nitr_register_case_015)
   nitr_add_case015_test(test_policy_enrichment_file ${EVAL_DIR}/tests/test_policy_enrichment_file.cc)
   nitr_add_case015_test(test_provider_switching ${EVAL_DIR}/tests/test_provider_switching.cc)
 
-  if(CASE015_ENABLE_VISIBLE_CHECKS)
-    nitr_add_case015_python_test(
-      check_no_concrete_provider_in_core
-      ${EVAL_DIR}/checks/check_no_concrete_provider_in_core.py
-    )
-    nitr_add_case015_python_test(
-      check_no_provider_creation_from_core
-      ${EVAL_DIR}/checks/check_no_provider_creation_from_core.py
-    )
-    nitr_add_case015_python_test(
-      check_single_wiring_boundary
-      ${EVAL_DIR}/checks/check_single_wiring_boundary.py
-    )
-  endif()
-
   if(CASE015_ENABLE_HIDDEN_EVALUATOR)
     nitr_add_case015_test(
       test_hidden_policy_enrichment_static_exact
@@ -267,15 +246,6 @@ function(nitr_register_case_015)
     nitr_add_case015_test(
       test_hidden_policy_fallback_and_partner
       ${EVAL_DIR}/tests/test_hidden_policy_fallback_and_partner.cc
-    )
-
-    nitr_add_case015_python_test(
-      check_hidden_pipeline_runner_contract_surface
-      ${EVAL_DIR}/checks/check_hidden_pipeline_runner_contract_surface.py
-    )
-    nitr_add_case015_python_test(
-      check_hidden_boundary_wiring_presence
-      ${EVAL_DIR}/checks/check_hidden_boundary_wiring_presence.py
     )
   endif()
 endfunction()
@@ -298,18 +268,6 @@ function(nitr_register_case_016)
   add_case016_test(test_execution_plan_updated ${EVAL_DIR}/tests/test_execution_plan_updated.cc)
   add_case016_test(test_execution_plan_unseen ${EVAL_DIR}/tests/test_execution_plan_unseen.cc)
   add_case016_test(test_runner_respects_segmentation ${EVAL_DIR}/tests/test_runner_respects_segmentation.cc)
-
-  nitr_add_python_test(
-    require_planner_usage_check
-    ${EVAL_DIR}/checks/check_require_planner_usage.py
-  )
-  set_tests_properties(require_planner_usage_check PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-  nitr_add_python_test(
-    no_step_index_special_case_check
-    ${EVAL_DIR}/checks/check_no_step_index_special_case.py
-  )
-  set_tests_properties(no_step_index_special_case_check PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
 
 function(nitr_register_case_017)
@@ -325,11 +283,6 @@ endfunction()
 function(nitr_register_case_018)
   nitr_case_evaluator_dir(EVAL_DIR 018.seeded-selection-testability)
   nitr_add_gtest(case018_evaluator_tests case018_core ${EVAL_DIR}/tests/test_evaluator.cc)
-  nitr_add_python_test(
-    case018_structural_checks
-    ${EVAL_DIR}/checks/check_seeded_selection.py
-  )
-  set_tests_properties(case018_structural_checks PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
 
 function(nitr_register_case_019)
@@ -381,17 +334,6 @@ function(nitr_register_case_021)
   target_compile_definitions(case021_functional_tests PRIVATE
     EVALUATOR_DATA_DIR="${EVAL_DIR}/data"
   )
-
-  nitr_add_python_test(
-    case021_no_duplicate_value_validation
-    ${EVAL_DIR}/checks/check_no_duplicate_value_validation.py
-  )
-  set_tests_properties(case021_no_duplicate_value_validation PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-  nitr_add_python_test(
-    case021_no_shadow_tables
-    ${EVAL_DIR}/checks/check_no_shadow_tables.py
-  )
-  set_tests_properties(case021_no_shadow_tables PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
 
 function(nitr_register_case_022)
@@ -403,12 +345,6 @@ function(nitr_register_case_022)
     case022_lib
     ${EVAL_DIR}/tests/test_thermostat.cc
   )
-  
-  nitr_add_python_test(
-    case022_dependency_check
-    ${EVAL_DIR}/checks/check_dependency.py
-    --case_root ${CASE_DIR}
-  )
 endfunction()
 
 function(nitr_register_case_023)
@@ -419,13 +355,6 @@ function(nitr_register_case_023)
     case023_validator_tests
     case023_lib
     ${EVAL_DIR}/tests/test_validator.cc
-  )
-
-  nitr_add_python_test(
-    case023_side_effect_check
-    ${EVAL_DIR}/checks/check_side_effect.py
-    --case_root ${CASE_DIR}
-    --baseline_case_root ${NITR_BASELINE_CASES_ROOT}/023.validator-global-mutation
   )
 endfunction()
 

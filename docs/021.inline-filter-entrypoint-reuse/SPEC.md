@@ -43,7 +43,7 @@ Expected starter shape:
 - cases/021.inline-filter-entrypoint-reuse/src/filter_validation.cc
 - cases/021.inline-filter-entrypoint-reuse/TASK.md
 - cases/021.inline-filter-entrypoint-reuse/CMakeLists.txt
-- evaluator/021.inline-filter-entrypoint-reuse/checks
+- evaluator/021.inline-filter-entrypoint-reuse/pipeline.json
 - evaluator/021.inline-filter-entrypoint-reuse/data
 - evaluator/021.inline-filter-entrypoint-reuse/tests
 - docs/021.inline-filter-entrypoint-reuse/SPEC.md
@@ -299,7 +299,7 @@ This case fits the standard package layout directly:
 - `cases/021.inline-filter-entrypoint-reuse/src/` contains a compact parsing and validation subsystem
 - `cases/021.inline-filter-entrypoint-reuse/app/main.cc` can expose the inline parser in a minimal demonstration path
 - `evaluator/021.inline-filter-entrypoint-reuse/tests/` can compare structured and inline parsing outcomes using matched fixtures
-- `evaluator/021.inline-filter-entrypoint-reuse/checks/` can add limited structural checks for obvious shadow parsers
+- `evaluator/021.inline-filter-entrypoint-reuse/pipeline.json` can express limited structural checks for obvious shadow parsers
 - `evaluator/021.inline-filter-entrypoint-reuse/data/` can hold matched valid and invalid examples if the harness prefers data-driven tests
 
 Notes for starter-code and evaluator generation:

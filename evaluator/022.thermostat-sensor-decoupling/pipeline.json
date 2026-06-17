@@ -28,17 +28,105 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "case022_dependency_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_dependency.py",
-        "--case_root",
-        "{case_root}"
+      "module_name": "source_analysis",
+      "name": "case022_core_decoupling_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "suffixes": [
+        ".h",
+        ".cc"
+      ],
+      "exclude_files": [
+        "tmp26_sensor.h",
+        "tmp26_sensor.cc",
+        "main.cc"
+      ],
+      "normalize": "strip_comments_and_strings",
+      "rules": [
+        {
+          "id": "no_tmp26_sensor_type_in_core",
+          "any_patterns": [
+            "\\bTmp26Sensor\\b"
+          ],
+          "message": "{filename}: core thermostat logic must not reference hardware sensor or environment-specific reading hooks directly."
+        },
+        {
+          "id": "no_getenv_in_core",
+          "any_patterns": [
+            "\\bgetenv\\s*\\("
+          ],
+          "message": "{filename}: core thermostat logic must not reference hardware sensor or environment-specific reading hooks directly."
+        },
+        {
+          "id": "no_tmp26_env_hook_in_core",
+          "any_patterns": [
+            "\\bTMP26_SIMULATOR_TEMP\\b"
+          ],
+          "message": "{filename}: core thermostat logic must not reference hardware sensor or environment-specific reading hooks directly."
+        },
+        {
+          "id": "no_tmp26_header_include_in_core",
+          "any_patterns": [
+            "#\\s*include\\s*[<\\\"]([^\\\">]*tmp26_sensor\\.h)[>\\\"]"
+          ],
+          "message": "{filename}: core thermostat logic must not include hardware sensor headers directly."
+        },
+        {
+          "id": "no_src_relative_include_in_core",
+          "any_patterns": [
+            "#\\s*include\\s*[\\\"]src/"
+          ],
+          "message": "{filename}: do not use #include \"src/...\"; keep starter relative include style."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case022_sensor_backdoor_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/tmp26_sensor.cc"
+      ],
+      "rules": [
+        {
+          "id": "require_tmp26_simulator_backdoor",
+          "not": {
+            "any_substrings": [
+              "std::getenv(\"TMP26_SIMULATOR_TEMP\")"
+            ]
+          },
+          "message": "src/tmp26_sensor.cc must keep the starter simulator backdoor behavior."
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case022_app_contract_check",
+      "root": "case_root",
+      "scan_roots": [
+        "app/main.cc"
+      ],
+      "normalize": "strip_comments_and_strings",
+      "rules": [
+        {
+          "id": "require_no_arg_evaluate_call",
+          "not": {
+            "any_patterns": [
+              "\\.\\s*Evaluate\\s*\\(\\s*\\)"
+            ]
+          },
+          "message": "app/main.cc must call ThermostatController::Evaluate() without passing current temperature manually."
+        },
+        {
+          "id": "forbid_arg_evaluate_call",
+          "any_patterns": [
+            "\\.\\s*Evaluate\\s*\\(\\s*[^)\\s]"
+          ],
+          "message": "app/main.cc should not call ThermostatController::Evaluate(...) with manual temperature arguments."
+        }
+      ]
     }
   ]
 }

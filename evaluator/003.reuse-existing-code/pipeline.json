@@ -28,19 +28,84 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "nitr_reuse_existing_step",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_reuse_existing_step.py",
-        "--case_root",
-        "{case_root}",
-        "--baseline_case_root",
-        "{baseline_case_root}"
+      "module_name": "baseline_diff",
+      "name": "case003_file_boundary_check",
+      "include_globs": [
+        "src/**/*"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "exclude_globs": [
+        "**/CMakeLists.txt"
+      ],
+      "allow_modified": [
+        "src/cosine_similarity.cc"
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case003_reuse_structure_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/cosine_similarity.cc"
+      ],
+      "rules": [
+        {
+          "id": "require_dot_product_include",
+          "not": {
+            "any_patterns": [
+              "#include\\s+\"dot_product\\.h\""
+            ]
+          },
+          "message": "Structural reuse check failed: missing #include \"dot_product.h\" in src/cosine_similarity.cc"
+        },
+        {
+          "id": "require_l2_norm_include",
+          "not": {
+            "any_patterns": [
+              "#include\\s+\"l2_norm\\.h\""
+            ]
+          },
+          "message": "Structural reuse check failed: missing #include \"l2_norm.h\" in src/cosine_similarity.cc"
+        },
+        {
+          "id": "require_dot_product_call",
+          "not": {
+            "any_patterns": [
+              "(?:nitr::case003::)?DotProduct\\s*\\("
+            ]
+          },
+          "message": "Structural reuse check failed: missing DotProduct(...) call in src/cosine_similarity.cc"
+        },
+        {
+          "id": "require_l2_norm_call",
+          "not": {
+            "any_patterns": [
+              "(?:nitr::case003::)?L2Norm\\s*\\("
+            ]
+          },
+          "message": "Structural reuse check failed: missing L2Norm(...) call in src/cosine_similarity.cc"
+        },
+        {
+          "id": "forbid_sqrt_reimplementation",
+          "any_patterns": [
+            "\\bsqrt\\s*\\("
+          ],
+          "message": "Structural check failed: detected likely re-implementation of math utilities in src/cosine_similarity.cc"
+        },
+        {
+          "id": "forbid_sum_sq_reimplementation",
+          "any_patterns": [
+            "sum_sq\\s*\\+="
+          ],
+          "message": "Structural check failed: detected likely re-implementation of math utilities in src/cosine_similarity.cc"
+        },
+        {
+          "id": "forbid_sum_multiply_reimplementation",
+          "any_patterns": [
+            "sum\\s*\\+=\\s*[^;]*\\*[^;]*;"
+          ],
+          "message": "Structural check failed: detected likely re-implementation of math utilities in src/cosine_similarity.cc"
+        }
+      ]
     }
   ]
 }

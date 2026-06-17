@@ -28,17 +28,22 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
       "name": "case011_structural_check",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check_no_compact_parameter_sprawl.py",
-        "--case_root",
-        "{case_root}"
+      "root": "case_root",
+      "scan_roots": [
+        "src/report_renderer.h",
+        "src/report_renderer.cc"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "rules": [
+        {
+          "id": "no_compact_mode_signature_param",
+          "any_patterns": [
+            "^[^\\n;{}]*\\([^\\n)]*\\bcompact_mode\\b[^\\n)]*\\)"
+          ],
+          "message": "{location}: standalone compact_mode parameter in function signature"
+        }
+      ]
     }
   ]
 }

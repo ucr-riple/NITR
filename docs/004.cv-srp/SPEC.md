@@ -57,13 +57,12 @@ cases/004.cv-srp/
     legacy_monolith.cc
 
 evaluator/004.cv-srp/
-  checks/
-    check.py
   data/
     simple_ok.json
     invalid_schema.json
     reject_case.json
     estimation_failed.json
+  pipeline.json
     outlier_mix.json
   tests/
     test_io_json.cc
@@ -217,7 +216,8 @@ Minimum conceptual components (names are not prescribed):
 
 ### 9.2 Structural (Static SRP Checks)
 
-Enforced by `evaluator/004.cv-srp/checks/check.py` via include- and symbol-usage checks.
+Enforced by `evaluator/004.cv-srp/pipeline.json` via `source_analysis` modules
+plus a remaining `customized_check` for binary symbol isolation.
 
 **JSON usage restrictions**
 - `src/estimator_*.cc` must NOT include `nlohmann/json.hpp` and must NOT include `src/io_json.h`

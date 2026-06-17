@@ -31,8 +31,8 @@ The case follows this layout:
 - `cases/011.config-sprawl/src/`
 - `cases/011.config-sprawl/TASK.md`
 - `cases/011.config-sprawl/CMakeLists.txt`
+- `evaluator/011.config-sprawl/pipeline.json`
 - `evaluator/011.config-sprawl/tests/`
-- `evaluator/011.config-sprawl/checks/`
 - `evaluator/011.config-sprawl/data/`
 - `docs/011.config-sprawl/SPEC.md`
 

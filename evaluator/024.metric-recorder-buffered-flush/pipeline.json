@@ -28,7 +28,82 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
+      "name": "case024_metric_collector_abstraction_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/metric_collector.h",
+        "src/metric_collector.cc"
+      ],
+      "normalize": "strip_comments",
+      "rules": [
+        {
+          "id": "no_console_metric_recorder_reference",
+          "any_patterns": [
+            "\\bConsoleMetricRecorder\\b"
+          ],
+          "message": "metric_collector.{h,cc} references concrete recorder type 'ConsoleMetricRecorder'. MetricCollector must operate through the abstract MetricRecorder reference; the checkpoint operation must not be coupled to a specific recorder implementation."
+        },
+        {
+          "id": "no_dynamic_cast",
+          "any_substrings": [
+            "dynamic_cast"
+          ],
+          "message": "metric_collector uses dynamic_cast. The checkpoint operation must invoke the polymorphic visibility-trigger directly through the abstract MetricRecorder reference, without runtime type discovery."
+        },
+        {
+          "id": "no_capability_branching_is_buffered",
+          "any_patterns": [
+            "\\bIsBuffered\\s*\\("
+          ],
+          "message": "metric_collector contains capability branching (pattern: 'IsBuffered'). The checkpoint operation must unconditionally invoke the polymorphic visibility-trigger on the abstract recorder reference. Capability predicates (e.g. IsBuffered, SupportsFlush) break substitutability by making the caller aware of implementation details."
+        },
+        {
+          "id": "no_capability_branching_supports_flush",
+          "any_patterns": [
+            "\\bSupportsFlush\\s*\\("
+          ],
+          "message": "metric_collector contains capability branching (pattern: 'SupportsFlush'). The checkpoint operation must unconditionally invoke the polymorphic visibility-trigger on the abstract recorder reference. Capability predicates (e.g. IsBuffered, SupportsFlush) break substitutability by making the caller aware of implementation details."
+        },
+        {
+          "id": "no_capability_branching_can_flush",
+          "any_patterns": [
+            "\\bCanFlush\\s*\\("
+          ],
+          "message": "metric_collector contains capability branching (pattern: 'CanFlush'). The checkpoint operation must unconditionally invoke the polymorphic visibility-trigger on the abstract recorder reference. Capability predicates (e.g. IsBuffered, SupportsFlush) break substitutability by making the caller aware of implementation details."
+        },
+        {
+          "id": "no_capability_branching_has_buffer",
+          "any_patterns": [
+            "\\bHasBuffer\\s*\\("
+          ],
+          "message": "metric_collector contains capability branching (pattern: 'HasBuffer'). The checkpoint operation must unconditionally invoke the polymorphic visibility-trigger on the abstract recorder reference. Capability predicates (e.g. IsBuffered, SupportsFlush) break substitutability by making the caller aware of implementation details."
+        },
+        {
+          "id": "no_capability_branching_needs_flush",
+          "any_patterns": [
+            "\\bNeedsFlush\\s*\\("
+          ],
+          "message": "metric_collector contains capability branching (pattern: 'NeedsFlush'). The checkpoint operation must unconditionally invoke the polymorphic visibility-trigger on the abstract recorder reference. Capability predicates (e.g. IsBuffered, SupportsFlush) break substitutability by making the caller aware of implementation details."
+        },
+        {
+          "id": "no_capability_branching_requires_flush",
+          "any_patterns": [
+            "\\bRequiresFlush\\s*\\("
+          ],
+          "message": "metric_collector contains capability branching (pattern: 'RequiresFlush'). The checkpoint operation must unconditionally invoke the polymorphic visibility-trigger on the abstract recorder reference. Capability predicates (e.g. IsBuffered, SupportsFlush) break substitutability by making the caller aware of implementation details."
+        },
+        {
+          "id": "no_conditional_flush_like_invocation",
+          "any_patterns": [
+            "if\\s*\\([^)]*\\.(Flush|Commit|Sync|MakeVisible|Publish|Drain)\\s*\\("
+          ],
+          "message": "metric_collector contains capability branching around a flush-like operation. The checkpoint operation must unconditionally invoke the polymorphic visibility-trigger on the abstract recorder reference."
+        }
+      ]
+    },
+    {
+      "module_name": "customized_check",
       "name": "case024_substitutability_check",
       "command": [
         "python3",

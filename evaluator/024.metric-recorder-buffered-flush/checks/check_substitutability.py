@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-"""Structural check for case 024: substitutability under interface evolution.
+"""Structural check for case 024: class hierarchy substitutability.
 
-Verifies that the agent evolved the abstract MetricRecorder base to admit
-the new buffered implementation while preserving substitutability for the
-existing console implementation.
-
-These are semantic, type-relationship-level assertions. There is no
-function-name blacklist; the check verifies the architecture, not syntax.
+Keeps the class-shape assertions that current generic modules do not yet
+express well:
+- MetricRecorder base must expose the right virtual surface.
+- A buffered subclass must derive from MetricRecorder.
+- Buffered and console implementations must override Record.
 """
 
 import argparse
@@ -21,10 +20,8 @@ from evaluator.shared.module.path_checks import (
 )
 from evaluator.shared.check_output import emit_check_result
 from evaluator.shared.module.source_analysis import (
-    find_class_body,
-    find_matching_patterns,
-    has_any_pattern,
     strip_comments,
+    find_class_body,
 )
 
 
@@ -213,69 +210,6 @@ def main() -> int:
         failures.append(
             "console_metric_recorder.h: ConsoleMetricRecorder must override "
             "Record to provide immediate-write recording logic."
-        )
-
-    # Assertion 5: MetricCollector must operate through the abstract
-    # MetricRecorder reference. It must not name any concrete recorder
-    # type in its source files (excluding #include lines, which are
-    # implementation-detail noise that does not constitute a dependency
-    # in the type system).
-    collector_h = read_text(src_dir / "metric_collector.h")
-    collector_cc = read_text(src_dir / "metric_collector.cc")
-    collector_combined = strip_comments(collector_h + "\n" + collector_cc)
-    non_include_lines = "\n".join(
-        line
-        for line in collector_combined.splitlines()
-        if not re.match(r"^\s*#\s*include", line)
-    )
-    concrete_types = ["ConsoleMetricRecorder"]
-    if buffered_class_match is not None:
-        concrete_types.append(buffered_class_match[1])
-    for concrete in concrete_types:
-        if has_any_pattern([rf"\b{re.escape(concrete)}\b"], non_include_lines):
-            failures.append(
-                f"metric_collector.{{h,cc}} references concrete recorder type "
-                f"{concrete!r}. MetricCollector must operate through the "
-                "abstract MetricRecorder reference; the checkpoint operation "
-                "must not be coupled to a specific recorder implementation."
-            )
-
-    # Assertion 6: MetricCollector must not use dynamic_cast to reach a
-    # concrete recorder. The polymorphic visibility-trigger should be
-    # callable directly through the abstract reference.
-    if "dynamic_cast" in collector_combined:
-        failures.append(
-            "metric_collector uses dynamic_cast. The checkpoint operation "
-            "must invoke the polymorphic visibility-trigger directly through "
-            "the abstract MetricRecorder reference, without runtime type "
-            "discovery."
-        )
-
-    # Assertion 7: MetricCollector must not use capability branching
-    # (e.g. if (recorder_.IsBuffered()) { ... }). The SPEC explicitly
-    # lists this as an undesirable direction. The visibility-trigger
-    # should be unconditionally callable on any recorder implementation.
-    capability_patterns = [
-        r"\bIsBuffered\s*\(",
-        r"\bSupportsFlush\s*\(",
-        r"\bCanFlush\s*\(",
-        r"\bHasBuffer\s*\(",
-        r"\bNeedsFlush\s*\(",
-        r"\bRequiresFlush\s*\(",
-        # Also catch conditional calls to flush-like methods
-        r"if\s*\([^)]*\.(Flush|Commit|Sync|MakeVisible|Publish|Drain)\s*\(",
-    ]
-    matching_capability_patterns = find_matching_patterns(
-        capability_patterns, collector_combined, flags=re.IGNORECASE
-    )
-    if matching_capability_patterns:
-        failures.append(
-            "metric_collector contains capability branching "
-            f"(pattern: {matching_capability_patterns[0]!r}). The checkpoint operation must "
-            "unconditionally invoke the polymorphic visibility-trigger "
-            "on the abstract recorder reference. Capability predicates "
-            "(e.g. IsBuffered, SupportsFlush) break substitutability "
-            "by making the caller aware of implementation details."
         )
 
     return emit_check_result(passed=not failures, findings=failures)

@@ -28,7 +28,159 @@
       ]
     },
     {
-      "module_name": "command",
+      "module_name": "source_analysis",
+      "name": "case020_consumer_assembly_logic_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/handover_packet_preview.cc",
+        "src/handover_packet_preview.h",
+        "src/handover_packet_writer.cc",
+        "src/handover_packet_writer.h",
+        "app/main.cc"
+      ],
+      "rules": [
+        {
+          "id": "no_consumer_side_packet_assembly",
+          "all_of": [
+            {
+              "any_substrings": [
+                "current_tote",
+                "completed_totes"
+              ]
+            },
+            {
+              "any_patterns": [
+                "completed_totes\\s*\\(",
+                "current_tote\\s*\\(",
+                "HandoverPacketRow\\s*\\{",
+                "rows\\s*\\.\\s*push_back\\s*\\(",
+                "row_number"
+              ]
+            }
+          ],
+          "message": "consumer-side file inspects tracker state and assembles packet rows"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case020_consumer_summary_logic_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/handover_packet_preview.cc",
+        "src/handover_packet_preview.h",
+        "src/handover_packet_writer.cc",
+        "src/handover_packet_writer.h",
+        "app/main.cc"
+      ],
+      "rules": [
+        {
+          "id": "no_consumer_side_packet_summary",
+          "all_of": [
+            {
+              "any_substrings": [
+                "summary",
+                "total_packages"
+              ]
+            },
+            {
+              "pattern_hit_thresholds": [
+                {
+                  "patterns": [
+                    "package_count",
+                    "tote_count",
+                    "total_packages"
+                  ],
+                  "at_least": 2
+                }
+              ]
+            }
+          ],
+          "message": "consumer-side file computes packet summary from live tracker state"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case020_consumer_tracker_packet_coupling_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/handover_packet_preview.cc",
+        "src/handover_packet_preview.h",
+        "src/handover_packet_writer.cc",
+        "src/handover_packet_writer.h",
+        "app/main.cc"
+      ],
+      "rules": [
+        {
+          "id": "no_consumer_side_tracker_packet_helper",
+          "all_of": [
+            {
+              "any_patterns": [
+                "ShiftTracker\\s*(?:&|\\*)"
+              ]
+            },
+            {
+              "any_patterns": [
+                "\\bHandoverPacket\\b"
+              ]
+            }
+          ],
+          "message": "consumer-side helper accepts ShiftTracker and packet types together"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case020_domain_packet_api_presence_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/handover_packet.cc",
+        "src/handover_packet.h",
+        "src/shift_tracker.cc",
+        "src/shift_tracker.h"
+      ],
+      "global_rules": [
+        {
+          "id": "require_domain_side_packet_owner",
+          "any_of": [
+            {
+              "all_of": [
+                {
+                  "any_patterns": [
+                    "ShiftTracker\\s*(?:&|\\*)"
+                  ]
+                },
+                {
+                  "any_patterns": [
+                    "\\bHandoverPacket\\b"
+                  ]
+                }
+              ]
+            },
+            {
+              "all_of": [
+                {
+                  "any_substrings": [
+                    "HandoverPacket"
+                  ]
+                },
+                {
+                  "any_patterns": [
+                    "current_tote\\s*\\(",
+                    "completed_totes\\s*\\("
+                  ]
+                }
+              ]
+            }
+          ],
+          "min_matching_files": 1,
+          "message": "no domain-side file appears to own packet assembly or expose a packet-producing API"
+        }
+      ]
+    },
+    {
+      "module_name": "customized_check",
       "name": "case020_structural_check",
       "command": [
         "python3",

@@ -23,7 +23,7 @@ This case checks whether the agent can add a local optimization without making s
 - `src/inventory_report_service.h/.cc`: service that owns products and should own cache state
 - `app/main.cc`: demo executable
 - `evaluator/012.cache-lifecycle/tests/test_report_cache.cc`: functional tests
-- `evaluator/012.cache-lifecycle/checks/check.py`: structural checks
+- `evaluator/012.cache-lifecycle/pipeline.json`: structural and test pipeline
 
 ## Task intent
 The service currently recomputes a summary on every read.

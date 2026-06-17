@@ -41,19 +41,88 @@
       ]
     },
     {
-      "module_name": "command",
-      "name": "case007_constraint_checks",
-      "command": [
-        "python3",
-        "{evaluator_root}/checks/check.py",
-        "--case_root",
-        "{case_root}",
-        "--baseline_case_root",
-        "{baseline_case_root}"
+      "module_name": "required_paths",
+      "name": "case007_required_files_check",
+      "root": "case_root",
+      "paths": [
+        "src/clamp_transform.h",
+        "src/clamp_transform.cc",
+        "src/transform_batch.h",
+        "src/transform_batch.cc",
+        "src/transform_chain.h",
+        "src/transform_chain.cc"
+      ]
+    },
+    {
+      "module_name": "baseline_diff",
+      "name": "case007_protected_files_check",
+      "paths": [
+        "src/feature_transform.h",
+        "src/feature_pipeline.h",
+        "src/feature_pipeline.cc"
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case007_no_rtti_patterns_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src"
       ],
-      "env": {
-        "PYTHONPATH": "{repo_root}"
-      }
+      "suffixes": [
+        ".h",
+        ".cc"
+      ],
+      "rules": [
+        {
+          "id": "no_dynamic_cast",
+          "any_substrings": [
+            "dynamic_cast"
+          ],
+          "message": "forbidden pattern dynamic_cast found in {relative_path}"
+        },
+        {
+          "id": "no_typeid",
+          "any_substrings": [
+            "typeid"
+          ],
+          "message": "forbidden pattern typeid found in {relative_path}"
+        }
+      ]
+    },
+    {
+      "module_name": "source_analysis",
+      "name": "case007_generic_path_leakage_check",
+      "root": "case_root",
+      "scan_roots": [
+        "src/transform_batch.h",
+        "src/transform_batch.cc",
+        "src/transform_chain.h",
+        "src/transform_chain.cc"
+      ],
+      "rules": [
+        {
+          "id": "no_clamp_transform_leak",
+          "any_substrings": [
+            "ClampTransform"
+          ],
+          "message": "generic path leaked concrete type ClampTransform in {relative_path}"
+        },
+        {
+          "id": "no_identity_transform_leak",
+          "any_substrings": [
+            "IdentityTransform"
+          ],
+          "message": "generic path leaked concrete type IdentityTransform in {relative_path}"
+        },
+        {
+          "id": "no_l2_normalize_transform_leak",
+          "any_substrings": [
+            "L2NormalizeTransform"
+          ],
+          "message": "generic path leaked concrete type L2NormalizeTransform in {relative_path}"
+        }
+      ]
     }
   ]
 }
