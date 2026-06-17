@@ -1,0 +1,30 @@
+name: Evaluator Module Tests
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/evaluator-module-tests.yml"
+      - "evaluator/shared/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/evaluator-module-tests.yml"
+      - "evaluator/shared/**"
+  workflow_dispatch:
+
+jobs:
+  evaluator-module-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run evaluator module unit tests
+        run: python3 -m unittest discover -s evaluator/shared/module/tests -v
