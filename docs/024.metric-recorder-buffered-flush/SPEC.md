@@ -168,7 +168,11 @@ The evaluator uses the following concrete signals:
    - explicit visibility-trigger on a buffered recorder makes metrics visible
    - the consumer's checkpoint operation works through the abstract base
      reference when wired with a buffered recorder
-2. Structural Python check (`check_substitutability.py`):
+2. Structural pipeline checks:
+   - a `source_analysis` rule keeps metric-collector abstractions free from
+     concrete buffered-recorder coupling
+   - a remaining `customized_check` verifies the substitutability-specific
+     abstract-base and override shape
    - the abstract base declares at least one polymorphic visibility-trigger
      in addition to `Record` (can be pure virtual or virtual with default
      implementation)

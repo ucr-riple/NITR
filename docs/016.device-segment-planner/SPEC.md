@@ -76,8 +76,10 @@ Undesirable patterns include scenario-specific branching on known indices, dupli
 - `execution_plan_updated_test`
 - `execution_plan_unseen_test`
 - `runner_respects_segmentation_test`
-- `check_require_planner_usage.py`
-- `check_no_step_index_special_case.py` (auxiliary only)
+- pipeline structural checks that:
+  - require `pipeline_runner.cc` to call `BuildExecutionPlan(...)`
+  - forbid hardcoded legacy step-index special-casing in production source
+  - remain auxiliary only
 
 Static checks are supportive only.
 They cannot pass a submission without direct plan-level assertions and unseen-config functional coverage.

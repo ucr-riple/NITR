@@ -123,7 +123,8 @@ structural check is the oracle for the dimension.
   order, leaks sorted by channel), and determinism (a repeated call yields an
   identical `Report`). The starter passes the range assertions but fails the
   drift/leak assertions until the feature is implemented.
-* **Structural decomposition** (`checks/check_decomposition.py`). No single
+* **Structural decomposition** (via `evaluator/025.session-alert-responsibilities/pipeline.json`
+  and its remaining `customized_check`). No single
   function may produce more than one alert family.
 
 ## Oracle signals and failure modes
@@ -137,11 +138,11 @@ structural check is the oracle for the dimension.
    sorted by channel and that samples do not affect leak accounting.
 4. Mixed scenario plus a determinism check (two calls compared).
 
-### Structural check (`check_decomposition.py`)
+### Structural decomposition check
 
-The check parses each function/method body (brace-matched; control blocks are
-skipped by keyword) and computes which alert families it *produces*. A family is
-produced if the body:
+The remaining custom structural check parses each function/method body
+(brace-matched; control blocks are skipped by keyword) and computes which alert
+families it *produces*. A family is produced if the body:
 
 1. Names that family's alert type (e.g. `RangeAlert`), or
 2. Appends to its report vector directly (`range_alerts.push_back(...)` /

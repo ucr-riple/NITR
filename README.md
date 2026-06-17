@@ -132,6 +132,31 @@ repository. Use the tooling under [`submit/`](submit/README.md) when you want to
 materialize generated submission outputs under `.submit-output/` and evaluate
 those results separately.
 
+The evaluator also supports a pipeline-based entrypoint:
+
+```bash
+python3 evaluator/run_evaluation_pipeline.py evaluator/002.refactor-and-reuse/pipeline.json
+```
+
+This is the current evaluator path for submission-style runs. Each case
+`pipeline.json` declares the ordered evaluation modules to run, such as
+`build`, `unit_test`, `source_analysis`, `baseline_diff`, `required_paths`, and
+`customized_check`.
+
+The underlying evaluator CMake targets are still registered through
+`evaluator/CMakeLists.txt` when `-DNITR_BUILD_EVALUATOR=ON` is enabled. That
+file remains the build-target registration layer, while
+`evaluator/run_evaluation_pipeline.py` is the primary orchestration entrypoint.
+
+When evaluating materialized outputs under `.submit-output/`, you can override
+paths from the pipeline config at runtime instead of editing the JSON:
+
+```bash
+python3 evaluator/run_evaluation_pipeline.py \
+  evaluator/008.map-dip/pipeline.json \
+  --override case_root=/abs/path/to/.submit-output/<run>/cases/008.map-dip
+```
+
 ## Running NITR with Different Interfaces
 
 This public repository does not include a hosted submission service. In the
@@ -154,7 +179,8 @@ You can use the benchmark through several interfaces:
 - API workflow: send the selected case directory and its `TASK.md` or
   `TASK1.md`/`TASK2.md`/`TASK3.md` files to your coding agent through an API,
   apply the returned file edits inside this repository, and then run
-  `python3 tools/run_case.py <case_slug> --with-evaluator`.
+  `python3 tools/run_case.py <case_slug> --with-evaluator` or
+  `python3 evaluator/run_evaluation_pipeline.py evaluator/<case_slug>/pipeline.json`.
 - Agent CLI workflow: open this repository in an agentic coding tool, point the
   agent at a specific case, ask it to complete the requested edits in place,
   and then run the same local evaluator command.

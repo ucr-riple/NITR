@@ -25,12 +25,9 @@ cases/005.pricing-ocp/
     pricing.cc
 
 evaluator/005.pricing-ocp/
-  checks/
-    check.py
-    inject/
-      injected_rule.cc
   data/
     ...
+  pipeline.json
   tests/
     test_pricing.cc
 ```
