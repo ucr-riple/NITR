@@ -68,6 +68,15 @@ class SourceAnalysisModule(EvaluationModule):
     module_name = "source_analysis"
 
     def evaluate(self, context: EvaluationContext) -> ModuleResult:
+        """
+        Evaluates source files against per-file and aggregate rules, returning pass/fail status and findings.
+        
+        Returns:
+            ModuleResult: Pass/fail status and rendered findings. Passes if no findings are produced.
+        
+        Raises:
+            ValueError: If both 'rules' and 'global_rules' are empty in configuration.
+        """
         root = self._resolve_root(self.config.get("root", "case_root"), context)
         scan_roots = self.config.get("scan_roots", ["src"])
         suffixes = tuple(self.config.get("suffixes", [".h", ".hpp", ".cc", ".cpp"]))

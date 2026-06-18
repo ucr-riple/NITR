@@ -162,6 +162,12 @@ def scan_files(*roots: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> lis
 def find_modified_relative_paths(
     root: Path, baseline_root: Path, relative_paths: Iterable[RelativePathLike]
 ) -> list[str]:
+    """
+    Identify relative paths whose normalized text content differs between two roots.
+    
+    Returns:
+        list[str]: POSIX strings of relative paths with modified text content
+    """
     modified: list[str] = []
     for relative_path in relative_paths:
         rel = _to_relative_path(relative_path)
@@ -175,19 +181,21 @@ def find_modified_relative_paths(
 def classify_relative_paths_against_baseline(
     root: Path, baseline_root: Path, relative_paths: Iterable[RelativePathLike]
 ) -> BaselinePathCheck:
-    """Compare a fixed set of relative paths between a case root and baseline root.
-
-    Args:
-        root: Current case root to validate.
-        baseline_root: Baseline/starter case root used for comparison.
-        relative_paths: Relative paths to classify against the two roots.
-
-    Returns structured path status for the supplied relative paths, including:
-    - paths missing from the current root
-    - paths missing from the baseline root
-    - paths newly created in the current root
-    - paths deleted from the current root relative to baseline
-    - paths present in both roots whose text content differs
+    """
+    Classify a set of relative paths by comparing their presence and content between two roots.
+    
+    Parameters:
+        root (Path): The current case root to evaluate.
+        baseline_root (Path): The baseline case root for comparison.
+        relative_paths (Iterable[RelativePathLike]): Relative paths to classify.
+    
+    Returns:
+        BaselinePathCheck: Classification of the provided paths with the following results:
+            - missing_in_root: paths absent from the current root
+            - missing_in_baseline: paths absent from the baseline root
+            - created_in_root: paths newly created in the current root
+            - deleted_from_root: paths deleted from the current root relative to baseline
+            - modified: paths present in both whose text content differs
     """
     relative_paths = list(relative_paths)
     missing = find_missing_relative_paths(root, relative_paths)
