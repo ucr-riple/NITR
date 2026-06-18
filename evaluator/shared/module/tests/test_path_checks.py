@@ -133,7 +133,7 @@ class PathChecksTest(ModuleTestCase):
 
     def test_crlf_only_differences_are_not_reported_as_modified(self) -> None:
         self._write_bytes(self.case_root, "src/same.cc", b"int value = 1;\r\n")
-        self._write(self.baseline_root, "src/same.cc", "int value = 1;\n")
+        self._write_bytes(self.baseline_root, "src/same.cc", b"int value = 1;\n")
 
         self.assertEqual(
             find_modified_relative_paths(
