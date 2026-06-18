@@ -8,6 +8,7 @@ from pathlib import Path
 
 from evaluator.shared.module.path_checks import (
     classify_relative_paths_against_baseline,
+    find_modified_relative_paths,
     find_missing_paths,
     find_missing_relative_paths,
     find_new_relative_paths,
@@ -30,6 +31,13 @@ class PathChecksTest(ModuleTestCase):
         missing = self.repo_root / "missing.txt"
 
         self.assertEqual(read_text(missing), "")
+
+    def test_read_text_normalizes_crlf_fixture_via_universal_newlines(self) -> None:
+        self._write_bytes(self.case_root, "data/crlf_fixture.csv", b"a,b\r\n1,2\r\n")
+
+        self.assertEqual(
+            read_text(self.case_root / "data/crlf_fixture.csv"), "a,b\n1,2\n"
+        )
 
     def test_find_missing_paths(self) -> None:
         present = self.case_root / "src/present.cc"
@@ -122,6 +130,27 @@ class PathChecksTest(ModuleTestCase):
         self.assertEqual(status.created_in_root, ["src/created.cc"])
         self.assertEqual(status.deleted_from_root, ["src/deleted.cc"])
         self.assertEqual(status.modified, ["src/modified.cc"])
+
+    def test_crlf_only_differences_are_not_reported_as_modified(self) -> None:
+        self._write_bytes(self.case_root, "src/same.cc", b"int value = 1;\r\n")
+        self._write_bytes(self.baseline_root, "src/same.cc", b"int value = 1;\n")
+
+        self.assertEqual(
+            find_modified_relative_paths(
+                self.case_root,
+                self.baseline_root,
+                ["src/same.cc"],
+            ),
+            [],
+        )
+
+        status = classify_relative_paths_against_baseline(
+            self.case_root,
+            self.baseline_root,
+            ["src/same.cc"],
+        )
+
+        self.assertEqual(status.modified, [])
 
     def test_read_text_raises_for_missing_path_when_not_allowed(self) -> None:
         with self.assertRaises(FileNotFoundError):

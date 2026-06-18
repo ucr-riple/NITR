@@ -52,7 +52,7 @@ from typing import Any, Iterable, Mapping
 from evaluator.shared.context import EvaluationContext
 from evaluator.shared.module.base import EvaluationModule
 from evaluator.shared.module.result import ModuleResult
-from evaluator.shared.module.path_checks import scan_files
+from evaluator.shared.module.path_checks import read_text, scan_files
 from evaluator.shared.module.source_analysis import (
     count_matching_patterns,
     count_matching_substrings,
@@ -68,6 +68,15 @@ class SourceAnalysisModule(EvaluationModule):
     module_name = "source_analysis"
 
     def evaluate(self, context: EvaluationContext) -> ModuleResult:
+        """
+        Evaluates source files against per-file and aggregate rules, returning pass/fail status and findings.
+
+        Returns:
+            ModuleResult: Pass/fail status and rendered findings. Passes if no findings are produced.
+
+        Raises:
+            ValueError: If both 'rules' and 'global_rules' are empty in configuration.
+        """
         root = self._resolve_root(self.config.get("root", "case_root"), context)
         scan_roots = self.config.get("scan_roots", ["src"])
         suffixes = tuple(self.config.get("suffixes", [".h", ".hpp", ".cc", ".cpp"]))
@@ -77,7 +86,9 @@ class SourceAnalysisModule(EvaluationModule):
         rules = self.config.get("rules", [])
         global_rules = self.config.get("global_rules", [])
         if not rules and not global_rules:
-            raise ValueError(f"Module '{self.name}' requires a non-empty 'rules' list")
+            raise ValueError(
+                f"Module '{self.name}' requires at least one rule in 'rules' or 'global_rules'"
+            )
 
         resolved_roots = [
             self._resolve_path_value(path, context=context, relative_to=root)
@@ -94,7 +105,12 @@ class SourceAnalysisModule(EvaluationModule):
             if any(Path(rel_path).match(glob) for glob in exclude_globs):
                 continue
 
-            content = source_file.read_text(encoding="utf-8", errors="replace")
+            content = read_text(
+                source_file,
+                encoding="utf-8",
+                errors="replace",
+                missing_ok=False,
+            )
             content = self._normalize_content(content)
             scanned_files.append((source_file, rel_path, content))
             for rule in rules:

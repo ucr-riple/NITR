@@ -114,6 +114,20 @@ class SourceAnalysisHelpersTest(ModuleTestCase):
             matches, [self.case_root / "src/a.cc", self.case_root / "src/a.cc"]
         )
 
+    def test_find_matching_paths_matches_crlf_terminated_source_file(self) -> None:
+        self._write_bytes(
+            self.case_root,
+            "src/crlf_fixture.cc",
+            b"int value = 1;\r\nForbiddenCall();\r\n",
+        )
+
+        self.assertEqual(
+            find_matching_paths(
+                r"ForbiddenCall\s*\(", self.case_root / "src/crlf_fixture.cc"
+            ),
+            [self.case_root / "src/crlf_fixture.cc"],
+        )
+
     def test_strip_comments(self) -> None:
         text = """
         // line comment
