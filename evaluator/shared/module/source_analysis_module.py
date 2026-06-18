@@ -86,7 +86,9 @@ class SourceAnalysisModule(EvaluationModule):
         rules = self.config.get("rules", [])
         global_rules = self.config.get("global_rules", [])
         if not rules and not global_rules:
-            raise ValueError(f"Module '{self.name}' requires a non-empty 'rules' list")
+            raise ValueError(
+                f"Module '{self.name}' requires at least one rule in 'rules' or 'global_rules'"
+            )
 
         resolved_roots = [
             self._resolve_path_value(path, context=context, relative_to=root)
@@ -103,7 +105,12 @@ class SourceAnalysisModule(EvaluationModule):
             if any(Path(rel_path).match(glob) for glob in exclude_globs):
                 continue
 
-            content = read_text(source_file, encoding="utf-8", errors="replace")
+            content = read_text(
+                source_file,
+                encoding="utf-8",
+                errors="replace",
+                missing_ok=False,
+            )
             content = self._normalize_content(content)
             scanned_files.append((source_file, rel_path, content))
             for rule in rules:
