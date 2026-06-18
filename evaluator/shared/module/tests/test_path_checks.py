@@ -34,7 +34,9 @@ class PathChecksTest(ModuleTestCase):
     def test_read_text_normalizes_crlf_fixture_via_universal_newlines(self) -> None:
         self._write_bytes(self.case_root, "data/crlf_fixture.csv", b"a,b\r\n1,2\r\n")
 
-        self.assertEqual(read_text(self.case_root / "data/crlf_fixture.csv"), "a,b\n1,2\n")
+        self.assertEqual(
+            read_text(self.case_root / "data/crlf_fixture.csv"), "a,b\n1,2\n"
+        )
 
     def test_find_missing_paths(self) -> None:
         present = self.case_root / "src/present.cc"

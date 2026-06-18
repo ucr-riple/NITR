@@ -164,7 +164,7 @@ def find_modified_relative_paths(
 ) -> list[str]:
     """
     Identify relative paths whose normalized text content differs between two roots.
-    
+
     Returns:
         list[str]: POSIX strings of relative paths with modified text content
     """
@@ -183,12 +183,12 @@ def classify_relative_paths_against_baseline(
 ) -> BaselinePathCheck:
     """
     Classify a set of relative paths by comparing their presence and content between two roots.
-    
+
     Parameters:
         root (Path): The current case root to evaluate.
         baseline_root (Path): The baseline case root for comparison.
         relative_paths (Iterable[RelativePathLike]): Relative paths to classify.
-    
+
     Returns:
         BaselinePathCheck: Classification of the provided paths with the following results:
             - missing_in_root: paths absent from the current root

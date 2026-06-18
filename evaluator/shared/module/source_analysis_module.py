@@ -70,10 +70,10 @@ class SourceAnalysisModule(EvaluationModule):
     def evaluate(self, context: EvaluationContext) -> ModuleResult:
         """
         Evaluates source files against per-file and aggregate rules, returning pass/fail status and findings.
-        
+
         Returns:
             ModuleResult: Pass/fail status and rendered findings. Passes if no findings are produced.
-        
+
         Raises:
             ValueError: If both 'rules' and 'global_rules' are empty in configuration.
         """

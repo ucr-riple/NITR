@@ -116,11 +116,15 @@ class SourceAnalysisHelpersTest(ModuleTestCase):
 
     def test_find_matching_paths_matches_crlf_terminated_source_file(self) -> None:
         self._write_bytes(
-            self.case_root, "src/crlf_fixture.cc", b"int value = 1;\r\nForbiddenCall();\r\n"
+            self.case_root,
+            "src/crlf_fixture.cc",
+            b"int value = 1;\r\nForbiddenCall();\r\n",
         )
 
         self.assertEqual(
-            find_matching_paths(r"ForbiddenCall\s*\(", self.case_root / "src/crlf_fixture.cc"),
+            find_matching_paths(
+                r"ForbiddenCall\s*\(", self.case_root / "src/crlf_fixture.cc"
+            ),
             [self.case_root / "src/crlf_fixture.cc"],
         )
 
