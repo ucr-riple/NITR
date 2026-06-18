@@ -44,6 +44,11 @@ class ModuleTestCase(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
+    def _write_bytes(self, root: Path, relative_path: str, content: bytes) -> None:
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+
     def _mkdir(self, root: Path, relative_path: str) -> None:
         (root / relative_path).mkdir(parents=True, exist_ok=True)
 

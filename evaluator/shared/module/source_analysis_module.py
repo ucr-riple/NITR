@@ -52,7 +52,7 @@ from typing import Any, Iterable, Mapping
 from evaluator.shared.context import EvaluationContext
 from evaluator.shared.module.base import EvaluationModule
 from evaluator.shared.module.result import ModuleResult
-from evaluator.shared.module.path_checks import scan_files
+from evaluator.shared.module.path_checks import read_text, scan_files
 from evaluator.shared.module.source_analysis import (
     count_matching_patterns,
     count_matching_substrings,
@@ -94,7 +94,7 @@ class SourceAnalysisModule(EvaluationModule):
             if any(Path(rel_path).match(glob) for glob in exclude_globs):
                 continue
 
-            content = source_file.read_text(encoding="utf-8", errors="replace")
+            content = read_text(source_file, encoding="utf-8", errors="replace")
             content = self._normalize_content(content)
             scanned_files.append((source_file, rel_path, content))
             for rule in rules:

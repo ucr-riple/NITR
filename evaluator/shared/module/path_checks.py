@@ -165,7 +165,9 @@ def find_modified_relative_paths(
     modified: list[str] = []
     for relative_path in relative_paths:
         rel = _to_relative_path(relative_path)
-        if (root / rel).read_bytes() != (baseline_root / rel).read_bytes():
+        if read_text(root / rel, missing_ok=False) != read_text(
+            baseline_root / rel, missing_ok=False
+        ):
             modified.append(rel.as_posix())
     return modified
 
@@ -185,7 +187,7 @@ def classify_relative_paths_against_baseline(
     - paths missing from the baseline root
     - paths newly created in the current root
     - paths deleted from the current root relative to baseline
-    - paths present in both roots whose bytes differ
+    - paths present in both roots whose text content differs
     """
     relative_paths = list(relative_paths)
     missing = find_missing_relative_paths(root, relative_paths)
