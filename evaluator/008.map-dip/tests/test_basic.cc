@@ -1,7 +1,7 @@
+#include <gtest/gtest.h>
+
 #include <nlohmann/json.hpp>
 #include <string>
-
-#include <gtest/gtest.h>
 
 #include "map_snapshot.h"
 

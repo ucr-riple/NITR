@@ -1,6 +1,7 @@
+#include <gtest/gtest.h>
+
 #include "pipeline_config.h"
 #include "pipeline_runner.h"
-#include <gtest/gtest.h>
 
 using nitr::case016::PipelineConfig;
 using nitr::case016::PipelineRunner;

@@ -1,7 +1,7 @@
+#include <gtest/gtest.h>
+
 #include <cmath>
 #include <vector>
-
-#include <gtest/gtest.h>
 
 #include "inventory_report_service.h"
 #include "summary_engine.h"

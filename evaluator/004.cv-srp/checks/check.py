@@ -23,7 +23,10 @@ import argparse
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
 
-from evaluator.shared.module.path_checks import case_root_from_script, repo_root_from_script
+from evaluator.shared.module.path_checks import (
+    case_root_from_script,
+    repo_root_from_script,
+)
 from evaluator.shared.module.source_analysis import find_matching_patterns
 from evaluator.shared.check_output import RunResult, emit_check_result
 
@@ -62,6 +65,7 @@ def binary_candidates(root: Path, name: str) -> list[Path]:
         for path in base_candidates
     ]
     return base_candidates + windows_candidates
+
 
 def find_binary(root: Path, name: str) -> Path:
     """

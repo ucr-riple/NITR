@@ -61,7 +61,9 @@ class BaselineDiffModule(EvaluationModule):
         allow_deleted = set(self.config.get("allow_deleted", []))
         allow_modified = set(self.config.get("allow_modified", []))
         allow_missing_in_root = set(self.config.get("allow_missing_in_root", []))
-        allow_missing_in_baseline = set(self.config.get("allow_missing_in_baseline", []))
+        allow_missing_in_baseline = set(
+            self.config.get("allow_missing_in_baseline", [])
+        )
         allowed_created_top_levels = self.config.get("allowed_created_top_levels", [])
 
         findings: list[str] = []
@@ -88,7 +90,9 @@ class BaselineDiffModule(EvaluationModule):
                 findings.append(f"Unexpected deleted path from case root: {path}")
         for path in status.modified:
             if path not in allow_modified:
-                findings.append(f"Unexpected modified path relative to baseline: {path}")
+                findings.append(
+                    f"Unexpected modified path relative to baseline: {path}"
+                )
 
         return self._base_result(
             passed=not findings,

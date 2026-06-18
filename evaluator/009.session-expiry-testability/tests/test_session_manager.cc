@@ -1,11 +1,10 @@
-#include "session_manager.h"
+#include <gtest/gtest.h>
 
 #include <cstdint>
 #include <memory>
 #include <string>
 
-#include <gtest/gtest.h>
-
+#include "session_manager.h"
 #include "time_source.h"
 
 namespace {

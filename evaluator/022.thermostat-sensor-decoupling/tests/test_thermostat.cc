@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <type_traits>
 #include <string>
-#include <vector>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "thermostat_controller.h"
 
@@ -49,8 +49,7 @@ TEST(ThermostatControllerTest, IdlesInsideThresholdBand) {
 namespace {
 
 std::string command_to_string(
-    const nitr::case022::ThermostatController::Command command
-) {
+    const nitr::case022::ThermostatController::Command command) {
   using Command = nitr::case022::ThermostatController::Command;
   switch (command) {
     case Command::kHeating:
@@ -65,19 +64,16 @@ std::string command_to_string(
 
 }  // namespace
 
-TEST(ThermostatControllerTest, FunctionalBehaviorMatchesApplicationCommandOutputs) {
+TEST(ThermostatControllerTest,
+     FunctionalBehaviorMatchesApplicationCommandOutputs) {
   using Command = nitr::case022::ThermostatController::Command;
   using Controller = nitr::case022::ThermostatController;
 
   const std::vector<std::pair<double, Command>> cases = {
-      {18.5, Command::kHeating},
-      {19.0, Command::kHeating},
-      {20.0, Command::kHeating},
-      {20.01, Command::kIdle},
-      {22.0, Command::kIdle},
-      {23.99, Command::kIdle},
-      {24.0, Command::kCooling},
-      {24.5, Command::kCooling},
+      {18.5, Command::kHeating}, {19.0, Command::kHeating},
+      {20.0, Command::kHeating}, {20.01, Command::kIdle},
+      {22.0, Command::kIdle},    {23.99, Command::kIdle},
+      {24.0, Command::kCooling}, {24.5, Command::kCooling},
       {30.0, Command::kCooling},
   };
 
@@ -86,8 +82,8 @@ TEST(ThermostatControllerTest, FunctionalBehaviorMatchesApplicationCommandOutput
     Controller controller(22.0f);
     const auto command = controller.Evaluate(current_temp);
     EXPECT_EQ(command, expected_command)
-        << "current_temp=" << sensor_temp
-        << " expected " << command_to_string(expected_command) << ", got "
+        << "current_temp=" << sensor_temp << " expected "
+        << command_to_string(expected_command) << ", got "
         << command_to_string(command);
   }
 }

@@ -1,5 +1,3 @@
-#include "validator.h"
-
 #include <gtest/gtest.h>
 
 #include <string>
@@ -9,6 +7,7 @@
 #include "reporter.h"
 #include "stats.h"
 #include "submission.h"
+#include "validator.h"
 
 TEST(ValidatorTest, RejectsEmptySubmissionContent) {
   nitr::case023::Submission submission;
@@ -121,14 +120,14 @@ TEST(AppFlowTest, ProcessesOnlyValidSubmissionsAndSummarizes) {
       continue;
     }
     ++nitr::case023::total_processed;
-    output_lines.push_back(
-        submission.student_id + ": " + std::to_string(grader.Grade(submission)));
+    output_lines.push_back(submission.student_id + ": " +
+                           std::to_string(grader.Grade(submission)));
   }
 
   output_lines.push_back(reporter.Summary());
 
   auto has_prefix = [](const std::vector<std::string>& lines,
-                      const char* prefix) {
+                       const char* prefix) {
     for (const auto& line : lines) {
       if (line.rfind(prefix, 0) == 0) {
         return true;

@@ -4,18 +4,51 @@ on:
   pull_request:
     paths:
       - ".github/workflows/evaluator-module-tests.yml"
-      - "evaluator/shared/**"
+      - "cases/**"
+      - "evaluator/**"
+      - "submit/**"
+      - "tools/**"
   push:
     branches:
       - main
     paths:
       - ".github/workflows/evaluator-module-tests.yml"
-      - "evaluator/shared/**"
+      - "cases/**"
+      - "evaluator/**"
+      - "submit/**"
+      - "tools/**"
   workflow_dispatch:
 
 jobs:
+  style-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install formatters
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install ruff
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Check C++ style
+        run: tools/check_format.sh
+
+      - name: Check Python style
+        run: tools/check_python_format.sh
+
   evaluator-module-tests:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
 
     steps:
       - name: Check out repository

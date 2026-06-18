@@ -152,11 +152,7 @@ def scan_files(*roots: Path, suffixes: Iterable[str] = CPP_LIKE_SUFFIXES) -> lis
         {
             path
             for root in roots
-            for path in (
-                [root]
-                if root.is_file()
-                else root.rglob("*")
-            )
+            for path in ([root] if root.is_file() else root.rglob("*"))
             if path.is_file() and path.suffix in suffix_set
         }
     )

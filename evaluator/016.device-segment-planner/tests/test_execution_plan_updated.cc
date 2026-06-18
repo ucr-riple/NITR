@@ -1,6 +1,7 @@
+#include <gtest/gtest.h>
+
 #include "execution_plan.h"
 #include "pipeline_config.h"
-#include <gtest/gtest.h>
 
 using nitr::case016::BuildExecutionPlan;
 using nitr::case016::DeviceKind;

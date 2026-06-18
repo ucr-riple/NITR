@@ -129,15 +129,15 @@ def path_env_value_for_container(
         return None
 
     mount_root = host_path if host_path.is_dir() else host_path.parent
-    if not any(path_is_relative_to(mount_root, mounted_root) for mounted_root, _ in mounts):
+    if not any(
+        path_is_relative_to(mount_root, mounted_root) for mounted_root, _ in mounts
+    ):
         container_root = f"/workspace/runtime-env/{env_name.lower()}"
         append_mount(docker_cmd, mounts, mount_root, f"{container_root}:ro")
     return map_path_for_container(host_path, mounts)
 
 
-def add_environment_flags(
-    docker_cmd: list[str], mounts: list[tuple[Path, str]], args
-):
+def add_environment_flags(docker_cmd: list[str], mounts: list[tuple[Path, str]], args):
     """Inject host environment variables and optional env-files into docker run."""
     for env_file in args.docker_env_file or []:
         docker_cmd.extend(["--env-file", str(Path(env_file).resolve())])
@@ -248,7 +248,9 @@ def exit_after_docker_run(
         raise FileNotFoundError(f"Dockerfile not found: {dockerfile}")
 
     if args.docker_build:
-        build_docker_image(repo_root, args.docker_image, dockerfile, args.docker_platform)
+        build_docker_image(
+            repo_root, args.docker_image, dockerfile, args.docker_platform
+        )
 
     repo_mount = "/workspace/repo"
     mounts: list[tuple[Path, str]] = []
@@ -265,7 +267,9 @@ def exit_after_docker_run(
 
     for extra_root in extra_mount_roots or []:
         resolved_root = extra_root.resolve()
-        if any(path_is_relative_to(resolved_root, host_root) for host_root, _ in mounts):
+        if any(
+            path_is_relative_to(resolved_root, host_root) for host_root, _ in mounts
+        ):
             continue
         container_root = f"/workspace/mounts/{len(mounts)}"
         append_mount(docker_cmd, mounts, resolved_root, container_root)

@@ -1,10 +1,10 @@
+#include <gtest/gtest.h>
+
 #include <cmath>
 #include <limits>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <gtest/gtest.h>
 
 #include "clamp_transform.h"
 #include "feature_pipeline.h"
@@ -57,7 +57,8 @@ void CheckTransformContract(const std::string& name) {
     const std::vector<float> output = pipeline.Run(input);
     EXPECT_EQ(output.size(), input.size()) << name << " changed output size";
     EXPECT_EQ(input, snapshot) << name << " modified input";
-    EXPECT_TRUE(IsFiniteVector(output)) << name << " produced non-finite output";
+    EXPECT_TRUE(IsFiniteVector(output))
+        << name << " produced non-finite output";
   }
 
   {

@@ -10,10 +10,10 @@ import textwrap
 from pathlib import Path
 
 from evaluator.shared.module.build_module import BuildModule
-from evaluator.shared.module.tests.base import ModuleTestCase
+from evaluator.shared.module.tests.base import ProcessModuleTestCase
 
 
-class BuildModuleTest(ModuleTestCase):
+class BuildModuleTest(ProcessModuleTestCase):
     def _run_module(
         self,
         *,
@@ -207,7 +207,9 @@ class BuildModuleTest(ModuleTestCase):
         self.assertFalse(result.passed)
         self.assertEqual(
             result.findings,
-            ["build module crashed: Module 'test_build' requires a non-empty 'command'"],
+            [
+                "build module crashed: Module 'test_build' requires a non-empty 'command'"
+            ],
         )
 
 

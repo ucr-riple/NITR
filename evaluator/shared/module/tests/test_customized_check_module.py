@@ -8,10 +8,10 @@ import sys
 import textwrap
 
 from evaluator.shared.module.customized_check_module import CustomizedCheckModule
-from evaluator.shared.module.tests.base import ModuleTestCase
+from evaluator.shared.module.tests.base import ProcessModuleTestCase
 
 
-class CustomizedCheckModuleTest(ModuleTestCase):
+class CustomizedCheckModuleTest(ProcessModuleTestCase):
     def _run_module(
         self,
         *,

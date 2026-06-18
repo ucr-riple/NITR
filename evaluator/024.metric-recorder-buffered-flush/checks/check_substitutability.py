@@ -25,7 +25,6 @@ from evaluator.shared.module.source_analysis import (
 )
 
 
-
 def count_pure_virtual_methods(class_body: str) -> int:
     """Count pure-virtual non-destructor methods inside a class body."""
     pattern = re.compile(

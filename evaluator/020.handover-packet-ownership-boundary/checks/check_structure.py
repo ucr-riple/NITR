@@ -29,7 +29,10 @@ from evaluator.shared.module.path_checks import (
     read_text,
     scan_files,
 )
-from evaluator.shared.module.source_analysis import count_matching_patterns, has_any_substring
+from evaluator.shared.module.source_analysis import (
+    count_matching_patterns,
+    has_any_substring,
+)
 from evaluator.shared.check_output import CHECK_FAILED, CHECK_PASSED
 
 
@@ -50,6 +53,7 @@ ASSEMBLY_SIGNAL_PATTERNS = [
     re.compile(r"summary\s*="),
     re.compile(r"row_number"),
 ]
+
 
 @dataclass
 class Finding:
@@ -85,8 +89,10 @@ def main() -> int:
     findings: list[Finding] = []
     source_files = scan_files(src_dir, suffixes=(".h", ".cc")) + [app_file]
 
-    consumer_files: list[Path] = [src_dir / consumer_file for consumer_file in CONSUMER_FILES] + [app_file]
-    
+    consumer_files: list[Path] = [
+        src_dir / consumer_file for consumer_file in CONSUMER_FILES
+    ] + [app_file]
+
     consumer_assembly_sites: list[str] = []
 
     for path in source_files:

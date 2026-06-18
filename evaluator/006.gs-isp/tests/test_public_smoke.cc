@@ -1,7 +1,7 @@
+#include <gtest/gtest.h>
+
 #include <cmath>
 #include <vector>
-
-#include <gtest/gtest.h>
 
 #include "pipeline.h"
 #include "types.h"

@@ -8,10 +8,10 @@ import sys
 import textwrap
 
 from evaluator.shared.module.unit_test_module import UnitTestModule
-from evaluator.shared.module.tests.base import ModuleTestCase
+from evaluator.shared.module.tests.base import ProcessModuleTestCase
 
 
-class UnitTestModuleTest(ModuleTestCase):
+class UnitTestModuleTest(ProcessModuleTestCase):
     def _run_module(
         self,
         *,
@@ -176,7 +176,9 @@ class UnitTestModuleTest(ModuleTestCase):
         self.assertFalse(result.passed)
         self.assertEqual(
             result.findings,
-            ["unit_test module crashed: Module 'test_unit_test' requires a non-empty 'command'"],
+            [
+                "unit_test module crashed: Module 'test_unit_test' requires a non-empty 'command'"
+            ],
         )
 
 
