@@ -1,13 +1,12 @@
+#include <gtest/gtest.h>
+
 #include <filesystem>
 #include <fstream>
 #include <limits>
+#include <nlohmann/json.hpp>
 #include <random>
 #include <sstream>
 #include <string>
-
-#include <gtest/gtest.h>
-
-#include <nlohmann/json.hpp>
 
 #include "legacy_monolith.h"
 
@@ -29,8 +28,7 @@ std::string TemporaryOutputPath(const std::string& suffix) {
       0, std::numeric_limits<unsigned long long>::max());
   const auto token = std::to_string(dist(rng));
   return (std::filesystem::temp_directory_path() /
-          ("case004_legacy_oracle_" + suffix + "_" + token +
-           ".json"))
+          ("case004_legacy_oracle_" + suffix + "_" + token + ".json"))
       .string();
 }
 
@@ -76,8 +74,8 @@ TEST(LegacyOracle, OutputsForSimpleValidCase) {
 
 TEST(LegacyOracle, RejectCase) {
   const std::string out = TemporaryOutputPath("reject");
-  const auto code = nitr::case004::RunLegacyMonolith(DataPath("reject_case.json"),
-                                                    out);
+  const auto code =
+      nitr::case004::RunLegacyMonolith(DataPath("reject_case.json"), out);
   EXPECT_NE(code, nitr::case004::ErrorCode::kInvalidJson);
   EXPECT_NE(code, nitr::case004::ErrorCode::kInvalidSchema);
 
@@ -114,19 +112,19 @@ TEST(LegacyOracle, EstimationFailedCase) {
 }
 
 TEST(LegacyOracle, InvalidSchemaAndJsonInputs) {
-  const std::string invalid_schema_input =
-      TemporaryInputPath("invalid_schema");
+  const std::string invalid_schema_input = TemporaryInputPath("invalid_schema");
   const std::string invalid_json_input = TemporaryInputPath("invalid_json");
-  const std::string invalid_schema_out = TemporaryOutputPath("invalid_schema_out");
+  const std::string invalid_schema_out =
+      TemporaryOutputPath("invalid_schema_out");
   const std::string invalid_json_out = TemporaryOutputPath("invalid_json_out");
 
   {
     std::ofstream input(invalid_schema_input);
     input << "{}";
   }
-  EXPECT_EQ(
-      nitr::case004::RunLegacyMonolith(invalid_schema_input, invalid_schema_out),
-      nitr::case004::ErrorCode::kInvalidSchema);
+  EXPECT_EQ(nitr::case004::RunLegacyMonolith(invalid_schema_input,
+                                             invalid_schema_out),
+            nitr::case004::ErrorCode::kInvalidSchema);
   EXPECT_FALSE(std::filesystem::exists(invalid_schema_out));
 
   {

@@ -1,5 +1,6 @@
-#include "pipeline_config.h"
 #include <gtest/gtest.h>
+
+#include "pipeline_config.h"
 
 using nitr::case016::DeviceKind;
 using nitr::case016::PipelineConfig;

@@ -1,6 +1,7 @@
+#include <gtest/gtest.h>
+
 #include "build_pipeline.h"
 #include "test_common.h"
-#include <gtest/gtest.h>
 
 TEST(Case015PolicyEnrichment, FileSmoke) {
   nitr::case015::PipelineConfig config;

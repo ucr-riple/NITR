@@ -67,7 +67,7 @@ TEST(SessionAlertTest, DetectsLeaksAndSortsByChannel) {
 TEST(SessionAlertTest, EnforcesMixedScenarioAndDeterminism) {
   const Config cfg{0.0, 100.0, 10.0};
   const std::vector<Event> events = {
-      {"p", EventKind::Acquire, 0.0}, {"p", EventKind::Sample, 50.0},
+      {"p", EventKind::Acquire, 0.0},  {"p", EventKind::Sample, 50.0},
       {"p", EventKind::Sample, 150.0},  // range (>100) and drift (>10)
       {"q", EventKind::Sample, -3.0},   // range (<0), baseline q = -3
       {"p", EventKind::Release, 0.0},   // p balanced

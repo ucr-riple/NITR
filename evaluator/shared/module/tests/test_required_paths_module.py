@@ -71,7 +71,9 @@ class RequiredPathsModuleTest(ModuleTestCase):
         self.assertFalse(result.passed)
         self.assertEqual(
             result.findings,
-            ["required_paths module crashed: Module 'test_required_paths' requires a non-empty 'paths' list"],
+            [
+                "required_paths module crashed: Module 'test_required_paths' requires a non-empty 'paths' list"
+            ],
         )
 
     def test_reports_invalid_root_selector(self) -> None:
@@ -84,7 +86,9 @@ class RequiredPathsModuleTest(ModuleTestCase):
         self.assertFalse(result.passed)
         self.assertEqual(
             result.findings,
-            ["required_paths module crashed: Context root 'unknown_root' is not available for module 'test_required_paths'"],
+            [
+                "required_paths module crashed: Context root 'unknown_root' is not available for module 'test_required_paths'"
+            ],
         )
 
 

@@ -95,7 +95,9 @@ class UnitTestModule(EvaluationModule):
 
         expected_tests = self._expected_test_count(command)
         detected_tests = self._detected_test_count(completed.stdout, completed.stderr)
-        if expected_tests > 0 and self._has_no_tests_signal(completed.stdout, completed.stderr):
+        if expected_tests > 0 and self._has_no_tests_signal(
+            completed.stdout, completed.stderr
+        ):
             findings.append(
                 f"Command reported no tests were found; expected at least {expected_tests}: {' '.join(command)}"
             )

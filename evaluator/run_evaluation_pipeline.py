@@ -36,7 +36,9 @@ def _load_config(path: Path) -> dict[str, Any]:
         if not isinstance(loaded, dict):
             raise SystemExit("Top-level YAML config must be a mapping/object.")
         return loaded
-    raise SystemExit(f"Unsupported config suffix for {path}. Use .json, .yaml, or .yml.")
+    raise SystemExit(
+        f"Unsupported config suffix for {path}. Use .json, .yaml, or .yml."
+    )
 
 
 def _resolve_override(
@@ -83,9 +85,7 @@ def _parse_path_overrides(entries: list[str]) -> dict[str, str]:
     overrides: dict[str, str] = {}
     for entry in entries:
         if "=" not in entry:
-            raise SystemExit(
-                f"Invalid --override value '{entry}'. Expected key=path."
-            )
+            raise SystemExit(f"Invalid --override value '{entry}'. Expected key=path.")
         key, raw_value = entry.split("=", 1)
         key = key.strip()
         value = raw_value.strip()
@@ -110,7 +110,9 @@ def _is_enabled_flag(value: Any) -> bool:
     return bool(value)
 
 
-def _module_is_enabled(module_config: dict[str, Any], variables: dict[str, Any]) -> bool:
+def _module_is_enabled(
+    module_config: dict[str, Any], variables: dict[str, Any]
+) -> bool:
     enabled_if = module_config.get("enabled_if")
     if enabled_if is None:
         return True
@@ -152,7 +154,8 @@ def _stage_workspace_context(
     repo_case_root = context.repo_root / "cases" / case_slug
     repo_evaluator_root = context.repo_root / "evaluator" / case_slug
     needs_staging = context.case_root != repo_case_root or (
-        context.evaluator_root is not None and context.evaluator_root != repo_evaluator_root
+        context.evaluator_root is not None
+        and context.evaluator_root != repo_evaluator_root
     )
     if not needs_staging:
         return None
@@ -249,10 +252,7 @@ def main() -> int:
         else None,
         evaluator_root=evaluator_root.resolve() if evaluator_root is not None else None,
         build_dir=build_dir.resolve() if build_dir is not None else None,
-        env={
-            key: str(value)
-            for key, value in config.get("env", {}).items()
-        },
+        env={key: str(value) for key, value in config.get("env", {}).items()},
         variables=variables,
     )
     staged = _stage_workspace_context(context)

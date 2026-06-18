@@ -1,10 +1,10 @@
+#include <gtest/gtest.h>
+
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include <gtest/gtest.h>
 
 #include "filter_clause.h"
 #include "filter_parser.h"
@@ -130,12 +130,12 @@ TEST(FilterEvaluatorTests, StructuredValidCases) {
         nitr::case021::ParseFilterClause(nitr::case021::FilterClause{
             test_case.field, test_case.op, test_case.value});
     EXPECT_TRUE(result.ok) << "structured parse should succeed for "
-                          << test_case.field;
+                           << test_case.field;
     if (!result.ok) {
       continue;
     }
     ExpectRule(result.rule, test_case.expected_field, test_case.expected_op,
-              test_case.value_kind, test_case.expected_value);
+               test_case.value_kind, test_case.expected_value);
   }
 }
 
@@ -146,12 +146,12 @@ TEST(FilterEvaluatorTests, InlineValidCases) {
     const nitr::case021::FilterParseResult result =
         nitr::case021::ParseInlineFilter(test_case.input);
     EXPECT_TRUE(result.ok) << "inline parse should succeed for "
-                          << test_case.input;
+                           << test_case.input;
     if (!result.ok) {
       continue;
     }
     ExpectRule(result.rule, test_case.expected_field, test_case.expected_op,
-              test_case.value_kind, test_case.expected_value);
+               test_case.value_kind, test_case.expected_value);
   }
 }
 
@@ -161,8 +161,8 @@ TEST(FilterEvaluatorTests, InlineInvalidCases) {
     InlineInvalidCase test_case{row[0], row[1]};
     const nitr::case021::FilterParseResult result =
         nitr::case021::ParseInlineFilter(test_case.input);
-    EXPECT_FALSE(result.ok) << "inline parse should fail for "
-                           << test_case.input;
+    EXPECT_FALSE(result.ok)
+        << "inline parse should fail for " << test_case.input;
     if (result.ok) {
       continue;
     }
@@ -194,8 +194,8 @@ TEST(FilterEvaluatorTests, ParityBetweenStructuredAndInlineParsing) {
                   nitr::case021::ToString(structured.rule))
             << "inline/structured rule mismatch for " << test_case.input;
         ExpectRule(inline_result.rule, test_case.expected_field,
-                  test_case.expected_op, test_case.value_kind,
-                  test_case.expected_value);
+                   test_case.expected_op, test_case.value_kind,
+                   test_case.expected_value);
       }
       continue;
     }

@@ -1,6 +1,6 @@
-#include <string>
-
 #include <gtest/gtest.h>
+
+#include <string>
 
 #include "exporter_factory.h"
 #include "report_export_service.h"
@@ -22,10 +22,8 @@ TEST(Case014ReportExport, ExportsText) {
   nitr::case014::ReportExportService service(
       nitr::case014::CreateDefaultExporters());
 
-  EXPECT_EQ(
-      service.ExportReport(report, "text"),
-      "Quarterly Metrics\nName, Value\nLatency, 120ms\nErrors, 3\n"
-  );
+  EXPECT_EQ(service.ExportReport(report, "text"),
+            "Quarterly Metrics\nName, Value\nLatency, 120ms\nErrors, 3\n");
 }
 
 TEST(Case014ReportExport, ExportsCsv) {

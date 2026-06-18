@@ -108,7 +108,9 @@ class FrozenPathsModuleTest(ModuleTestCase):
         self.assertFalse(result.passed)
         self.assertEqual(
             result.findings,
-            ["frozen_paths module crashed: Module 'test_frozen_paths' requires a non-empty 'paths' list"],
+            [
+                "frozen_paths module crashed: Module 'test_frozen_paths' requires a non-empty 'paths' list"
+            ],
         )
 
 

@@ -110,7 +110,9 @@ class SourceAnalysisHelpersTest(ModuleTestCase):
 
         # Directory and explicit-file inputs are both scanned, so the same file can
         # appear twice when the caller passes overlapping roots.
-        self.assertEqual(matches, [self.case_root / "src/a.cc", self.case_root / "src/a.cc"])
+        self.assertEqual(
+            matches, [self.case_root / "src/a.cc", self.case_root / "src/a.cc"]
+        )
 
     def test_strip_comments(self) -> None:
         text = """
@@ -183,7 +185,9 @@ class SourceAnalysisHelpersTest(ModuleTestCase):
 
         self.assertIn("value = 1;", extract_function_body(text, "Existing"))
 
-    def test_extract_function_body_returns_empty_string_for_missing_function(self) -> None:
+    def test_extract_function_body_returns_empty_string_for_missing_function(
+        self,
+    ) -> None:
         text = """
         void Existing() {
           value = 1;

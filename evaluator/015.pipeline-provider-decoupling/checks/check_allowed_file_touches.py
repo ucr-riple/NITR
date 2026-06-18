@@ -52,7 +52,7 @@ def main() -> int:
 
     if not args.paths:
         return emit_check_result(passed=True, findings=[])
-    
+
     repo_root = args.repo_root.resolve()
 
     root_file_paths = [path for path in args.paths if "/" not in path]

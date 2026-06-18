@@ -207,7 +207,9 @@ class BuildModuleTest(ProcessModuleTestCase):
         self.assertFalse(result.passed)
         self.assertEqual(
             result.findings,
-            ["build module crashed: Module 'test_build' requires a non-empty 'command'"],
+            [
+                "build module crashed: Module 'test_build' requires a non-empty 'command'"
+            ],
         )
 
 

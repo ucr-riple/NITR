@@ -176,7 +176,9 @@ class UnitTestModuleTest(ProcessModuleTestCase):
         self.assertFalse(result.passed)
         self.assertEqual(
             result.findings,
-            ["unit_test module crashed: Module 'test_unit_test' requires a non-empty 'command'"],
+            [
+                "unit_test module crashed: Module 'test_unit_test' requires a non-empty 'command'"
+            ],
         )
 
 

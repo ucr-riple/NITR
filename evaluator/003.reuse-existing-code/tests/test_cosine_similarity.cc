@@ -1,7 +1,7 @@
+#include <gtest/gtest.h>
+
 #include <cmath>
 #include <vector>
-
-#include <gtest/gtest.h>
 
 #include "cosine_similarity.h"
 
@@ -28,7 +28,8 @@ TEST(Case003ReuseExistingCode, OrthogonalVectorsAreZero) {
 TEST(Case003ReuseExistingCode, SizeMismatchThrowsInvalidArgument) {
   std::vector<double> a{1};
   std::vector<double> b{1, 2};
-  EXPECT_THROW((void)nitr::case003::CosineSimilarity(a, b), std::invalid_argument);
+  EXPECT_THROW((void)nitr::case003::CosineSimilarity(a, b),
+               std::invalid_argument);
 }
 
 TEST(Case003ReuseExistingCode, ZeroVectorReturnsZero) {

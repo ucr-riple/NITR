@@ -1,3 +1,5 @@
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <set>
@@ -5,8 +7,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <gtest/gtest.h>
 
 #include "candidate.h"
 #include "sampler_v1.h"
@@ -130,9 +130,10 @@ void AssertPolicyInvariants(const std::vector<Candidate>& candidates,
     const Candidate& c = it->second;
     CheckCondition(c.eligible, "Output contains ineligible candidate");
     CheckCondition(c.is_fallback == pool_is_fallback,
-           "Output violates fallback precedence");
+                   "Output violates fallback precedence");
     CheckCondition(seen.insert(id).second, "Output contains duplicate id");
-    CheckCondition(c.score <= prev_score, "Output violates score-priority invariant");
+    CheckCondition(c.score <= prev_score,
+                   "Output violates score-priority invariant");
     prev_score = c.score;
   }
 }
@@ -221,7 +222,8 @@ void TestPolicyEquivalenceUnderSameSampler() {
   const auto replay =
       nitr::case018::SelectRecommendationsReplay(fixture, 6U, 12345U);
   EXPECT_EQ(with_sampler, replay)
-      << "Replay path diverges from explicit-sampler path under same seed/stream";
+      << "Replay path diverges from explicit-sampler path under same "
+         "seed/stream";
 }
 
 void TestSeedChangeOnlyAffectsRandomAspect() {

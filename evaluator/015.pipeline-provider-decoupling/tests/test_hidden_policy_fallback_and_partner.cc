@@ -1,8 +1,9 @@
+#include <gtest/gtest.h>
+
 #include <vector>
 
 #include "build_pipeline.h"
 #include "test_common.h"
-#include <gtest/gtest.h>
 
 namespace {
 

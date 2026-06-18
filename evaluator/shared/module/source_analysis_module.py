@@ -123,9 +123,8 @@ class SourceAnalysisModule(EvaluationModule):
             ]
             min_matching_files = rule.get("min_matching_files")
             max_matching_files = rule.get("max_matching_files")
-            if (
-                min_matching_files is not None
-                and len(matching_files) < int(min_matching_files)
+            if min_matching_files is not None and len(matching_files) < int(
+                min_matching_files
             ):
                 findings.append(
                     self._render_global_message(
@@ -133,9 +132,8 @@ class SourceAnalysisModule(EvaluationModule):
                         matching_files=matching_files,
                     )
                 )
-            if (
-                max_matching_files is not None
-                and len(matching_files) > int(max_matching_files)
+            if max_matching_files is not None and len(matching_files) > int(
+                max_matching_files
             ):
                 findings.append(
                     self._render_global_message(
@@ -164,9 +162,7 @@ class SourceAnalysisModule(EvaluationModule):
             return strip_comments(content)
         if mode == "strip_comments_and_strings":
             return strip_comments_and_strings(content)
-        raise ValueError(
-            f"Unsupported normalize mode for module '{self.name}': {mode}"
-        )
+        raise ValueError(f"Unsupported normalize mode for module '{self.name}': {mode}")
 
     def _match_detail(
         self, rule: Mapping[str, Any], content: str
@@ -250,8 +246,7 @@ class SourceAnalysisModule(EvaluationModule):
         match_detail: Mapping[str, Any] | None = None,
     ) -> str:
         template = (
-            rule.get("message")
-            or "Source analysis rule '{rule_id}' matched in {path}"
+            rule.get("message") or "Source analysis rule '{rule_id}' matched in {path}"
         )
         line_no = match_detail.get("line_no") if match_detail else None
         location = f"{relative_path}:{line_no}" if line_no else relative_path
@@ -270,7 +265,9 @@ class SourceAnalysisModule(EvaluationModule):
         *,
         matching_files: list[str],
     ) -> str:
-        template = rule.get("message") or "Global source analysis rule '{rule_id}' matched"
+        template = (
+            rule.get("message") or "Global source analysis rule '{rule_id}' matched"
+        )
         return template.format(
             rule_id=rule.get("id", "unnamed_rule"),
             matching_file_count=len(matching_files),

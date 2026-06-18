@@ -75,7 +75,10 @@ class BuildModule(EvaluationModule):
         )
 
         configure_details: dict[str, object] = {}
-        if context.build_dir is not None and not (context.build_dir / "CMakeCache.txt").exists():
+        if (
+            context.build_dir is not None
+            and not (context.build_dir / "CMakeCache.txt").exists()
+        ):
             configure_args = [
                 self._format_string(str(value), context)
                 for value in self.config.get(
@@ -108,11 +111,13 @@ class BuildModule(EvaluationModule):
                 ]
                 if configured.stdout.strip():
                     findings.extend(
-                        f"stdout: {line}" for line in configured.stdout.strip().splitlines()[-20:]
+                        f"stdout: {line}"
+                        for line in configured.stdout.strip().splitlines()[-20:]
                     )
                 if configured.stderr.strip():
                     findings.extend(
-                        f"stderr: {line}" for line in configured.stderr.strip().splitlines()[-20:]
+                        f"stderr: {line}"
+                        for line in configured.stderr.strip().splitlines()[-20:]
                     )
                 return self._base_result(
                     passed=False,

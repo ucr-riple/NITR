@@ -27,9 +27,7 @@ def codex_auth_mount_specs() -> list[str]:
     for filename in ("auth.json", "config.toml"):
         host_path = codex_home / filename
         if host_path.is_file():
-            mount_specs.append(
-                f"{host_path.resolve()}:/root/.codex/{filename}:ro"
-            )
+            mount_specs.append(f"{host_path.resolve()}:/root/.codex/{filename}:ro")
     return mount_specs
 
 
@@ -76,7 +74,10 @@ def build_parser():
         help="Optional model override for supported backends",
     )
     parser.add_argument(
-        "--project-id", "--project_id", dest="project_id", help="Optional project id override"
+        "--project-id",
+        "--project_id",
+        dest="project_id",
+        help="Optional project id override",
     )
     parser.add_argument("--region", help="Optional region override")
     parser.add_argument(
@@ -105,9 +106,7 @@ def build_parser():
         type=int,
         help="Optional last step for multi-step capable backends",
     )
-    add_common_runtime_args(
-        parser, default_dockerfile=current_default_dockerfile()
-    )
+    add_common_runtime_args(parser, default_dockerfile=current_default_dockerfile())
     return parser
 
 
