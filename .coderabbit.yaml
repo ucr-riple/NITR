@@ -1,0 +1,89 @@
+language: "en-US"
+
+tone_instructions: |
+  Be concise. Do not comment on style-only issues. For benchmark cases,
+  focus on actionable risks: task/evaluator mismatch, leakage, nondeterminism,
+  false positives, false negatives, and cross-platform regressions.
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+
+  path_filters:
+    - "!build*/**"
+    - "!third_party/**"
+    - "!**/__pycache__/**"
+    - "!**/CMakeFiles/**"
+    - "!**/*.log"
+
+  path_instructions:
+    - path: "cases/**"
+      instructions: |
+        This directory contains benchmark starter code that models are expected to
+        modify as part of the NITR benchmark task. The code intentionally exhibits
+        design problems (e.g. SRP violations, tight coupling, poor extensibility) —
+        these are the subject of each case and must NOT be flagged as defects.
+        Focus only on: C++ syntax correctness, consistency with the project's case
+        structure (src/, app/, TASK*.md), and whether the starter code cleanly
+        isolates the benchmark task without accidentally solving it.
+        Also check whether TASK.md, SPEC.md, starter code, and evaluator intent
+        appear consistent with each other.
+
+    - path: "cases/**/SPEC.md"
+      instructions: |
+        Review SPEC.md against the NITR case template. Check that it includes
+        metadata, problem context, TASK.md section, expected design direction,
+        evaluation criteria, oracle signals, failure modes, maintainability mapping,
+        and allowed/disallowed summary.
+        Flag if SPEC.md leaks evaluator implementation details into TASK.md.
+
+    - path: "evaluator/*/pipeline.json"
+      instructions: |
+        Review pipeline.json for valid JSON structure and correct module_name values
+        (build, unit_test, frozen_paths, required_paths, customized_check,
+        source_analysis, baseline_diff). Modules should be ordered so that cheap
+        prerequisite checks run before expensive or dependent checks. Do not require
+        a fixed order unless sibling pipeline files clearly establish one. Flag
+        missing required fields or inconsistent naming with sibling pipeline files.
+
+    - path: "evaluator/shared/**"
+      instructions: |
+        Core evaluator infrastructure shared across all cases. Review carefully for:
+        correctness of module logic, backward compatibility with existing
+        pipeline.json files, clear and actionable error messages in findings, and
+        adequate test coverage in the adjacent tests/ directory.
+
+    - path: "docs/**"
+      instructions: |
+        Project-level documentation. Review for accuracy and consistency with the
+        current codebase. Flag outdated references to case counts, file paths, or
+        workflow steps.
+
+    - path: "submit/**"
+      instructions: |
+        Submission tooling. Review for: correctness of subprocess and Docker
+        handling, robust error propagation, and compatibility with the benchmark
+        evaluation pipeline. Changes here affect all submitters, so flag any
+        regression risks explicitly.
+
+    - path: "tools/**"
+      instructions: |
+        Utility and validation scripts. Review for correctness, proper exit codes,
+        and consistency with existing tool conventions.
+
+    - path: "CMakeLists.txt"
+      instructions: |
+        Verify that newly registered cases follow the existing cmake target naming
+        pattern and that NITR_CASE guards are consistent with sibling entries.
+
+chat:
+  auto_reply: true
