@@ -40,16 +40,37 @@ class ModuleTestCase(unittest.TestCase):
         )
 
     def _write(self, root: Path, relative_path: str, content: str = "") -> None:
+        """
+        Write text content to a file under a root directory.
+        
+        Ensures parent directories exist before writing.
+        
+        Parameters:
+        	root (Path): The base directory.
+        	relative_path (str): The relative path from root where the file will be written.
+        	content (str): The text content to write. Defaults to an empty string.
+        """
         path = root / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
     def _write_bytes(self, root: Path, relative_path: str, content: bytes) -> None:
+        """
+        Write binary content to a file within a root directory, creating parent directories as necessary.
+        
+        Parameters:
+        	root (Path): The root directory path
+        	relative_path (str): The relative path of the file within the root directory
+        	content (bytes): The binary content to write to the file
+        """
         path = root / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
 
     def _mkdir(self, root: Path, relative_path: str) -> None:
+        """
+        Creates a directory at the given path, ensuring parent directories exist.
+        """
         (root / relative_path).mkdir(parents=True, exist_ok=True)
 
     def _write_executable(self, path: Path, content: str) -> None:
