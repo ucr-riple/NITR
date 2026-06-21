@@ -105,6 +105,14 @@ DEFAULTS = {
 }
 
 
+def combine_run_labels(*parts):
+    """Join optional run-label fragments into one log label string."""
+    filtered = [part for part in parts if part]
+    if not filtered:
+        return None
+    return " ".join(filtered)
+
+
 def transcript_output_path(response_output_path):
     """Derive the sidecar transcript filename for a saved backend response."""
     if response_output_path.endswith(".txt"):
@@ -322,6 +330,7 @@ def run_chatgpt_api(args):
         run_single_task=run_single_task,
         start_step=args.start_step or 1,
         end_step=args.end_step,
+        run_label=getattr(args, "run_label", None),
     )
 
 
@@ -440,6 +449,7 @@ def run_chatgpt_codex(args):
         run_single_task=run_single_task,
         start_step=args.start_step or 1,
         end_step=args.end_step,
+        run_label=getattr(args, "run_label", None),
     )
 
 
@@ -534,6 +544,7 @@ def run_claude_vertex(args):
         run_single_task=run_single_task,
         start_step=args.start_step or 1,
         end_step=args.end_step,
+        run_label=getattr(args, "run_label", None),
     )
 
 
@@ -667,7 +678,7 @@ Focus only on the implementation requested in {task_file}."""
         run_single_task=run_single_task,
         start_step=args.start_step or 1,
         end_step=args.end_step,
-        run_label="(CLI agent)",
+        run_label=combine_run_labels(getattr(args, "run_label", None), "(CLI agent)"),
     )
 
 
@@ -749,6 +760,7 @@ def run_gemini_vertex(args):
         run_single_task=run_single_task,
         start_step=args.start_step or 1,
         end_step=args.end_step,
+        run_label=getattr(args, "run_label", None),
     )
 
 
@@ -827,6 +839,7 @@ def run_gemini_cli(args):
         run_single_task=run_single_task,
         start_step=args.start_step or 1,
         end_step=args.end_step,
+        run_label=getattr(args, "run_label", None),
     )
 
 
@@ -1003,6 +1016,7 @@ def run_qwen_vertex(args):
         run_single_task=run_single_task,
         start_step=args.start_step or 1,
         end_step=args.end_step,
+        run_label=getattr(args, "run_label", None),
     )
 
 
@@ -1139,6 +1153,7 @@ def run_qwen_openapi(args):
         run_single_task=run_single_task,
         start_step=args.start_step or 1,
         end_step=args.end_step,
+        run_label=getattr(args, "run_label", None),
     )
 
 

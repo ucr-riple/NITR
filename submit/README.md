@@ -77,17 +77,12 @@ By default, the shell wrapper writes outputs under:
 
 ```text
 .submit-output/<backend-name>/
-```
-
-Typical generated structure:
-
-```text
-.submit-output/<backend-name>/
-|-- cases/
-|-- evaluator/
-|-- responses/
-|-- reports/
-`-- staging/
+`-- run01/
+    |-- cases/
+    |-- evaluator/
+    |-- responses/
+    |-- reports/
+    `-- staging/
 ```
 
 Response sidecars may also appear under `responses/`, for example:
@@ -106,6 +101,21 @@ python3 submit/submit_case.py \
   -o .submit-output/chatgpt-codex \
   -c 024
 ```
+
+Run the same case multiple times to sample backend randomness:
+
+```bash
+python3 submit/submit_case.py \
+  --backend chatgpt-api \
+  -i . \
+  -o .submit-output/chatgpt-api \
+  -c 024 \
+  --submit-count 3
+```
+
+When `--submit-count` is greater than `1`, outputs are written under
+`run01/`, `run02/`, and so on beneath the requested output root.
+The same `run01/` layout is also used when `--submit-count 1`.
 
 Run one case fully inside Docker:
 
@@ -155,6 +165,17 @@ Evaluate one generated case:
 python3 submit/run_case_evaluator.py -g .submit-output/chatgpt-codex -c 024 -r . --refresh_evaluator
 ```
 
+If the generated root is a backend root that contains `runXX/` subdirectories,
+`run_case_evaluator.py` evaluates every run for the requested case and writes:
+
+- per-run reports under `runXX/reports/<case>.json`
+- an aggregate case report under `reports/<case>.json`
+
+The aggregate report includes:
+
+- `Pass@N`: `1` if at least one of `N` runs passed, else `0`
+- `Stability`: `1` if all `N` runs agree (all pass or all fail), else `0`
+
 Evaluate one generated case inside the pinned Linux/GCC container:
 
 ```bash
@@ -181,6 +202,10 @@ bash submit/run_batch.sh \
   --mode evaluate \
   --generated-root .submit-output/chatgpt-codex
 ```
+
+When `--generated-root` points at a backend root containing `runXX/`,
+batch evaluation aggregates per-case metrics across runs and also writes
+`reports/summary.json` with per-case `Pass@N` / `Stability` plus overall rates.
 
 Run batch evaluation inside the same Docker image:
 
@@ -218,6 +243,16 @@ bash submit/run_batch.sh \
   --mode submit \
   --backend qwen-openapi \
   --cases 001,002,024
+```
+
+Run batch submit with repeated attempts per case:
+
+```bash
+bash submit/run_batch.sh \
+  --mode submit \
+  --backend chatgpt-api \
+  --cases 001,002 \
+  --submit-count 3
 ```
 
 ## Notes

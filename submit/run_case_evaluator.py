@@ -3,11 +3,13 @@
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
+import traceback
 from pathlib import Path
 
 from docker_runtime import (
@@ -255,8 +257,209 @@ def save_summary(summary: dict, generated_root: Path, case_slug: str):
     report_path.write_text(
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
-    summary["report_path"] = str(report_path)
     return report_path
+
+
+def discover_generated_roots(generated_root: Path) -> list[Path]:
+    """Accept either one run root or a backend root containing runXX subdirectories."""
+    direct_cases_dir = generated_root / "cases"
+    if direct_cases_dir.is_dir():
+        return [generated_root]
+
+    run_roots = sorted(
+        path
+        for path in generated_root.iterdir()
+        if path.is_dir() and re.match(r"^run\d+$", path.name)
+    )
+    if run_roots:
+        return run_roots
+
+    raise FileNotFoundError(
+        f"Generated cases directory not found under {generated_root}. "
+        "Expected either cases/<case> or runXX/cases/<case>."
+    )
+
+
+def evaluate_generated_case(
+    *,
+    generated_root: Path,
+    repo_root: Path,
+    cases_root: Path,
+    case_id: str,
+    refresh_evaluator: bool,
+    keep_workspace: bool,
+    workspace_dir: Path | None,
+    build_timeout: int,
+    ctest_timeout: int,
+    check_timeout: int,
+) -> dict:
+    """Evaluate one generated root for one case and return the summary payload."""
+    case_slug = find_case_slug(cases_root, case_id)
+    generated_case_dir = generated_root / "cases" / case_slug
+    if not generated_case_dir.is_dir():
+        raise FileNotFoundError(
+            f"Generated case directory not found: {generated_case_dir}"
+        )
+    if refresh_evaluator:
+        generated_evaluator_dir = refresh_generated_evaluator(
+            repo_root, generated_root, case_slug
+        )
+    else:
+        generated_evaluator_dir = ensure_generated_evaluator(
+            repo_root, generated_root, case_slug
+        )
+
+    temp_dir = None
+    local_workspace_dir = workspace_dir
+    if local_workspace_dir is None:
+        if keep_workspace:
+            local_workspace_dir = Path(tempfile.mkdtemp(prefix=f"nitr_eval_{case_id}_"))
+            print(f"[*] Keeping evaluator workspace at: {local_workspace_dir}")
+        else:
+            temp_dir = tempfile.TemporaryDirectory(prefix=f"nitr_eval_{case_id}_")
+            local_workspace_dir = Path(temp_dir.name)
+
+    summary = {
+        "case_id": case_id,
+        "case_slug": case_slug,
+        "generated_root": str(generated_root),
+        "generated_case_dir": str(generated_case_dir),
+        "generated_evaluator_dir": str(generated_evaluator_dir),
+        "workspace_dir": str(local_workspace_dir),
+        "configure": None,
+        "build": None,
+        "ctest": None,
+        "checks": [],
+        "passed": False,
+    }
+
+    try:
+        copy_repo_workspace(repo_root, local_workspace_dir)
+        replace_case_dir(local_workspace_dir, case_slug, generated_case_dir)
+        replace_evaluator_dir(local_workspace_dir, case_slug, generated_evaluator_dir)
+
+        build_dir = local_workspace_dir / "build"
+        case_root = local_workspace_dir / "cases" / case_slug
+        baseline_case_root = repo_root / "cases" / case_slug
+        evaluator_dir = local_workspace_dir / "evaluator" / case_slug
+
+        configure_cmd = [
+            "cmake",
+            "-S",
+            str(local_workspace_dir),
+            "-B",
+            str(build_dir),
+            "-DNITR_BUILD_ALL_CASES=OFF",
+            f"-DNITR_CASE={case_slug}",
+            "-DNITR_BUILD_EVALUATOR=ON",
+            f"-DNITR_BASELINE_CASES_ROOT={repo_root / 'cases'}",
+        ]
+        summary["configure"] = run_command(configure_cmd, local_workspace_dir)
+        if summary["configure"]["exit_code"] == 0:
+            build_cmd = ["cmake", "--build", str(build_dir)]
+            summary["build"] = run_command(
+                build_cmd,
+                local_workspace_dir,
+                stream_output=True,
+                timeout_seconds=build_timeout,
+            )
+            if summary["build"]["exit_code"] == 0:
+                summary["ctest"] = run_ctest_per_test(build_dir, ctest_timeout)
+
+        for script_path in discover_structural_checks(evaluator_dir / "checks"):
+            result = run_structural_check(
+                script_path,
+                local_workspace_dir,
+                case_root,
+                timeout_seconds=check_timeout,
+                baseline_case_root=baseline_case_root,
+            )
+            result["script"] = str(script_path.relative_to(local_workspace_dir))
+            summary["checks"].append(result)
+
+        summary["passed"] = (
+            summary["configure"]["exit_code"] == 0
+            and summary["build"] is not None
+            and summary["build"]["exit_code"] == 0
+            and summary["ctest"] is not None
+            and summary["ctest"]["exit_code"] == 0
+            and all(result["exit_code"] == 0 for result in summary["checks"])
+        )
+        report_path = save_summary(summary, generated_root, case_slug)
+        summary["report_path"] = str(report_path)
+        print(f"[*] Saved report to: {report_path}")
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        return summary
+    except Exception as exc:
+        setattr(exc, "_nitr_workspace_dir", str(local_workspace_dir))
+        raise
+    finally:
+        if temp_dir is not None and not keep_workspace:
+            temp_dir.cleanup()
+
+
+def aggregate_run_summaries(
+    generated_root: Path, case_id: str, case_slug: str, run_summaries: list[dict]
+) -> dict:
+    """Aggregate multiple run-level summaries into Pass@N and Stability metrics."""
+    submission_count = len(run_summaries)
+    passed_values = [bool(summary["passed"]) for summary in run_summaries]
+    pass_at_n = any(passed_values)
+    stability = 1 if all(value == passed_values[0] for value in passed_values) else 0
+
+    aggregate = {
+        "case_id": case_id,
+        "case_slug": case_slug,
+        "generated_root": str(generated_root),
+        "submission_count": submission_count,
+        "pass_at": {
+            "name": f"Pass@{submission_count}",
+            "n": submission_count,
+            "value": 1 if pass_at_n else 0,
+        },
+        "stability": {
+            "name": "Stability",
+            "n": submission_count,
+            "value": stability,
+        },
+        "passed_runs": sum(1 for value in passed_values if value),
+        "failed_runs": sum(1 for value in passed_values if not value),
+        "evaluation_errors": sum(
+            1 for summary in run_summaries if summary.get("evaluation_error")
+        ),
+        "passed": pass_at_n,
+        "runs": [
+            {
+                "run_name": Path(summary["generated_root"]).name,
+                "generated_root": summary["generated_root"],
+                "passed": summary["passed"],
+                "report_path": summary.get("report_path"),
+                "evaluation_error": summary.get("evaluation_error"),
+            }
+            for summary in run_summaries
+        ],
+    }
+    report_path = save_summary(aggregate, generated_root, case_slug)
+    aggregate["report_path"] = str(report_path)
+    return aggregate
+
+
+def build_error_summary(
+    *, generated_root: Path, case_id: str, case_slug: str, error: Exception
+) -> dict:
+    """Build a minimal per-run summary for evaluator crashes."""
+    return {
+        "case_id": case_id,
+        "case_slug": case_slug,
+        "generated_root": str(generated_root),
+        "passed": False,
+        "evaluation_error": {
+            "type": type(error).__name__,
+            "message": str(error),
+            "traceback": traceback.format_exc(),
+        },
+        "workspace_dir": getattr(error, "_nitr_workspace_dir", None),
+    }
 
 
 def discover_ctest_names(build_dir: Path):
@@ -446,100 +649,81 @@ def main():
             extra_mount_roots=extra_mount_roots,
         )
 
-    case_slug = find_case_slug(cases_root, case_id)
-    generated_case_dir = generated_root / "cases" / case_slug
-    if not generated_case_dir.is_dir():
-        raise FileNotFoundError(
-            f"Generated case directory not found: {generated_case_dir}"
+    run_roots = discover_generated_roots(generated_root)
+    evaluating_backend_root = generated_root != run_roots[0]
+    if len(run_roots) == 1 and not evaluating_backend_root:
+        summary = evaluate_generated_case(
+            generated_root=run_roots[0],
+            repo_root=repo_root,
+            cases_root=cases_root,
+            case_id=case_id,
+            refresh_evaluator=args.refresh_evaluator,
+            keep_workspace=args.keep_workspace,
+            workspace_dir=Path(args.workspace_dir).resolve()
+            if args.workspace_dir
+            else None,
+            build_timeout=args.build_timeout,
+            ctest_timeout=args.ctest_timeout,
+            check_timeout=args.check_timeout,
         )
-    if args.refresh_evaluator:
-        generated_evaluator_dir = refresh_generated_evaluator(
-            repo_root, generated_root, case_slug
-        )
-    else:
-        generated_evaluator_dir = ensure_generated_evaluator(
-            repo_root, generated_root, case_slug
-        )
-
-    workspace_dir = Path(args.workspace_dir).resolve() if args.workspace_dir else None
-    temp_dir = None
-    if workspace_dir is None:
-        temp_dir = tempfile.TemporaryDirectory(prefix=f"nitr_eval_{case_id}_")
-        workspace_dir = Path(temp_dir.name)
-
-    summary = {
-        "case_id": case_id,
-        "case_slug": case_slug,
-        "generated_root": str(generated_root),
-        "generated_case_dir": str(generated_case_dir),
-        "generated_evaluator_dir": str(generated_evaluator_dir),
-        "workspace_dir": str(workspace_dir),
-        "configure": None,
-        "build": None,
-        "ctest": None,
-        "checks": [],
-        "passed": False,
-    }
-
-    try:
-        copy_repo_workspace(repo_root, workspace_dir)
-        replace_case_dir(workspace_dir, case_slug, generated_case_dir)
-        replace_evaluator_dir(workspace_dir, case_slug, generated_evaluator_dir)
-
-        build_dir = workspace_dir / "build"
-        case_root = workspace_dir / "cases" / case_slug
-        baseline_case_root = repo_root / "cases" / case_slug
-        evaluator_dir = workspace_dir / "evaluator" / case_slug
-
-        configure_cmd = [
-            "cmake",
-            "-S",
-            str(workspace_dir),
-            "-B",
-            str(build_dir),
-            "-DNITR_BUILD_ALL_CASES=OFF",
-            f"-DNITR_CASE={case_slug}",
-            "-DNITR_BUILD_EVALUATOR=ON",
-            f"-DNITR_BASELINE_CASES_ROOT={repo_root / 'cases'}",
-        ]
-        summary["configure"] = run_command(configure_cmd, workspace_dir)
-        if summary["configure"]["exit_code"] == 0:
-            build_cmd = ["cmake", "--build", str(build_dir)]
-            summary["build"] = run_command(
-                build_cmd,
-                workspace_dir,
-                stream_output=True,
-                timeout_seconds=args.build_timeout,
-            )
-            if summary["build"]["exit_code"] == 0:
-                summary["ctest"] = run_ctest_per_test(build_dir, args.ctest_timeout)
-
-        for script_path in discover_structural_checks(evaluator_dir / "checks"):
-            result = run_structural_check(
-                script_path,
-                workspace_dir,
-                case_root,
-                timeout_seconds=args.check_timeout,
-                baseline_case_root=baseline_case_root,
-            )
-            result["script"] = str(script_path.relative_to(workspace_dir))
-            summary["checks"].append(result)
-
-        summary["passed"] = (
-            summary["configure"]["exit_code"] == 0
-            and summary["build"] is not None
-            and summary["build"]["exit_code"] == 0
-            and summary["ctest"] is not None
-            and summary["ctest"]["exit_code"] == 0
-            and all(result["exit_code"] == 0 for result in summary["checks"])
-        )
-        report_path = save_summary(summary, generated_root, case_slug)
-        print(f"[*] Saved report to: {report_path}")
-        print(json.dumps(summary, indent=2, ensure_ascii=False))
         raise SystemExit(0 if summary["passed"] else 1)
-    finally:
-        if temp_dir is not None and not args.keep_workspace:
-            temp_dir.cleanup()
+
+    case_slug = find_case_slug(cases_root, case_id)
+    print(
+        f"[*] Evaluating {case_slug} across {len(run_roots)} submission runs under "
+        f"{generated_root}"
+    )
+    run_summaries = []
+    for run_root in run_roots:
+        print(f"===== RUN {run_root.name} =====")
+        run_workspace_dir = None
+        if args.workspace_dir:
+            run_workspace_dir = Path(args.workspace_dir).resolve() / run_root.name
+        try:
+            run_summaries.append(
+                evaluate_generated_case(
+                    generated_root=run_root,
+                    repo_root=repo_root,
+                    cases_root=cases_root,
+                    case_id=case_id,
+                    refresh_evaluator=args.refresh_evaluator,
+                    keep_workspace=args.keep_workspace,
+                    workspace_dir=run_workspace_dir,
+                    build_timeout=args.build_timeout,
+                    ctest_timeout=args.ctest_timeout,
+                    check_timeout=args.check_timeout,
+                )
+            )
+        except Exception as exc:
+            error_summary = build_error_summary(
+                generated_root=run_root,
+                case_id=case_id,
+                case_slug=case_slug,
+                error=exc,
+            )
+            print(f"[!] RUN {run_root.name} evaluation error: {exc}")
+            try:
+                report_path = save_summary(error_summary, run_root, case_slug)
+                error_summary["report_path"] = str(report_path)
+                print(f"[*] Saved error report to: {report_path}")
+            except Exception as save_exc:
+                error_summary["report_save_error"] = {
+                    "type": type(save_exc).__name__,
+                    "message": str(save_exc),
+                }
+                print(
+                    f"[!] Failed to save error report for {run_root.name}: {save_exc}"
+                )
+            run_summaries.append(error_summary)
+
+    aggregate = aggregate_run_summaries(
+        generated_root, case_id, case_slug, run_summaries
+    )
+    print(f"[*] Saved aggregate report to: {aggregate['report_path']}")
+    print(json.dumps(aggregate, indent=2, ensure_ascii=False))
+    raise SystemExit(
+        0 if aggregate["passed"] and aggregate["evaluation_errors"] == 0 else 1
+    )
 
 
 if __name__ == "__main__":

@@ -184,6 +184,23 @@ python3 submit/submit_case.py \
   -c 024
 ```
 
+To run the same case multiple times against a stochastic backend, set
+`--submit-count`:
+
+```bash
+python3 submit/submit_case.py \
+  --backend chatgpt-api \
+  -i . \
+  -o .submit-output/chatgpt-api \
+  -c 024 \
+  --submit-count 3
+```
+
+When `--submit-count` is greater than `1`, the tool keeps each attempt in a
+separate subdirectory such as `.submit-output/chatgpt-api/run01/`,
+`.submit-output/chatgpt-api/run02/`, and so on.
+The same `run01/` structure is used when `--submit-count 1`.
+
 You can use the same override pattern with other model-driven backends such as
 `chatgpt-codex`, `claude-vertex`, `claude-cli`, `gemini-vertex`, `gemini-cli`,
 and `qwen-openapi`.
@@ -200,11 +217,12 @@ The generated output root will typically contain:
 
 ```text
 .submit-output/<backend-name>/
-|-- cases/
-|-- evaluator/
-|-- responses/
-|-- reports/
-`-- staging/
+`-- run01/
+    |-- cases/
+    |-- evaluator/
+    |-- responses/
+    |-- reports/
+    `-- staging/
 ```
 
 The `responses/` directory may also include sidecar metadata files such as:
@@ -247,6 +265,15 @@ python3 submit/run_case_evaluator.py \
   --docker_build
 ```
 
+If `--generated-root` points at a backend directory containing `runXX/`,
+the evaluator automatically scans all runs for that case and computes:
+
+- `Pass@N`: `1` if at least one of the `N` runs passed
+- `Stability`: `1` if all `N` runs are consistent (all pass or all fail)
+
+Per-run reports remain under each `runXX/reports/`, and the aggregate case
+report is written to `<generated-root>/reports/<case>.json`.
+
 ## 5. Run Batch Submit
 
 Use [`submit/run_batch.sh`](submit/run_batch.sh) in submit mode.
@@ -279,6 +306,16 @@ bash submit/run_batch.sh \
   --cases 001,002,024
 ```
 
+Repeat batch submission multiple times per case:
+
+```bash
+bash submit/run_batch.sh \
+  --mode submit \
+  --backend chatgpt-api \
+  --cases 001,002,024 \
+  --submit-count 3
+```
+
 If `--cases all` is used, the script expands to all case ids currently present under `cases/`.
 
 ## 6. Run Batch Evaluate
@@ -302,6 +339,10 @@ bash submit/run_batch.sh \
   --runtime docker \
   --docker-build
 ```
+
+When batch evaluation targets a backend root with `runXX/`, it also writes
+`<generated-root>/reports/summary.json` containing per-case `Pass@N`,
+`Stability`, and overall average rates.
 
 Run both submit and evaluate in Docker:
 
