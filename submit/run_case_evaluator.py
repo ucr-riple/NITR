@@ -715,7 +715,9 @@ def main():
                 )
             run_summaries.append(error_summary)
 
-    aggregate = aggregate_run_summaries(generated_root, case_id, case_slug, run_summaries)
+    aggregate = aggregate_run_summaries(
+        generated_root, case_id, case_slug, run_summaries
+    )
     print(f"[*] Saved aggregate report to: {aggregate['report_path']}")
     print(json.dumps(aggregate, indent=2, ensure_ascii=False))
     raise SystemExit(
