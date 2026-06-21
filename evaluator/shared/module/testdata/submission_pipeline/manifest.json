@@ -1,0 +1,19 @@
+{
+  "samples": [
+    {
+      "backend": "chatgpt-api",
+      "case_slug": "003.reuse-existing-code",
+      "description": "API-generated multi-step reuse case"
+    },
+    {
+      "backend": "chatgpt-api-macos-gpt54nano",
+      "case_slug": "008.map-dip",
+      "description": "macOS API-generated map snapshot plugin case"
+    },
+    {
+      "backend": "chatgpt-codex",
+      "case_slug": "003.reuse-existing-code",
+      "description": "Codex-generated multi-step reuse case"
+    }
+  ]
+}
