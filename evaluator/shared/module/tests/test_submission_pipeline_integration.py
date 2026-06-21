@@ -127,8 +127,9 @@ class SubmissionPipelineIntegrationTest(unittest.TestCase):
                 self.assertGreaterEqual(payload["summary"]["total_modules"], 1)
                 self.assertEqual(payload["summary"]["failed_modules"], 0)
                 self.assertIsNotNone(payload["workspace_root"])
-                self.assertTrue(
-                    Path(payload["case_root"]).resolve().as_posix().endswith(case_slug)
+                self.assertEqual(
+                    Path(payload["case_root"]).resolve().name,
+                    case_slug,
                 )
 
 
