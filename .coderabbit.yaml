@@ -24,6 +24,8 @@ reviews:
     - "!**/__pycache__/**"
     - "!**/CMakeFiles/**"
     - "!**/*.log"
+    - "!**/tests/data/**"
+    - "!**/tests/testdata/**"
 
   path_instructions:
     - path: "cases/**"

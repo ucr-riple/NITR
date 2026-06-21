@@ -148,6 +148,9 @@ The underlying evaluator CMake targets are still registered through
 file remains the build-target registration layer, while
 `evaluator/run_evaluation_pipeline.py` is the primary orchestration entrypoint.
 
+For local regression coverage against already-materialized submit outputs, see
+[`evaluator/shared/module/testdata/submission_pipeline/README.md`](evaluator/shared/module/testdata/submission_pipeline/README.md).
+
 When evaluating materialized outputs under `.submit-output/`, you can override
 paths from the pipeline config at runtime instead of editing the JSON:
 
