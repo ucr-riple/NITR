@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -268,7 +269,7 @@ def discover_generated_roots(generated_root: Path) -> list[Path]:
     run_roots = sorted(
         path
         for path in generated_root.iterdir()
-        if path.is_dir() and path.name.startswith("run")
+        if path.is_dir() and re.match(r"^run\d+$", path.name)
     )
     if run_roots:
         return run_roots

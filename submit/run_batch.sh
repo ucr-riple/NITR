@@ -417,6 +417,8 @@ try:
         print("evaluation_error")
     elif payload.get("passed") == False:
         print("evaluated_failure")
+    elif payload.get("passed") == True:
+        print("evaluated_success")
     else:
         print("evaluation_error")
 except Exception:
