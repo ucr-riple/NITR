@@ -40,6 +40,25 @@ class SubmissionPipelineIntegrationTest(unittest.TestCase):
                 f"submission pipeline manifest not found: {manifest_path}"
             )
         cls.manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        samples = cls.manifest.get("samples")
+        if not isinstance(samples, list):
+            raise ValueError(
+                "submission pipeline manifest must contain a 'samples' list"
+            )
+        for index, sample in enumerate(samples):
+            if not isinstance(sample, dict):
+                raise ValueError(
+                    f"invalid manifest sample at index {index}: expected object, "
+                    f"got {type(sample).__name__}"
+                )
+            missing_keys = [
+                key for key in ("backend", "case_slug") if key not in sample
+            ]
+            if missing_keys:
+                raise ValueError(
+                    f"invalid manifest sample at index {index}: missing "
+                    f"{', '.join(repr(key) for key in missing_keys)} in {sample}"
+                )
 
     def _run_pipeline(self, backend: str, case_slug: str) -> dict[str, object]:
         generated_case_root = self.fixture_root / backend / "cases" / case_slug
@@ -47,6 +66,8 @@ class SubmissionPipelineIntegrationTest(unittest.TestCase):
             self.fail(f"missing generated case fixture: {generated_case_root}")
 
         pipeline_config = self.repo_root / "evaluator" / case_slug / "pipeline.json"
+        if not pipeline_config.is_file():
+            self.fail(f"missing pipeline config: {pipeline_config}")
         command = [
             sys.executable,
             str(self.repo_root / "evaluator" / "run_evaluation_pipeline.py"),
