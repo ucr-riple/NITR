@@ -1,9 +1,9 @@
 #include "cosine_similarity.h"
 
-#include "l2_norm.h"
-#include "dot_product.h"
-
 #include <stdexcept>
+
+#include "dot_product.h"
+#include "l2_norm.h"
 
 namespace nitr::case003 {
 

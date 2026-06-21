@@ -8,8 +8,7 @@ namespace nitr::case008 {
 
 namespace {
 
-std::unique_ptr<ILayerProvider> CreateGeometryProvider(
-    const nlohmann::json&) {
+std::unique_ptr<ILayerProvider> CreateGeometryProvider(const nlohmann::json&) {
   return std::make_unique<GeometryProvider>();
 }
 

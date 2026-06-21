@@ -7,8 +7,7 @@
 
 namespace nitr::case003 {
 
-double CosineSimilarity(std::span<const double> a,
-                        std::span<const double> b) {
+double CosineSimilarity(std::span<const double> a, std::span<const double> b) {
   if (a.size() != b.size()) {
     throw std::invalid_argument("CosineSimilarity: size mismatch");
   }
