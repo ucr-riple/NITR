@@ -1,4 +1,5 @@
 import argparse
+import json
 from pathlib import Path
 
 from backends import BACKEND_RUNNERS
@@ -29,6 +30,26 @@ def codex_auth_mount_specs() -> list[str]:
         if host_path.is_file():
             mount_specs.append(f"{host_path.resolve()}:/root/.codex/{filename}:ro")
     return mount_specs
+
+
+def submit_output_dir(base_output_dir: str, submit_index: int) -> str:
+    """Resolve the concrete output directory for one submission attempt."""
+    return str(Path(base_output_dir) / f"run{submit_index:02d}")
+
+
+def save_submit_error(output_dir: str, error: Exception, submit_index: int) -> None:
+    """Persist one backend submission failure so later evaluation can count the run."""
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    error_path = output_path / "submit_error.json"
+    payload = {
+        "submit_index": submit_index,
+        "error_type": type(error).__name__,
+        "message": str(error),
+    }
+    error_path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
 
 
 def build_parser():
@@ -65,6 +86,14 @@ def build_parser():
         dest="case_id",
         required=True,
         help="Three-digit case id, e.g. 001",
+    )
+    parser.add_argument(
+        "--submit-count",
+        "--submit_count",
+        dest="submit_count",
+        type=int,
+        default=1,
+        help="Number of independent submission attempts to run. Defaults to 1.",
     )
 
     parser.add_argument(
@@ -116,6 +145,9 @@ def main():
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[1]
 
+    if args.submit_count < 1:
+        parser.error("--submit-count must be >= 1")
+
     if args.runtime == "docker":
         extra_mount_specs = []
         pre_exec_shell_commands = []
@@ -144,6 +176,8 @@ def main():
             str(Path(args.output_dir).resolve()),
             "--case-id",
             args.case_id,
+            "--submit-count",
+            str(args.submit_count),
         ]
         if args.model_name:
             forwarded_args.extend(["--model-name", args.model_name])
@@ -175,8 +209,33 @@ def main():
             pre_exec_shell_commands=pre_exec_shell_commands,
         )
 
-    print(f"[*] Dispatching backend '{args.backend}'")
-    BACKEND_RUNNERS[args.backend](args)
+    failed_attempts = []
+    for submit_index in range(1, args.submit_count + 1):
+        attempt_args = argparse.Namespace(**vars(args))
+        attempt_args.submit_index = submit_index
+        attempt_args.output_dir = submit_output_dir(args.output_dir, submit_index)
+        if args.submit_count == 1:
+            attempt_args.run_label = None
+        else:
+            attempt_args.run_label = f"(submit {submit_index}/{args.submit_count})"
+
+        print(
+            f"[*] Dispatching backend '{attempt_args.backend}'"
+            f"{' ' + attempt_args.run_label if attempt_args.run_label else ''}"
+        )
+        print(f"[*] Output dir: {attempt_args.output_dir}")
+        try:
+            BACKEND_RUNNERS[args.backend](attempt_args)
+        except Exception as exc:
+            save_submit_error(attempt_args.output_dir, exc, submit_index)
+            failed_attempts.append(submit_index)
+            print(f"[!] Submission attempt {submit_index} failed: {exc}")
+
+    if failed_attempts:
+        failed_runs = ", ".join(
+            f"run{submit_index:02d}" for submit_index in failed_attempts
+        )
+        raise SystemExit(f"Submission failed for attempt(s): {failed_runs}")
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@ Submit mode options:
   --backend <name>            Backend for submit_case.py
   --output-root <path>        Output root for generated artifacts
   --cases <list>              Comma-separated case ids, or "all"
+  --submit-count <n>          Number of independent submissions per case
   --model-name <name>         Optional model override for supported backends
 
 Evaluate mode options:
@@ -81,6 +82,7 @@ GENERATED_ROOT=""
 LOG_FILE=""
 CASES=""
 MODEL_NAME=""
+SUBMIT_COUNT=1
 BUILD_TIMEOUT=300
 CTEST_TIMEOUT=120
 CHECK_TIMEOUT=60
@@ -94,6 +96,14 @@ DOCKER_BUILD=0
 PASS_ENV_ARGS=()
 DOCKER_ENV_FILE_ARGS=()
 DOCKER_MOUNT_ARGS=()
+
+require_value() {
+  local option_name="$1"
+  if [[ $# -lt 2 || -z "${2:-}" || "${2:-}" == --* ]]; then
+    echo "${option_name} requires a value" >&2
+    exit 1
+  fi
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -123,6 +133,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     --model-name)
       MODEL_NAME="${2:-}"
+      shift 2
+      ;;
+    --submit-count)
+      require_value "$1" "${2:-}"
+      SUBMIT_COUNT="${2:-}"
       shift 2
       ;;
     --build-timeout)
@@ -239,7 +254,13 @@ if [[ "${MODE}" == "submit" ]]; then
     echo "Output root: ${OUTPUT_ROOT}"
     echo "Python: ${PYTHON_BIN}"
     echo "Cases: ${CASES}"
+    echo "Submit count: ${SUBMIT_COUNT}"
     echo "Runtime: ${SUBMIT_RUNTIME}"
+
+    if ! [[ "${SUBMIT_COUNT}" =~ ^[1-9][0-9]*$ ]]; then
+      echo "--submit-count must be a positive integer" >&2
+      exit 1
+    fi
 
     cd "${REPO_ROOT}"
 
@@ -260,6 +281,7 @@ if [[ "${MODE}" == "submit" ]]; then
         -i . \
         -o "${OUTPUT_ROOT}" \
         -c "${case_id}" \
+        --submit-count "${SUBMIT_COUNT}" \
         "${submit_extra_args[@]}"; then
         echo "===== CASE ${case_id} EXIT 0 ====="
         submit_extra_args=(
@@ -321,17 +343,32 @@ if [[ "${MODE}" == "evaluate" ]]; then
     echo "Runtime: ${EVALUATE_RUNTIME}"
 
     cd "${REPO_ROOT}"
-    if [[ ! -d "${GENERATED_ROOT}/cases" ]]; then
-      echo "Generated cases directory not found: ${GENERATED_ROOT}/cases"
+
+    discover_case_names() {
+      local root="$1"
+      if [[ -d "${root}/cases" ]]; then
+        find "${root}/cases" -mindepth 1 -maxdepth 1 -type d | sort | sed 's#.*/##'
+        return
+      fi
+      find "${root}" -mindepth 3 -maxdepth 3 -type d -path '*/cases/*' | sort | sed 's#.*/##' | awk '!seen[$0]++'
+    }
+
+    CASE_NAMES=()
+    while IFS= read -r case_name; do
+      [[ -z "${case_name}" ]] && continue
+      CASE_NAMES+=("${case_name}")
+    done < <(discover_case_names "${GENERATED_ROOT}")
+    if [[ ${#CASE_NAMES[@]} -eq 0 ]]; then
+      echo "Generated cases not found under: ${GENERATED_ROOT}"
       exit 1
     fi
 
     evaluated_failures=()
     evaluation_errors=()
-    while IFS= read -r case_dir; do
-      case_name="$(basename "${case_dir}")"
+    for case_name in "${CASE_NAMES[@]}"; do
       case_id="${case_name%%.*}"
       report_path="${GENERATED_ROOT}/reports/${case_name}.json"
+      exit_code=0
       evaluator_cmd=(
         "${PYTHON_BIN}" submit/run_case_evaluator.py
         -g "${GENERATED_ROOT}"
@@ -361,17 +398,42 @@ if [[ "${MODE}" == "evaluate" ]]; then
       echo "===== CASE ${case_id} (${case_name}) ====="
       if "${evaluator_cmd[@]}"; then
         echo "===== CASE ${case_id} EXIT 0 ====="
-        evaluator_extra_args=()
       else
         exit_code=$?
         echo "===== CASE ${case_id} EXIT ${exit_code} ====="
-        if [[ -f "${report_path}" ]] && grep -q '"passed":[[:space:]]*false' "${report_path}"; then
+        classification="$("${PYTHON_BIN}" - <<'PY' "${report_path}"
+import json
+import sys
+from pathlib import Path
+
+report_path = Path(sys.argv[1])
+try:
+    if not report_path.is_file():
+        print("evaluation_error")
+        raise SystemExit(0)
+
+    payload = json.loads(report_path.read_text(encoding="utf-8"))
+    if payload.get("evaluation_error") or payload.get("evaluation_errors", 0) > 0:
+        print("evaluation_error")
+    elif payload.get("passed") == False:
+        print("evaluated_failure")
+    else:
+        print("evaluation_error")
+except Exception:
+    print("evaluation_error")
+    raise SystemExit(0)
+PY
+)" || classification="evaluation_error"
+        if [[ "${classification}" == "evaluated_failure" ]]; then
           evaluated_failures+=("${case_id}")
         else
           evaluation_errors+=("${case_id}")
         fi
       fi
-    done < <(find "${GENERATED_ROOT}/cases" -mindepth 1 -maxdepth 1 -type d | sort)
+      if [[ "${exit_code}" == "0" ]]; then
+        evaluator_extra_args=()
+      fi
+    done
 
     if [[ ${#evaluated_failures[@]} -gt 0 ]]; then
       echo "Failed cases (evaluated but failed): ${evaluated_failures[*]}"
@@ -382,6 +444,90 @@ if [[ "${MODE}" == "evaluate" ]]; then
     fi
 
     if [[ ${#evaluated_failures[@]} -gt 0 || ${#evaluation_errors[@]} -gt 0 ]]; then
+      batch_exit_code=1
+    else
+      batch_exit_code=0
+    fi
+
+    summary_path="${GENERATED_ROOT}/reports/summary.json"
+    "${PYTHON_BIN}" - <<'PY' "${GENERATED_ROOT}" "${summary_path}"
+import json
+import sys
+from pathlib import Path
+
+generated_root = Path(sys.argv[1])
+summary_path = Path(sys.argv[2])
+reports_dir = generated_root / "reports"
+case_reports = []
+try:
+    if reports_dir.is_dir():
+        for report_path in sorted(reports_dir.glob("*.json")):
+            if report_path.name == "summary.json":
+                continue
+            try:
+                payload = json.loads(report_path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if "case_slug" not in payload:
+                continue
+            submission_count = payload.get("submission_count", 1)
+            pass_metric = payload.get("pass_at")
+            if not isinstance(pass_metric, dict):
+                pass_metric = {
+                    "name": f"Pass@{submission_count}",
+                    "n": submission_count,
+                    "value": 1 if payload.get("passed") else 0,
+                }
+            stability_metric = payload.get("stability")
+            if not isinstance(stability_metric, dict):
+                stability_metric = {
+                    "name": "Stability",
+                    "n": submission_count,
+                    "value": 1,
+                }
+            case_reports.append(
+                {
+                    "case_id": payload["case_id"],
+                    "case_slug": payload["case_slug"],
+                    "submission_count": submission_count,
+                    "pass_at": pass_metric,
+                    "stability": stability_metric,
+                    "passed": bool(payload.get("passed")),
+                    "report_path": str(report_path),
+                }
+            )
+
+    pass_values = [report["pass_at"]["value"] for report in case_reports]
+    stability_values = [report["stability"]["value"] for report in case_reports]
+    submission_counts = sorted({report["submission_count"] for report in case_reports})
+
+    summary = {
+        "generated_root": str(generated_root),
+        "total_cases": len(case_reports),
+        "submission_counts": submission_counts,
+        "cases": case_reports,
+        "pass_rate": (
+            sum(pass_values) / len(pass_values) if pass_values else 0.0
+        ),
+        "stability_rate": (
+            sum(stability_values) / len(stability_values) if stability_values else 0.0
+        ),
+    }
+    if len(submission_counts) == 1:
+        n = submission_counts[0]
+        summary["pass_metric_name"] = f"Pass@{n}"
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    print(f"[*] Saved aggregate batch summary to: {summary_path}")
+except Exception as exc:
+    print(f"[!] Failed to write aggregate batch summary: {exc}")
+    raise SystemExit(0)
+PY
+
+    if [[ "${batch_exit_code}" == "1" ]]; then
       exit 1
     fi
 
