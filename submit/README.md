@@ -258,6 +258,8 @@ bash submit/run_batch.sh \
 ## Notes
 
 - The submit scripts assume the standard NITR layout with `cases/`, `docs/`, and `evaluator/`.
+- Python cases are supported as long as they are wired into the same
+  `CMake` / `CTest` evaluator flow used by the repository.
 - Multi-step cases are driven by `TASK1.md`, `TASK2.md`, and so on based on `docs/design_matrix.md`.
 - In the repository's submit flow, the model context includes the case project
   files plus only the currently selected `TASK.md` / `TASK*.md` file for that

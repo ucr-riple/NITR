@@ -3,9 +3,9 @@ Haichao Zhu*, Qian Zhang*, Jiyuan Wang, Zhaorui Yang, and Yuxin Qiu (* indicates
 <br>
 | [arXiv](https://arxiv.org/abs/2603.27745) | [Project Page](https://www.cs.ucr.edu/~qzhang/nitr.html) |
 
-TL;DR: Needle in the Repo (NITR) is a C++ repository-level benchmark for evaluating whether
+TL;DR: Needle in the Repo (NITR) is a repository-level benchmark for evaluating whether
 AI-generated repository edits preserve maintainable structure, not just
-behavioral correctness. It comprises 24 curated C++ repository probes across
+behavioral correctness. It comprises curated repository probes across
 nine maintainability dimensions, pairing natural multi-file change requests
 with hidden functional tests and structural oracles. The benchmark is designed
 to expose cases where an agent produces behaviorally correct code that still
@@ -27,11 +27,14 @@ Latest result matrix: [docs/model_case_pass_matrix.csv](docs/model_case_pass_mat
 
 This repository contains the public benchmark release:
 
-- 24 starter cases under `cases/`
+- starter cases under `cases/`
 - case specifications and design docs under `docs/`
 - public evaluator code under `evaluator/`
 - agent-facing task statements (`TASK.md`, `TASK1.md`, ...)
 - vendored dependencies required to build cases and evaluators
+
+The current suite is predominantly C++, with Python pilot coverage beginning at
+`026.inline-filter-entrypoint-reuse-python`.
 
 This repository includes local submission helpers under `submit/` for
 benchmark automation, but it does not include a hosted submission service.
@@ -84,7 +87,7 @@ Configure all cases:
 cmake -S . -B build
 ```
 
-Run the repository-wide C++ formatting check:
+Run the repository-wide C/C++ formatting check:
 
 ```bash
 cmake -S . -B build
@@ -142,6 +145,9 @@ This is the current evaluator path for submission-style runs. Each case
 `pipeline.json` declares the ordered evaluation modules to run, such as
 `build`, `unit_test`, `source_analysis`, `baseline_diff`, `required_paths`, and
 `customized_check`.
+
+Python cases still register their functional tests through `CMake` / `CTest`
+so they can participate in the same evaluator flow as C++ cases.
 
 The underlying evaluator CMake targets are still registered through
 `evaluator/CMakeLists.txt` when `-DNITR_BUILD_EVALUATOR=ON` is enabled. That
