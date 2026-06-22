@@ -358,6 +358,18 @@ function(nitr_register_case_023)
   )
 endfunction()
 
+function(nitr_register_case_026)
+  nitr_case_source_dir(CASE_DIR 026.inline-filter-entrypoint-reuse-python)
+  nitr_case_evaluator_dir(EVAL_DIR 026.inline-filter-entrypoint-reuse-python)
+
+  nitr_add_python_test(
+    case026_functional_tests
+    ${EVAL_DIR}/tests/test_filter_evaluator.py
+    --case_root ${CASE_DIR}
+    --data_dir ${EVAL_DIR}/data
+  )
+endfunction()
+
 function(nitr_register_case_024)
   nitr_case_evaluator_dir(EVAL_DIR 024.metric-recorder-buffered-flush)
 
@@ -440,6 +452,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_022()
   elseif(case_dir STREQUAL "023.validator-global-mutation")
     nitr_register_case_023()
+  elseif(case_dir STREQUAL "026.inline-filter-entrypoint-reuse-python")
+    nitr_register_case_026()
   elseif(case_dir STREQUAL "024.metric-recorder-buffered-flush")
     nitr_register_case_024()
   elseif(case_dir STREQUAL "025.session-alert-responsibilities")
@@ -473,6 +487,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(023.validator-global-mutation)
   nitr_add_evaluator(024.metric-recorder-buffered-flush)
   nitr_add_evaluator(025.session-alert-responsibilities)
+  nitr_add_evaluator(026.inline-filter-entrypoint-reuse-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

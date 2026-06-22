@@ -1,0 +1,5 @@
+field,op,value,expected_field,expected_op,value_kind,expected_value
+status,=,open,status,=,text,open
+priority,>=,3,priority,>=,integer,3
+owner,:,alice,owner,:,text,alice
+owner,=,bob,owner,=,text,bob

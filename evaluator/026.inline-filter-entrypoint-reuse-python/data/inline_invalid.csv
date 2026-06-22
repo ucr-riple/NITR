@@ -1,0 +1,6 @@
+inline,error_code
+tag=open,invalid_field
+priority>3,invalid_operator
+priority>=high,invalid_value
+status,invalid_operator
+status=open=closed,invalid_value

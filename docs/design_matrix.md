@@ -234,6 +234,7 @@ Notes:
 | 023 validator-global-mutation | D9 Side-Effect Isolation | micro |
 | 024 metric-recorder-buffered-flush | D5 Interface and Substitutability Discipline | micro |
 | 025 session-alert-responsibilities | D3 Responsibility Decomposition | micro |
+| 026 inline-filter-entrypoint-reuse-python | D2 Reuse and Repo Awareness | micro |
 
 
 ---
@@ -243,7 +244,7 @@ Notes:
 | Dimension | Count |
 |---|---:|
 | D1 Change Locality | 3 |
-| D2 Reuse and Repo Awareness | 3 |
+| D2 Reuse and Repo Awareness | 4 |
 | D3 Responsibility Decomposition | 3 |
 | D4 Extension Structure | 2 |
 | D5 Interface and Substitutability Discipline | 3 |
@@ -252,8 +253,8 @@ Notes:
 | D8 State Ownership and Lifecycle | 2 |
 | D9 Side-Effect Isolation | 3 |
 
-Total cases recorded: **25**
+Total cases recorded: **26**
 
 Notes:
-- Current matrix contents cover cases `001`-`025`.
-- With `016`, `021`, `023`, `024`, and `025` included, D1, D2, D3, D5, D7, and D9 each have three cases; D4 and D8 each have two.
+- Current matrix contents cover cases `001`-`026`.
+- With `016`, `021`, `023`, `024`, `025`, and `026` included, D2 has four cases; D1, D3, D5, D7, and D9 each have three cases; D4 and D8 each have two.
