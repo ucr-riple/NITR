@@ -21,7 +21,7 @@ Each case must use the following structure:
 - cases
   - <case-id>.<case-name>
     - app
-      - main.cc
+      - main.<ext>
     - src
     - SPEC.md
     - TASK.md
@@ -34,7 +34,7 @@ Each case must use the following structure:
 ```
 
 All code and documentation must be written in **English**.
-Each case is written in **C++**.
+Cases may be written in **C++** or **Python**.
 Case numbering must use a three-digit prefix starting from `001`.
 
 ---
@@ -67,7 +67,9 @@ case_id:              # e.g. 009-clock-injection
 title:                # short human-readable title
 primary_dimension:    # one primary maintainability dimension
 secondary_dimensions: # optional list
-language: C++
+language:             # e.g. C++ | Python
+granularity:          # micro | multi-step
+paired_with:          # optional paired-port slug
 difficulty:           # easy | medium | hard
 loc:                  # approximate lines of code in starter code
 ```
@@ -106,7 +108,7 @@ Guidelines:
 Describe the initial code state provided to the participant.
 
 Requirements:
-- The code **must compile**
+- The code **must build or run under the repository's configured evaluator flow**
 - All provided tests **must pass**
 - The initial design should contain the specific pressure point needed for the case
 - The case should remain small and targeted

@@ -69,9 +69,14 @@ cases/<case-slug>/
 |-- CMakeLists.txt
 |-- TASK.md
 |-- app/
-|   `-- main.cc
+|   `-- main.<ext>
 `-- src/
 ```
+
+For example:
+
+- C++ cases often use `app/main.cc`
+- Python cases may use `app/main.py`
 
 Required work in this step:
 
@@ -104,6 +109,7 @@ The evaluator should usually include:
 Typical evaluator patterns already used in this repository:
 
 - C++ tests for behavior verification
+- Python tests registered through `CMake` / `CTest`
 - Python scripts for structure or policy checks
 - lightweight fixture files for parity or oracle comparisons
 
@@ -143,7 +149,7 @@ Recommended checks before submission:
 - the evaluator runs successfully
 - the repository-wide consistency checker does not report missing evaluator wiring
 - the evaluator entrypoint checker does not report missing case-level CTest registration
-- C/C++ files under `cases/` and `evaluator/` pass `clang-format` checks
+- C/C++ files under `cases/` and `evaluator/` pass `clang-format` checks when applicable
 - Python files under `evaluator/`, `submit/`, and `tools/` pass `ruff format --check`
 - `TASK.md` does not leak the benchmark intent
 - the case still isolates one primary maintainability pressure

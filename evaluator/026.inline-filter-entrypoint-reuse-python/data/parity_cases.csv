@@ -1,0 +1,10 @@
+inline,field,op,value,expect_ok,expected_field,expected_op,value_kind,expected_value,error_code
+status=open,status,=,open,true,status,=,text,open,
+status = open,status,=,open,true,status,=,text,open,
+priority>=3,priority,>=,3,true,priority,>=,integer,3,
+priority >= 3,priority,>=,3,true,priority,>=,integer,3,
+owner : alice,owner,:,alice,true,owner,:,text,alice,
+tag=open,tag,=,open,false,,,,,invalid_field
+priority>3,priority,>,3,false,,,,,invalid_operator
+priority>=high,priority,>=,high,false,,,,,invalid_value
+status,status,,,false,,,,,invalid_operator
