@@ -4,6 +4,16 @@
   "build_dir": "../../build",
   "modules": [
     {
+      "module_name": "required_paths",
+      "name": "case026_required_layout",
+      "paths": [
+        "src/filter_clause.py",
+        "src/filter_rule.py",
+        "src/filter_parser.py",
+        "src/filter_validation.py"
+      ]
+    },
+    {
       "module_name": "unit_test",
       "name": "case026_functional_tests",
       "command": [
@@ -13,16 +23,6 @@
         "--output-on-failure",
         "-R",
         "^case026_functional_tests$"
-      ]
-    },
-    {
-      "module_name": "required_paths",
-      "name": "case026_required_layout",
-      "paths": [
-        "src/filter_clause.py",
-        "src/filter_rule.py",
-        "src/filter_parser.py",
-        "src/filter_validation.py"
       ]
     },
     {

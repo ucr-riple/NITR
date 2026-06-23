@@ -43,18 +43,16 @@ def main() -> int:
             findings.append(f"missing required path: {path.relative_to(case_root)}")
 
     parser_path = src_dir / "filter_parser.py"
-    validation_path = src_dir / "filter_validation.py"
     if parser_path.is_file():
         parser_text = read_text(parser_path)
-        if "parse_filter_clause(" not in parser_text:
-            findings.append(
-                "filter_parser.py: parse_inline_filter must reuse parse_filter_clause."
-            )
-
         inline_body = find_parse_inline_body(parser_text)
         if inline_body is None:
             findings.append("filter_parser.py: missing parse_inline_filter definition.")
         else:
+            if re.search(r"\bparse_filter_clause\s*\(", inline_body) is None:
+                findings.append(
+                    "filter_parser.py: parse_inline_filter must reuse parse_filter_clause."
+                )
             if "FilterRule(" in inline_body:
                 findings.append(
                     "filter_parser.py: parse_inline_filter must not construct FilterRule directly."
