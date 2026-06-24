@@ -1,0 +1,42 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/027.active-snapshot-lifecycle-python",
+  "baseline_case_root": "../../cases/027.active-snapshot-lifecycle-python",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "required_paths",
+      "name": "case027_required_layout",
+      "paths": [
+        "src/snapshot.py",
+        "src/query_result.py",
+        "src/snapshot_store.py",
+        "src/query_service.py"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case027_lifecycle_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case027_lifecycle_tests$"
+      ]
+    },
+    {
+      "module_name": "customized_check",
+      "name": "case027_structural_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/run_evaluator.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}
