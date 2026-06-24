@@ -97,7 +97,9 @@ def main() -> int:
         ):
             tracker_hits += 1
     if tracker_hits > 1:
-        findings.append("Multiple core modules appear to maintain writable active-state trackers.")
+        findings.append(
+            "Multiple core modules appear to maintain writable active-state trackers."
+        )
 
     query_service_path = src_dir / "query_service.py"
     if query_service_path.is_file():
@@ -120,12 +122,18 @@ def main() -> int:
         for method_name in re.findall(r"^    def (\w+)\(", query_text, re.MULTILINE):
             if method_name in {"__init__", "lookup"}:
                 continue
-            if not re.search(r"(bind|refresh|cache|set_active|load_active)", method_name):
+            if not re.search(
+                r"(bind|refresh|cache|set_active|load_active)", method_name
+            ):
                 continue
             method_body = extract_method_body(query_text, method_name)
-            binder_assigned_attrs.update(find_assigned_self_attrs(method_body) - receiver_attrs)
+            binder_assigned_attrs.update(
+                find_assigned_self_attrs(method_body) - receiver_attrs
+            )
 
-        suspect_cached_attrs = (extra_init_attrs | binder_assigned_attrs) & lookup_read_attrs
+        suspect_cached_attrs = (
+            extra_init_attrs | binder_assigned_attrs
+        ) & lookup_read_attrs
         stale_alias_signals = 0
         if extra_init_attrs:
             stale_alias_signals += 1
@@ -153,7 +161,9 @@ def main() -> int:
             continue
         text = read_text(path)
         if re.search(r"\breset_active_snapshot\s*\(", text):
-            findings.append("reset_active_snapshot logic appears outside snapshot_store.py.")
+            findings.append(
+                "reset_active_snapshot logic appears outside snapshot_store.py."
+            )
             break
 
     if findings:
