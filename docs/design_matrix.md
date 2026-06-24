@@ -48,8 +48,9 @@ Current cases:
 - `002 refactor-and-reuse`
 - `003 reuse-exising-code`
 - `021 inline-filter-entrypoint-reuse` (**micro**)
+- `026 inline-filter-entrypoint-reuse-python` (**micro**)
 
-Current count: **3**
+Current count: **4**
 
 Notes:
 - `021` is the D2 micro case that completes the previously missing D2 coverage slot.
@@ -156,9 +157,10 @@ Typical failures:
 
 Current cases:
 - `009 session-expiry-testability`
+- `016 device-segment-planner` (**multi-step**)
 - `018 seeded-selection-testability` (**multi-step**)
 
-Current count: **2**
+Current count: **3**
 
 ---
 
@@ -175,8 +177,9 @@ Typical failures:
 Current cases:
 - `012 cache-lifecycle`
 - `017 active-snapshot-lifecycle` (**multi-step**)
+- `027 active-snapshot-lifecycle-python` (**multi-step**)
 
-Current count: **2**
+Current count: **3**
 
 ---
 
@@ -235,6 +238,7 @@ Notes:
 | 024 metric-recorder-buffered-flush | D5 Interface and Substitutability Discipline | micro |
 | 025 session-alert-responsibilities | D3 Responsibility Decomposition | micro |
 | 026 inline-filter-entrypoint-reuse-python | D2 Reuse and Repo Awareness | micro |
+| 027 active-snapshot-lifecycle-python | D8 State Ownership and Lifecycle | multi-step |
 
 
 ---
@@ -250,11 +254,11 @@ Notes:
 | D5 Interface and Substitutability Discipline | 3 |
 | D6 Dependency Control | 3 |
 | D7 Testability and Determinism | 3 |
-| D8 State Ownership and Lifecycle | 2 |
+| D8 State Ownership and Lifecycle | 3 |
 | D9 Side-Effect Isolation | 3 |
 
-Total cases recorded: **26**
+Total cases recorded: **27**
 
 Notes:
-- Current matrix contents cover cases `001`-`026`.
-- With `016`, `021`, `023`, `024`, `025`, and `026` included, D2 has four cases; D1, D3, D5, D7, and D9 each have three cases; D4 and D8 each have two.
+- Current matrix contents cover cases `001`-`027`.
+- With `016`, `021`, `023`, `024`, `025`, `026`, and `027` included, D2 has four cases; D8 has three cases; D1, D3, D5, D7, and D9 each have three cases; D4 has two.

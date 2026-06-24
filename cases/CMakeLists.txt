@@ -40,6 +40,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(024.metric-recorder-buffered-flush)
   nitr_add_case(025.session-alert-responsibilities)
   nitr_add_case(026.inline-filter-entrypoint-reuse-python)
+  nitr_add_case(027.active-snapshot-lifecycle-python)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR
