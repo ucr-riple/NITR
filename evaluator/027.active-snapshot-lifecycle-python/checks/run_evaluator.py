@@ -29,6 +29,16 @@ def find_read_self_attrs(body: str) -> set[str]:
     return {attr for attr in attrs if f"self.{attr} =" not in body}
 
 
+def has_module_level_active_global(text: str) -> bool:
+    for match in re.finditer(r"(?m)^([_a-zA-Z]\w*)\s*=", text):
+        name = match.group(1)
+        if name.isupper():
+            continue
+        if re.search(r"(active|current|snapshot)", name, re.IGNORECASE):
+            return True
+    return False
+
+
 def has_lifecycle_control_flow(text: str) -> bool:
     lines = text.splitlines()
     for index, line in enumerate(lines):
@@ -81,7 +91,7 @@ def main() -> int:
 
     for path in src_dir.glob("*.py"):
         text = read_text(path)
-        if re.search(r"^(ACTIVE_|GLOBAL_ACTIVE_|G_ACTIVE_)\w+\s*=", text, re.MULTILINE):
+        if has_module_level_active_global(text):
             findings.append(
                 f"{path.relative_to(case_root)}: detected module-level mutable active-state global."
             )
