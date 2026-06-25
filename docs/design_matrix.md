@@ -139,8 +139,9 @@ Current cases:
 - `008 map-dip`
 - `015 pipeline-provider-decoupling`
 - `022 thermostat-sensor-decoupling`
+- `029 thermostat-sensor-decoupling-python`
 
-Current count: **3**
+Current count: **4**
 
 ---
 
@@ -241,6 +242,7 @@ Notes:
 | 026 inline-filter-entrypoint-reuse-python | D2 Reuse and Repo Awareness | micro |
 | 027 active-snapshot-lifecycle-python | D8 State Ownership and Lifecycle | multi-step |
 | 028 validator-global-mutation-python | D9 Side-Effect Isolation | micro |
+| 029 thermostat-sensor-decoupling-python | D6 Dependency Control | micro |
 
 
 ---
@@ -254,13 +256,13 @@ Notes:
 | D3 Responsibility Decomposition | 3 |
 | D4 Extension Structure | 2 |
 | D5 Interface and Substitutability Discipline | 3 |
-| D6 Dependency Control | 3 |
+| D6 Dependency Control | 4 |
 | D7 Testability and Determinism | 3 |
 | D8 State Ownership and Lifecycle | 3 |
 | D9 Side-Effect Isolation | 4 |
 
-Total cases recorded: **28**
+Total cases recorded: **29**
 
 Notes:
-- Current matrix contents cover cases `001`-`028`.
-- With `016`, `021`, `023`, `024`, `025`, `026`, `027`, and `028` included, D2 and D9 have four cases; D8 has three cases; D1, D3, D5, D6, and D7 each have three cases; D4 has two.
+- Current matrix contents cover cases `001`-`029`.
+- With `016`, `021`, `023`, `024`, `025`, `026`, `027`, `028`, and `029` included, D2, D6, and D9 have four cases; D8 has three cases; D1, D3, D5, and D7 each have three cases; D4 has two.
