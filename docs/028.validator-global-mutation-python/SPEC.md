@@ -120,19 +120,9 @@ Primary maintainability probe:
 
 - D9 Side-Effect Isolation
 
-The evaluator rewards:
-
-- correct true/false outcomes for empty, late, and valid submissions
-- `Validator` logic that does not reference `total_processed`
-- `Validator` that does not import `stats`
-
-The evaluator penalizes:
-
-- any reference to `total_processed` inside `validator.py`
-- importing `stats` inside `validator.py`
-- modifying `reporter.py` or `grader.py` to compensate for wrong counter value
-
 Calling `Validator.validate()` should not change `total_processed`, regardless of whether the submission is valid or invalid. Counter ownership should remain entirely outside validator logic.
+
+The core question is whether validation remains a pure eligibility check while shared counter ownership stays with the caller-side flow, or whether the validation layer becomes entangled with shared process-wide state.
 
 ## Functional expectations
 
@@ -148,21 +138,18 @@ The finished implementation should support:
 
 Recommended checks:
 
-- `validator.py` must not reference `total_processed`
-- `validator.py` must not import `stats`
-- files other than `stats.py`, `reporter.py`, and `app/main.py` must not reference `total_processed`
-- files other than `stats.py`, `reporter.py`, and `app/main.py` must not import `stats`
-- `app/main.py`, `reporter.py`, and `grader.py` should remain protected starter-owned boundaries
+- validation logic should remain free of shared counter access
+- shared counter ownership should remain localized to the intended boundary
+- unrelated helper modules should not absorb counter mutation or state plumbing
+- starter-owned wiring and reporting boundaries should not need compensating edits
 
 These checks should remain secondary to functional correctness, but they are the core maintainability signal for the case.
 
 ## Common failure modes (non-scoring)
 
-- importing `stats` in `validator.py`
-- incrementing `total_processed` inside `validate()`
-- modifying `reporter.py` to compensate for a wrong counter value
-- modifying `grader.py` to call validation internally
-- editing evaluator tests or checks
+- validator logic that mutates shared process-wide state
+- compensating for incorrect ownership by pushing counter logic into unrelated modules
+- solving the task by editing wiring or reporting boundaries instead of keeping validation pure
 
 ## Maintainability mapping
 
