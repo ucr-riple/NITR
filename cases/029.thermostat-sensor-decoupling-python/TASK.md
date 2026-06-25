@@ -1,0 +1,20 @@
+## Task
+
+The `ThermostatController` currently requires the current room temperature to be passed into its evaluation function manually. We need to automate this by hooking it up to our new hardware sensor.
+
+Update the code so that the thermostat controller can be connected to a temperature source, so callers no longer need to read the sensor and pass the value manually.
+
+### Requirements
+
+- Add a no-argument `evaluate()` method in `ThermostatController`.
+- If the current temperature read from the sensor is 2.0 degrees (or more) below the target temperature, return `Command.HEATING`.
+- If the current temperature read from the sensor is 2.0 degrees (or more) above the target temperature, return `Command.COOLING`.
+- Otherwise, return `Command.IDLE`.
+
+### Constraints
+
+- Do not add external dependencies.
+- Do not modify files under `evaluator`.
+- You may modify or add new files under `src/` and `app/`.
+- If you modify `src/tmp26_sensor.py`, preserve the `TMP26_SIMULATOR_TEMP` behavior.
+- The project must run, and all existing tests must pass after the change.
