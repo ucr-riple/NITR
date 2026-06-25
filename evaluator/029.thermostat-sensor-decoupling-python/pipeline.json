@@ -13,13 +13,6 @@
       ]
     },
     {
-      "module_name": "baseline_diff",
-      "name": "case029_sensor_backdoor_protected_files_check",
-      "paths": [
-        "src/tmp26_sensor.py"
-      ]
-    },
-    {
       "module_name": "unit_test",
       "name": "case029_thermostat_tests",
       "command": [

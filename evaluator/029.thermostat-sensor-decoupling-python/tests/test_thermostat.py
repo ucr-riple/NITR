@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 import os
 import subprocess
 import sys
@@ -43,8 +44,22 @@ class ThermostatControllerTests(unittest.TestCase):
 
     def test_no_argument_evaluate_path_exists(self) -> None:
         controller = ThermostatController(22.0)
-        with self.assertRaises(TypeError):
-            controller.evaluate()
+        signature = inspect.signature(controller.evaluate)
+        required_parameters = [
+            parameter
+            for parameter in signature.parameters.values()
+            if parameter.kind
+            in (
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            )
+            and parameter.default is inspect.Signature.empty
+        ]
+        self.assertEqual(
+            required_parameters,
+            [],
+            msg="ThermostatController.evaluate() should support a no-argument call path.",
+        )
 
     def test_application_reads_sensor_temperature_end_to_end(self) -> None:
         app_path = CASE_ROOT / "app" / "main.py"
