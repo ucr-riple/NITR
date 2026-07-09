@@ -43,6 +43,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(027.active-snapshot-lifecycle-python)
   nitr_add_case(028.validator-global-mutation-python)
   nitr_add_case(029.thermostat-sensor-decoupling-python)
+  nitr_add_case(030.session-expiry-testability-python)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR
