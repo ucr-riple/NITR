@@ -35,6 +35,7 @@ This file lists the cases currently included in the public repository.
 - `029.thermostat-sensor-decoupling-python`
 - `030.session-expiry-testability-python`
 - `031.session-alert-responsibilities-python`
+- `032.metric-recorder-buffered-flush-python`
 
 ## Notes
 
