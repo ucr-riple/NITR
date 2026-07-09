@@ -32,6 +32,8 @@ This file lists the cases currently included in the public repository.
 - `026.inline-filter-entrypoint-reuse-python`
 - `027.active-snapshot-lifecycle-python`
 - `028.validator-global-mutation-python`
+- `029.thermostat-sensor-decoupling-python`
+- `030.session-expiry-testability-python`
 
 ## Notes
 

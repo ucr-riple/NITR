@@ -160,8 +160,9 @@ Current cases:
 - `009 session-expiry-testability`
 - `016 device-segment-planner` (**multi-step**)
 - `018 seeded-selection-testability` (**multi-step**)
+- `030 session-expiry-testability-python` (**micro**)
 
-Current count: **3**
+Current count: **4**
 
 ---
 
@@ -243,6 +244,7 @@ Notes:
 | 027 active-snapshot-lifecycle-python | D8 State Ownership and Lifecycle | multi-step |
 | 028 validator-global-mutation-python | D9 Side-Effect Isolation | micro |
 | 029 thermostat-sensor-decoupling-python | D6 Dependency Control | micro |
+| 030 session-expiry-testability-python | D7 Testability and Determinism | micro |
 
 
 ---
@@ -257,11 +259,11 @@ Notes:
 | D4 Extension Structure | 2 |
 | D5 Interface and Substitutability Discipline | 3 |
 | D6 Dependency Control | 4 |
-| D7 Testability and Determinism | 3 |
+| D7 Testability and Determinism | 4 |
 | D8 State Ownership and Lifecycle | 3 |
 | D9 Side-Effect Isolation | 4 |
 
-Total cases recorded: **29**
+Total cases recorded: **30**
 
 Notes:
 - Current matrix contents cover cases `001`-`029`.
