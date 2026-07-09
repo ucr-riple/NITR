@@ -1,0 +1,40 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/031.session-alert-responsibilities-python",
+  "baseline_case_root": "../../cases/031.session-alert-responsibilities-python",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "required_paths",
+      "name": "case031_required_layout",
+      "paths": [
+        "src/monitor.py",
+        "app/main.py"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case031_monitor_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case031_monitor_tests$"
+      ]
+    },
+    {
+      "module_name": "customized_check",
+      "name": "case031_decomposition_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/run_evaluator.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

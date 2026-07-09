@@ -34,6 +34,7 @@ This file lists the cases currently included in the public repository.
 - `028.validator-global-mutation-python`
 - `029.thermostat-sensor-decoupling-python`
 - `030.session-expiry-testability-python`
+- `031.session-alert-responsibilities-python`
 
 ## Notes
 

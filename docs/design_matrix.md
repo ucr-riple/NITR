@@ -72,8 +72,9 @@ Current cases:
 - `004 cv-srp`
 - `020 handover-packet-ownership-boundary` (**micro**)
 - `025 session-alert-responsibilities` (**micro**)
+- `031 session-alert-responsibilities-python` (**micro**)
 
-Current count: **3**
+Current count: **4**
 
 Notes:
 - `020` is the newly added D3 micro case.
@@ -245,6 +246,7 @@ Notes:
 | 028 validator-global-mutation-python | D9 Side-Effect Isolation | micro |
 | 029 thermostat-sensor-decoupling-python | D6 Dependency Control | micro |
 | 030 session-expiry-testability-python | D7 Testability and Determinism | micro |
+| 031 session-alert-responsibilities-python | D3 Responsibility Decomposition | micro |
 
 
 ---
@@ -255,7 +257,7 @@ Notes:
 |---|---:|
 | D1 Change Locality | 3 |
 | D2 Reuse and Repo Awareness | 4 |
-| D3 Responsibility Decomposition | 3 |
+| D3 Responsibility Decomposition | 4 |
 | D4 Extension Structure | 2 |
 | D5 Interface and Substitutability Discipline | 3 |
 | D6 Dependency Control | 4 |
@@ -263,8 +265,8 @@ Notes:
 | D8 State Ownership and Lifecycle | 3 |
 | D9 Side-Effect Isolation | 4 |
 
-Total cases recorded: **30**
+Total cases recorded: **31**
 
 Notes:
-- Current matrix contents cover cases `001`-`029`.
-- With `016`, `021`, `023`, `024`, `025`, `026`, `027`, `028`, and `029` included, D2, D6, and D9 have four cases; D8 has three cases; D1, D3, D5, and D7 each have three cases; D4 has two.
+- Current matrix contents cover cases `001`-`031`.
+- With `016`, `021`, `023`, `024`, `025`, `026`, `027`, `028`, `029`, `030`, and `031` included, D2, D3, D6, D7, and D9 have four cases; D8 has three cases; D1 and D5 have three cases; D4 has two.
