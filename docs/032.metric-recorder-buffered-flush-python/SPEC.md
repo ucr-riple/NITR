@@ -16,20 +16,11 @@ loc: ~120-200
 
 ## Problem Context
 
-A backend service emits metrics from many call sites. Components hold a
-`MetricRecorder` reference and call `record(metric)` to publish counters and
-latency samples. Today the only deployed implementation is
-`ConsoleMetricRecorder`, which writes each metric immediately to a stream.
-
-The product now needs a buffered implementation for higher-throughput services,
-plus a checkpoint-visibility requirement: at the boundary between request
-batches, the consumer must be able to make any queued metrics visible
-immediately regardless of which recorder implementation is wired in.
-
-The maintainability pressure is not just buffering. The real question is
-whether the abstraction evolves in a substitutable way, or whether the new
-behavior is added only to a concrete subclass and the consumer is forced to
-branch on implementation details.
+A backend service emits metrics from many call sites via a `MetricRecorder`
+reference. The only deployed implementation, `ConsoleMetricRecorder`, writes
+each metric immediately. The product now needs a buffered recorder for
+high-throughput services plus a checkpoint-visibility trigger that works
+regardless of which recorder implementation is wired in.
 
 ## Case metadata and matrix rationale
 
