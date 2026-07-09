@@ -114,8 +114,9 @@ Current cases:
 - `006 gs-isp` (**micro**)
 - `007 ml-lsp` (**upgraded to multi-step**)
 - `024 metric-recorder-buffered-flush` (**micro**)
+- `032 metric-recorder-buffered-flush-python` (**micro**)
 
-Current count: **3**
+Current count: **4**
 
 Notes:
 - `006` remains a micro probe.
@@ -247,6 +248,7 @@ Notes:
 | 029 thermostat-sensor-decoupling-python | D6 Dependency Control | micro |
 | 030 session-expiry-testability-python | D7 Testability and Determinism | micro |
 | 031 session-alert-responsibilities-python | D3 Responsibility Decomposition | micro |
+| 032 metric-recorder-buffered-flush-python | D5 Interface and Substitutability Discipline | micro |
 
 
 ---
@@ -259,14 +261,14 @@ Notes:
 | D2 Reuse and Repo Awareness | 4 |
 | D3 Responsibility Decomposition | 4 |
 | D4 Extension Structure | 2 |
-| D5 Interface and Substitutability Discipline | 3 |
+| D5 Interface and Substitutability Discipline | 4 |
 | D6 Dependency Control | 4 |
 | D7 Testability and Determinism | 4 |
 | D8 State Ownership and Lifecycle | 3 |
 | D9 Side-Effect Isolation | 4 |
 
-Total cases recorded: **31**
+Total cases recorded: **32**
 
 Notes:
-- Current matrix contents cover cases `001`-`031`.
-- With `016`, `021`, `023`, `024`, `025`, `026`, `027`, `028`, `029`, `030`, and `031` included, D2, D3, D6, D7, and D9 have four cases; D8 has three cases; D1 and D5 have three cases; D4 has two.
+- Current matrix contents cover cases `001`-`032`.
+- With `016`, `021`, `023`, `024`, `025`, `026`, `027`, `028`, `029`, `030`, `031`, and `032` included, D2, D3, D5, D6, D7, and D9 have four cases; D8 has three cases; D1 has three cases; D4 has two.

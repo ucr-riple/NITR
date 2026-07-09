@@ -425,6 +425,17 @@ function(nitr_register_case_031)
   )
 endfunction()
 
+function(nitr_register_case_032)
+  nitr_case_source_dir(CASE_DIR 032.metric-recorder-buffered-flush-python)
+  nitr_case_evaluator_dir(EVAL_DIR 032.metric-recorder-buffered-flush-python)
+
+  nitr_add_python_test(
+    case032_recorder_lifecycle_tests
+    ${EVAL_DIR}/tests/test_recorder_lifecycle.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_register_case_024)
   nitr_case_evaluator_dir(EVAL_DIR 024.metric-recorder-buffered-flush)
 
@@ -519,6 +530,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_030()
   elseif(case_dir STREQUAL "031.session-alert-responsibilities-python")
     nitr_register_case_031()
+  elseif(case_dir STREQUAL "032.metric-recorder-buffered-flush-python")
+    nitr_register_case_032()
   elseif(case_dir STREQUAL "024.metric-recorder-buffered-flush")
     nitr_register_case_024()
   elseif(case_dir STREQUAL "025.session-alert-responsibilities")
@@ -558,6 +571,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(029.thermostat-sensor-decoupling-python)
   nitr_add_evaluator(030.session-expiry-testability-python)
   nitr_add_evaluator(031.session-alert-responsibilities-python)
+  nitr_add_evaluator(032.metric-recorder-buffered-flush-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()
