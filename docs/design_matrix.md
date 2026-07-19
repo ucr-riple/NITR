@@ -29,8 +29,9 @@ Current cases:
 - `001 add-no-callsite-spread`
 - `011 config-sprawl`
 - `013 stable-public-api`
+- `034 config-sprawl-python` (**micro**)
 
-Current count: **3**
+Current count: **4**
 
 ---
 
@@ -251,6 +252,7 @@ Notes:
 | 031 session-alert-responsibilities-python | D3 Responsibility Decomposition | micro |
 | 032 metric-recorder-buffered-flush-python | D5 Interface and Substitutability Discipline | micro |
 | 033 logging-side-effects-python | D9 Side-Effect Isolation | micro |
+| 034 config-sprawl-python | D1 Change Locality | micro |
 
 
 ---
@@ -259,7 +261,7 @@ Notes:
 
 | Dimension | Count |
 |---|---:|
-| D1 Change Locality | 3 |
+| D1 Change Locality | 4 |
 | D2 Reuse and Repo Awareness | 4 |
 | D3 Responsibility Decomposition | 4 |
 | D4 Extension Structure | 2 |
@@ -269,9 +271,9 @@ Notes:
 | D8 State Ownership and Lifecycle | 3 |
 | D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **33**
+Total cases recorded: **34**
 
 Notes:
-- Current matrix contents cover cases `001`-`033`.
-- With cases through `033` included, D9 has five cases; D2, D3, D5, D6,
-  and D7 have four cases; D1 and D8 have three cases; D4 has two.
+- Current matrix contents cover cases `001`-`034`.
+- With cases through `034` included, D9 has five cases; D1, D2, D3, D5, D6,
+  and D7 have four cases; D8 has three cases; D4 has two.
