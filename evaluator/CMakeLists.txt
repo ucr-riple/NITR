@@ -487,6 +487,22 @@ function(nitr_register_case_033)
   )
 endfunction()
 
+function(nitr_register_case_034)
+  nitr_case_source_dir(CASE_DIR 034.config-sprawl-python)
+  nitr_case_evaluator_dir(EVAL_DIR 034.config-sprawl-python)
+
+  nitr_add_python_test(
+    case034_config_sprawl_tests
+    ${EVAL_DIR}/tests/test_config_sprawl.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case034_config_boundary_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -554,6 +570,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_032()
   elseif(case_dir STREQUAL "033.logging-side-effects-python")
     nitr_register_case_033()
+  elseif(case_dir STREQUAL "034.config-sprawl-python")
+    nitr_register_case_034()
   endif()
 endfunction()
 
@@ -591,6 +609,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(031.session-alert-responsibilities-python)
   nitr_add_evaluator(032.metric-recorder-buffered-flush-python)
   nitr_add_evaluator(033.logging-side-effects-python)
+  nitr_add_evaluator(034.config-sprawl-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

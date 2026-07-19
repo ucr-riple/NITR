@@ -1,0 +1,15 @@
+Full mode:
+Inventory Report
+Items: 3
+- id=A-1, name=apple, qty=5
+- id=B-2, name=banana, qty=2
+- id=C-3, name=carrot, qty=7
+Summary
+Total quantity: 14
+
+Compact mode:
+Inventory Report (compact)
+A-1:apple:5
+B-2:banana:2
+C-3:carrot:7
+Total quantity: 14
