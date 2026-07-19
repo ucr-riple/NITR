@@ -33,12 +33,17 @@ This repository contains the public benchmark release:
 - agent-facing task statements (`TASK.md`, `TASK1.md`, ...)
 - vendored dependencies required to build cases and evaluators
 
-The current suite is predominantly C++, with Python pilot coverage currently
+The current suite is predominantly C++, with Python coverage currently
 including:
 
 - `026.inline-filter-entrypoint-reuse-python`
 - `027.active-snapshot-lifecycle-python`
 - `028.validator-global-mutation-python`
+- `029.thermostat-sensor-decoupling-python`
+- `030.session-expiry-testability-python`
+- `031.session-alert-responsibilities-python`
+- `032.metric-recorder-buffered-flush-python`
+- `033.logging-side-effects-python`
 
 This repository includes local submission helpers under `submit/` for
 benchmark automation, but it does not include a hosted submission service.
