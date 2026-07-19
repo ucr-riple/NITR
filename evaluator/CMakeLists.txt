@@ -358,6 +358,41 @@ function(nitr_register_case_023)
   )
 endfunction()
 
+function(nitr_register_case_024)
+  nitr_case_evaluator_dir(EVAL_DIR 024.metric-recorder-buffered-flush)
+
+  nitr_add_gtest(
+    case024_recorder_lifecycle_tests
+    case024_lib
+    ${EVAL_DIR}/tests/test_recorder_lifecycle.cc
+  )
+
+  nitr_add_python_test(
+    case024_substitutability_check
+    ${EVAL_DIR}/checks/check_substitutability.py
+  )
+endfunction()
+
+function(nitr_register_case_025)
+
+  nitr_case_source_dir(CASE_DIR 025.session-alert-responsibilities)
+  nitr_case_evaluator_dir(EVAL_DIR 025.session-alert-responsibilities)
+
+  # Functional tests: range / drift / leak detection, ordering, determinism.
+  nitr_add_gtest(
+    case025_monitor_tests
+    case_025_lib
+    ${EVAL_DIR}/tests/test_monitor.cpp
+  )
+
+  # Structural check: each alert family must be owned by its own unit (D3).
+  nitr_add_python_test(
+    case025_decomposition_check
+    ${EVAL_DIR}/checks/check_decomposition.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_register_case_026)
   nitr_case_source_dir(CASE_DIR 026.inline-filter-entrypoint-reuse-python)
   nitr_case_evaluator_dir(EVAL_DIR 026.inline-filter-entrypoint-reuse-python)
@@ -452,41 +487,6 @@ function(nitr_register_case_033)
   )
 endfunction()
 
-function(nitr_register_case_024)
-  nitr_case_evaluator_dir(EVAL_DIR 024.metric-recorder-buffered-flush)
-
-  nitr_add_gtest(
-    case024_recorder_lifecycle_tests
-    case024_lib
-    ${EVAL_DIR}/tests/test_recorder_lifecycle.cc
-  )
-
-  nitr_add_python_test(
-    case024_substitutability_check
-    ${EVAL_DIR}/checks/check_substitutability.py
-  )
-endfunction()
-
-function(nitr_register_case_025)
-
-  nitr_case_source_dir(CASE_DIR 025.session-alert-responsibilities)
-  nitr_case_evaluator_dir(EVAL_DIR 025.session-alert-responsibilities)
-
-  # Functional tests: range / drift / leak detection, ordering, determinism.
-  nitr_add_gtest(
-    case025_monitor_tests
-    case_025_lib
-    ${EVAL_DIR}/tests/test_monitor.cpp
-  )
-
-  # Structural check: each alert family must be owned by its own unit (D3).
-  nitr_add_python_test(
-    case025_decomposition_check
-    ${EVAL_DIR}/checks/check_decomposition.py
-    --case_root ${CASE_DIR}
-  )
-endfunction()
-
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -534,6 +534,10 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_022()
   elseif(case_dir STREQUAL "023.validator-global-mutation")
     nitr_register_case_023()
+  elseif(case_dir STREQUAL "024.metric-recorder-buffered-flush")
+    nitr_register_case_024()
+  elseif(case_dir STREQUAL "025.session-alert-responsibilities")
+    nitr_register_case_025()
   elseif(case_dir STREQUAL "026.inline-filter-entrypoint-reuse-python")
     nitr_register_case_026()
   elseif(case_dir STREQUAL "027.active-snapshot-lifecycle-python")
@@ -550,10 +554,6 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_032()
   elseif(case_dir STREQUAL "033.logging-side-effects-python")
     nitr_register_case_033()
-  elseif(case_dir STREQUAL "024.metric-recorder-buffered-flush")
-    nitr_register_case_024()
-  elseif(case_dir STREQUAL "025.session-alert-responsibilities")
-    nitr_register_case_025()
   endif()
 endfunction()
 
