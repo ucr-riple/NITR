@@ -203,8 +203,9 @@ Current cases:
 - `019 ranking-explainability-boundary` (**multi-step**)
 - `023 validator-global-mutation` (**micro**)
 - `028 validator-global-mutation-python` (**micro**)
+- `033 logging-side-effects-python` (**micro**)
 
-Current count: **4**
+Current count: **5**
 
 Notes:
 - `010` remains the micro side-effect probe.
@@ -249,6 +250,7 @@ Notes:
 | 030 session-expiry-testability-python | D7 Testability and Determinism | micro |
 | 031 session-alert-responsibilities-python | D3 Responsibility Decomposition | micro |
 | 032 metric-recorder-buffered-flush-python | D5 Interface and Substitutability Discipline | micro |
+| 033 logging-side-effects-python | D9 Side-Effect Isolation | micro |
 
 
 ---
@@ -265,10 +267,11 @@ Notes:
 | D6 Dependency Control | 4 |
 | D7 Testability and Determinism | 4 |
 | D8 State Ownership and Lifecycle | 3 |
-| D9 Side-Effect Isolation | 4 |
+| D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **32**
+Total cases recorded: **33**
 
 Notes:
-- Current matrix contents cover cases `001`-`032`.
-- With `016`, `021`, `023`, `024`, `025`, `026`, `027`, `028`, `029`, `030`, `031`, and `032` included, D2, D3, D5, D6, D7, and D9 have four cases; D8 has three cases; D1 has three cases; D4 has two.
+- Current matrix contents cover cases `001`-`033`.
+- With cases through `033` included, D9 has five cases; D2, D3, D5, D6,
+  and D7 have four cases; D1 and D8 have three cases; D4 has two.
