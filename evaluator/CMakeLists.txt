@@ -503,6 +503,22 @@ function(nitr_register_case_034)
   )
 endfunction()
 
+function(nitr_register_case_035)
+  nitr_case_source_dir(CASE_DIR 035.cache-lifecycle-python)
+  nitr_case_evaluator_dir(EVAL_DIR 035.cache-lifecycle-python)
+
+  nitr_add_python_test(
+    case035_report_cache_tests
+    ${EVAL_DIR}/tests/test_report_cache.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case035_cache_ownership_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -572,6 +588,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_033()
   elseif(case_dir STREQUAL "034.config-sprawl-python")
     nitr_register_case_034()
+  elseif(case_dir STREQUAL "035.cache-lifecycle-python")
+    nitr_register_case_035()
   endif()
 endfunction()
 
@@ -610,6 +628,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(032.metric-recorder-buffered-flush-python)
   nitr_add_evaluator(033.logging-side-effects-python)
   nitr_add_evaluator(034.config-sprawl-python)
+  nitr_add_evaluator(035.cache-lifecycle-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

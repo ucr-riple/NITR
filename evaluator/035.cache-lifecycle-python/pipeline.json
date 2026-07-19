@@ -1,0 +1,42 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/035.cache-lifecycle-python",
+  "baseline_case_root": "../../cases/035.cache-lifecycle-python",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "required_paths",
+      "name": "case035_required_layout",
+      "paths": [
+        "src/product.py",
+        "src/summary_engine.py",
+        "src/inventory_report_service.py",
+        "app/main.py"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case035_report_cache_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case035_report_cache_tests$"
+      ]
+    },
+    {
+      "module_name": "customized_check",
+      "name": "case035_cache_ownership_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/run_evaluator.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

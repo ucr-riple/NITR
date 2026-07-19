@@ -183,8 +183,9 @@ Current cases:
 - `012 cache-lifecycle`
 - `017 active-snapshot-lifecycle` (**multi-step**)
 - `027 active-snapshot-lifecycle-python` (**multi-step**)
+- `035 cache-lifecycle-python` (**micro**)
 
-Current count: **3**
+Current count: **4**
 
 ---
 
@@ -253,6 +254,7 @@ Notes:
 | 032 metric-recorder-buffered-flush-python | D5 Interface and Substitutability Discipline | micro |
 | 033 logging-side-effects-python | D9 Side-Effect Isolation | micro |
 | 034 config-sprawl-python | D1 Change Locality | micro |
+| 035 cache-lifecycle-python | D8 State Ownership and Lifecycle | micro |
 
 
 ---
@@ -268,12 +270,12 @@ Notes:
 | D5 Interface and Substitutability Discipline | 4 |
 | D6 Dependency Control | 4 |
 | D7 Testability and Determinism | 4 |
-| D8 State Ownership and Lifecycle | 3 |
+| D8 State Ownership and Lifecycle | 4 |
 | D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **34**
+Total cases recorded: **35**
 
 Notes:
-- Current matrix contents cover cases `001`-`034`.
-- With cases through `034` included, D9 has five cases; D1, D2, D3, D5, D6,
-  and D7 have four cases; D8 has three cases; D4 has two.
+- Current matrix contents cover cases `001`-`035`.
+- With cases through `035` included, D9 has five cases; D1, D2, D3, D5, D6,
+  D7, and D8 have four cases; D4 has two.
