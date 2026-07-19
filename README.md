@@ -45,6 +45,7 @@ including:
 - `032.metric-recorder-buffered-flush-python`
 - `033.logging-side-effects-python`
 - `034.config-sprawl-python`
+- `035.cache-lifecycle-python`
 
 This repository includes local submission helpers under `submit/` for
 benchmark automation, but it does not include a hosted submission service.

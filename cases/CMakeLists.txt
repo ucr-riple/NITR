@@ -48,6 +48,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(032.metric-recorder-buffered-flush-python)
   nitr_add_case(033.logging-side-effects-python)
   nitr_add_case(034.config-sprawl-python)
+  nitr_add_case(035.cache-lifecycle-python)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR
