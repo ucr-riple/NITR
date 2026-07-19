@@ -12,17 +12,11 @@ loc: ~80-140
 
 # Case 033: Logging Side Effects, Python
 
-## Problem Context
+## Problem context
 
 A loan review workflow evaluates applicants with three deterministic policy
 rules. Batch review must now emit an audit message for every applicant while
 also returning approved applicant ids.
-
-The design pressure is to keep the policy calculation pure and independent of
-logging infrastructure. Audit emission belongs at the orchestration boundary,
-where the policy decision is converted into a message. A behaviorally correct
-solution that injects a logger into `evaluate_applicant()`, logs from policy
-code, or performs direct I/O there fails the maintainability objective.
 
 ## Case metadata and matrix rationale
 
@@ -58,9 +52,37 @@ calls the policy but emits only a placeholder audit message.
 
 ## Agent-facing contract
 
-The full agent-facing contract is maintained in `TASK.md`. It requires the
-three approval rules, ordered denial reasons, stable approved-id ordering, and
-exact audit message formatting while preserving the public API.
+The following section is the full text of `TASK.md`. The internal sections that
+follow are not exposed to the coding agent.
+
+## Task
+
+Implement the loan review workflow in `src/`.
+
+### Requirements
+
+- `evaluate_applicant()` should determine whether an applicant is approved and
+  list denial reasons.
+- `review_applicants()` should process a batch of applicants, return approved
+  applicant ids in input order, and emit one audit log line per applicant.
+- Approval rules:
+  - credit score must be at least `700`
+  - annual income must be at least `50000`
+  - debt ratio must be at most `0.40`
+- Use the exact denial reason tokens in this order:
+  1. `low_credit`
+  2. `low_income`
+  3. `high_debt`
+- Use the exact audit message format:
+  - approved applicant: `"<id> approved"`
+  - denied applicant: `"<id> denied: <reason1>,<reason2>,..."`
+
+### Constraints
+
+- Keep the existing public classes and function names unchanged.
+- Keep applicant evaluation independent of audit logging and direct I/O.
+- Implement the change in files under `src/` and do not add external
+  dependencies.
 
 ## Expected design direction (human-facing)
 
@@ -87,6 +109,56 @@ emission remains localized in `loan_review_service.py`.
 - approved ids retain input order
 - exactly one correctly formatted audit message per applicant
 - a missing logger disables audit output without changing review behavior
+
+## Evaluator plan
+
+### Functional checks
+
+The evaluator runs tests for:
+
+- approval of an eligible applicant
+- rejection with all denial reasons in the required order
+- inclusive behavior at the three approval thresholds
+- approved applicant ids in input order
+- one exact audit message per applicant
+- review behavior when no logger is supplied
+
+The starter is intentionally incomplete and should fail these functional
+checks until the task is implemented.
+
+### Structural / oracle checks
+
+The AST-based evaluator checks that:
+
+- `loan_policy.py` does not import `audit_logger` or Python's `logging` module
+- `evaluate_applicant()` accepts only the applicant dependency
+- policy code does not call direct I/O functions such as `print()` or `open()`
+- policy code does not call logger methods
+- `loan_review_service.py` owns the `logger.log()` call
+
+These checks distinguish a behaviorally correct implementation with localized
+side effects from one that couples policy evaluation to audit infrastructure.
+
+## Failure modes (non-scoring)
+
+- injecting an audit logger into `evaluate_applicant()`
+- importing audit or logging infrastructure from `loan_policy.py`
+- emitting audit messages directly from policy code
+- using direct I/O such as `print()` or `open()` in policy code
+- moving audit emission out of `review_applicants()` into the policy layer
+- producing the correct decisions and messages while mixing calculation and
+  side-effect responsibilities
+
+## Maintainability mapping
+
+Primary Dimension:
+
+- D9 Side-Effect Isolation
+
+Measured Capability:
+
+- keep deterministic policy decisions independent of logging infrastructure
+- localize audit message formatting and emission at the orchestration boundary
 
 ## Allowed & Disallowed Summary
 
