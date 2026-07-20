@@ -551,6 +551,22 @@ function(nitr_register_case_037)
   )
 endfunction()
 
+function(nitr_register_case_038)
+  nitr_case_source_dir(CASE_DIR 038.handover-packet-ownership-boundary-python)
+  nitr_case_evaluator_dir(EVAL_DIR 038.handover-packet-ownership-boundary-python)
+
+  nitr_add_python_test(
+    case038_handover_packet_tests
+    ${EVAL_DIR}/tests/test_handover_packet.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case038_packet_ownership_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -626,6 +642,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_036()
   elseif(case_dir STREQUAL "037.report-export-ocp-python")
     nitr_register_case_037()
+  elseif(case_dir STREQUAL "038.handover-packet-ownership-boundary-python")
+    nitr_register_case_038()
   endif()
 endfunction()
 
@@ -667,6 +685,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(035.cache-lifecycle-python)
   nitr_add_evaluator(036.stable-public-api-python)
   nitr_add_evaluator(037.report-export-ocp-python)
+  nitr_add_evaluator(038.handover-packet-ownership-boundary-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

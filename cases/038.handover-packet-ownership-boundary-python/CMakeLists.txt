@@ -1,0 +1,3 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(case038_handover_packet_ownership_boundary_python LANGUAGES NONE)

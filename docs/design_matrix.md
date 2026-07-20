@@ -75,8 +75,9 @@ Current cases:
 - `020 handover-packet-ownership-boundary` (**micro**)
 - `025 session-alert-responsibilities` (**micro**)
 - `031 session-alert-responsibilities-python` (**micro**)
+- `038 handover-packet-ownership-boundary-python` (**micro**)
 
-Current count: **4**
+Current count: **5**
 
 Notes:
 - `020` is the newly added D3 micro case.
@@ -259,6 +260,7 @@ Notes:
 | 035 cache-lifecycle-python | D8 State Ownership and Lifecycle | micro |
 | 036 stable-public-api-python | D1 Change Locality | micro |
 | 037 report-export-ocp-python | D4 Extension Structure | micro |
+| 038 handover-packet-ownership-boundary-python | D3 Responsibility Decomposition | micro |
 
 
 ---
@@ -269,7 +271,7 @@ Notes:
 |---|---:|
 | D1 Change Locality | 5 |
 | D2 Reuse and Repo Awareness | 4 |
-| D3 Responsibility Decomposition | 4 |
+| D3 Responsibility Decomposition | 5 |
 | D4 Extension Structure | 3 |
 | D5 Interface and Substitutability Discipline | 4 |
 | D6 Dependency Control | 4 |
@@ -277,9 +279,9 @@ Notes:
 | D8 State Ownership and Lifecycle | 4 |
 | D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **37**
+Total cases recorded: **38**
 
 Notes:
-- Current matrix contents cover cases `001`-`037`.
-- With cases through `037` included, D1 and D9 have five cases; D2, D3, D5,
+- Current matrix contents cover cases `001`-`038`.
+- With cases through `038` included, D1, D3, and D9 have five cases; D2, D5,
   D6, D7, and D8 have four cases; D4 has three.
