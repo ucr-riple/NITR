@@ -40,6 +40,7 @@ This file lists the cases currently included in the public repository.
 - `034.config-sprawl-python`
 - `035.cache-lifecycle-python`
 - `036.stable-public-api-python`
+- `037.report-export-ocp-python`
 
 ## Notes
 

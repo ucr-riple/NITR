@@ -97,8 +97,9 @@ Typical failures:
 Current cases:
 - `005 pricing-ocp`
 - `014 report-export-ocp`
+- `037 report-export-ocp-python` (**micro**)
 
-Current count: **2**
+Current count: **3**
 
 ---
 
@@ -257,6 +258,7 @@ Notes:
 | 034 config-sprawl-python | D1 Change Locality | micro |
 | 035 cache-lifecycle-python | D8 State Ownership and Lifecycle | micro |
 | 036 stable-public-api-python | D1 Change Locality | micro |
+| 037 report-export-ocp-python | D4 Extension Structure | micro |
 
 
 ---
@@ -268,16 +270,16 @@ Notes:
 | D1 Change Locality | 5 |
 | D2 Reuse and Repo Awareness | 4 |
 | D3 Responsibility Decomposition | 4 |
-| D4 Extension Structure | 2 |
+| D4 Extension Structure | 3 |
 | D5 Interface and Substitutability Discipline | 4 |
 | D6 Dependency Control | 4 |
 | D7 Testability and Determinism | 4 |
 | D8 State Ownership and Lifecycle | 4 |
 | D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **36**
+Total cases recorded: **37**
 
 Notes:
-- Current matrix contents cover cases `001`-`036`.
-- With cases through `036` included, D1 and D9 have five cases; D2, D3, D5,
-  D6, D7, and D8 have four cases; D4 has two.
+- Current matrix contents cover cases `001`-`037`.
+- With cases through `037` included, D1 and D9 have five cases; D2, D3, D5,
+  D6, D7, and D8 have four cases; D4 has three.

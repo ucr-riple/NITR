@@ -535,6 +535,22 @@ function(nitr_register_case_036)
   )
 endfunction()
 
+function(nitr_register_case_037)
+  nitr_case_source_dir(CASE_DIR 037.report-export-ocp-python)
+  nitr_case_evaluator_dir(EVAL_DIR 037.report-export-ocp-python)
+
+  nitr_add_python_test(
+    case037_report_export_tests
+    ${EVAL_DIR}/tests/test_report_export.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case037_extension_structure_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -608,6 +624,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_035()
   elseif(case_dir STREQUAL "036.stable-public-api-python")
     nitr_register_case_036()
+  elseif(case_dir STREQUAL "037.report-export-ocp-python")
+    nitr_register_case_037()
   endif()
 endfunction()
 
@@ -648,6 +666,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(034.config-sprawl-python)
   nitr_add_evaluator(035.cache-lifecycle-python)
   nitr_add_evaluator(036.stable-public-api-python)
+  nitr_add_evaluator(037.report-export-ocp-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

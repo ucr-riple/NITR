@@ -1,0 +1,45 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/037.report-export-ocp-python",
+  "baseline_case_root": "../../cases/037.report-export-ocp-python",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "required_paths",
+      "name": "case037_required_layout",
+      "paths": [
+        "src/report.py",
+        "src/report_exporter.py",
+        "src/text_report_exporter.py",
+        "src/csv_report_exporter.py",
+        "src/report_export_service.py",
+        "src/exporter_factory.py",
+        "app/main.py"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case037_report_export_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case037_report_export_tests$"
+      ]
+    },
+    {
+      "module_name": "customized_check",
+      "name": "case037_extension_structure_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/run_evaluator.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}
