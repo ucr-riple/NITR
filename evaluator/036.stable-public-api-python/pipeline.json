@@ -1,0 +1,40 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/036.stable-public-api-python",
+  "baseline_case_root": "../../cases/036.stable-public-api-python",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "required_paths",
+      "name": "case036_required_layout",
+      "paths": [
+        "src/library_catalog.py",
+        "app/main.py"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case036_catalog_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case036_catalog_tests$"
+      ]
+    },
+    {
+      "module_name": "customized_check",
+      "name": "case036_api_stability_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/run_evaluator.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

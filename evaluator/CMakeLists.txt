@@ -519,6 +519,22 @@ function(nitr_register_case_035)
   )
 endfunction()
 
+function(nitr_register_case_036)
+  nitr_case_source_dir(CASE_DIR 036.stable-public-api-python)
+  nitr_case_evaluator_dir(EVAL_DIR 036.stable-public-api-python)
+
+  nitr_add_python_test(
+    case036_catalog_tests
+    ${EVAL_DIR}/tests/test_catalog.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case036_api_stability_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -590,6 +606,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_034()
   elseif(case_dir STREQUAL "035.cache-lifecycle-python")
     nitr_register_case_035()
+  elseif(case_dir STREQUAL "036.stable-public-api-python")
+    nitr_register_case_036()
   endif()
 endfunction()
 
@@ -629,6 +647,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(033.logging-side-effects-python)
   nitr_add_evaluator(034.config-sprawl-python)
   nitr_add_evaluator(035.cache-lifecycle-python)
+  nitr_add_evaluator(036.stable-public-api-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()
