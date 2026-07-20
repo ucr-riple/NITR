@@ -39,6 +39,7 @@ This file lists the cases currently included in the public repository.
 - `033.logging-side-effects-python`
 - `034.config-sprawl-python`
 - `035.cache-lifecycle-python`
+- `036.stable-public-api-python`
 
 ## Notes
 

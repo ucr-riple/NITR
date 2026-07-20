@@ -46,6 +46,7 @@ including:
 - `033.logging-side-effects-python`
 - `034.config-sprawl-python`
 - `035.cache-lifecycle-python`
+- `036.stable-public-api-python`
 
 This repository includes local submission helpers under `submit/` for
 benchmark automation, but it does not include a hosted submission service.
