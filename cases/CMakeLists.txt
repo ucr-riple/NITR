@@ -50,6 +50,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(034.config-sprawl-python)
   nitr_add_case(035.cache-lifecycle-python)
   nitr_add_case(036.stable-public-api-python)
+  nitr_add_case(037.report-export-ocp-python)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR
