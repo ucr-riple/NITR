@@ -1,0 +1,43 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/038.handover-packet-ownership-boundary-python",
+  "baseline_case_root": "../../cases/038.handover-packet-ownership-boundary-python",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "required_paths",
+      "name": "case038_required_layout",
+      "paths": [
+        "src/shift_tracker.py",
+        "src/handover_packet.py",
+        "src/handover_packet_preview.py",
+        "src/handover_packet_writer.py",
+        "app/main.py"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case038_handover_packet_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case038_handover_packet_tests$"
+      ]
+    },
+    {
+      "module_name": "customized_check",
+      "name": "case038_packet_ownership_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/run_evaluator.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}

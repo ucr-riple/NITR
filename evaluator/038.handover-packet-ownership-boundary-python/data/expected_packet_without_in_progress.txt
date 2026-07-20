@@ -1,0 +1,6 @@
+Handover packet for shift SHIFT-501
+Rows:
+  1. TOTE-200 packages=5
+  2. TOTE-201 packages=1
+  3. TOTE-202 packages=2
+Summary: totes=3, packages=8
