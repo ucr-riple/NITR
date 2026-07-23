@@ -51,8 +51,9 @@ Current cases:
 - `003 reuse-exising-code`
 - `021 inline-filter-entrypoint-reuse` (**micro**)
 - `026 inline-filter-entrypoint-reuse-python` (**micro**)
+- `039 reuse-existing-code-python` (**multi-step**)
 
-Current count: **4**
+Current count: **5**
 
 Notes:
 - `021` is the D2 micro case that completes the previously missing D2 coverage slot.
@@ -261,6 +262,7 @@ Notes:
 | 036 stable-public-api-python | D1 Change Locality | micro |
 | 037 report-export-ocp-python | D4 Extension Structure | micro |
 | 038 handover-packet-ownership-boundary-python | D3 Responsibility Decomposition | micro |
+| 039 reuse-existing-code-python | D2 Reuse and Repo Awareness | multi-step |
 
 
 ---
@@ -270,7 +272,7 @@ Notes:
 | Dimension | Count |
 |---|---:|
 | D1 Change Locality | 5 |
-| D2 Reuse and Repo Awareness | 4 |
+| D2 Reuse and Repo Awareness | 5 |
 | D3 Responsibility Decomposition | 5 |
 | D4 Extension Structure | 3 |
 | D5 Interface and Substitutability Discipline | 4 |
@@ -279,9 +281,9 @@ Notes:
 | D8 State Ownership and Lifecycle | 4 |
 | D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **38**
+Total cases recorded: **39**
 
 Notes:
-- Current matrix contents cover cases `001`-`038`.
-- With cases through `038` included, D1, D3, and D9 have five cases; D2, D5,
+- Current matrix contents cover cases `001`-`039`.
+- With cases through `039` included, D1, D2, D3, and D9 have five cases; D5,
   D6, D7, and D8 have four cases; D4 has three.

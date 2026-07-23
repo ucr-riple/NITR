@@ -42,6 +42,7 @@ This file lists the cases currently included in the public repository.
 - `036.stable-public-api-python`
 - `037.report-export-ocp-python`
 - `038.handover-packet-ownership-boundary-python`
+- `039.reuse-existing-code-python`
 
 ## Notes
 
