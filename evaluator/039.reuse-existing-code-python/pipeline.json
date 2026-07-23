@@ -1,0 +1,52 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/039.reuse-existing-code-python",
+  "baseline_case_root": "../../cases/039.reuse-existing-code-python",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "required_paths",
+      "name": "case039_required_layout",
+      "paths": [
+        "src/dot_product.py",
+        "src/l2_norm.py",
+        "src/cosine_similarity.py",
+        "app/main.py"
+      ]
+    },
+    {
+      "module_name": "baseline_diff",
+      "name": "case039_file_boundary_check",
+      "include_globs": [
+        "src/**/*"
+      ],
+      "allow_modified": [
+        "src/cosine_similarity.py"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case039_cosine_similarity_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "{build_dir}",
+        "--output-on-failure",
+        "-R",
+        "^case039_cosine_similarity_tests$"
+      ]
+    },
+    {
+      "module_name": "customized_check",
+      "name": "case039_helper_reuse_check",
+      "command": [
+        "python3",
+        "{evaluator_root}/checks/run_evaluator.py",
+        "--case_root",
+        "{case_root}"
+      ],
+      "env": {
+        "PYTHONPATH": "{repo_root}"
+      }
+    }
+  ]
+}
