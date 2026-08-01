@@ -100,8 +100,9 @@ Current cases:
 - `005 pricing-ocp`
 - `014 report-export-ocp`
 - `037 report-export-ocp-python` (**micro**)
+- `040 pricing-ocp-python` (**multi-step**)
 
-Current count: **3**
+Current count: **4**
 
 ---
 
@@ -263,6 +264,7 @@ Notes:
 | 037 report-export-ocp-python | D4 Extension Structure | micro |
 | 038 handover-packet-ownership-boundary-python | D3 Responsibility Decomposition | micro |
 | 039 reuse-existing-code-python | D2 Reuse and Repo Awareness | multi-step |
+| 040 pricing-ocp-python | D4 Extension Structure | multi-step |
 
 
 ---
@@ -274,16 +276,16 @@ Notes:
 | D1 Change Locality | 5 |
 | D2 Reuse and Repo Awareness | 5 |
 | D3 Responsibility Decomposition | 5 |
-| D4 Extension Structure | 3 |
+| D4 Extension Structure | 4 |
 | D5 Interface and Substitutability Discipline | 4 |
 | D6 Dependency Control | 4 |
 | D7 Testability and Determinism | 4 |
 | D8 State Ownership and Lifecycle | 4 |
 | D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **39**
+Total cases recorded: **40**
 
 Notes:
-- Current matrix contents cover cases `001`-`039`.
-- With cases through `039` included, D1, D2, D3, and D9 have five cases; D5,
-  D6, D7, and D8 have four cases; D4 has three.
+- Current matrix contents cover cases `001`-`040`.
+- With cases through `040` included, D1, D2, D3, and D9 have five cases; D4,
+  D5, D6, D7, and D8 have four cases.

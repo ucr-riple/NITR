@@ -583,6 +583,27 @@ function(nitr_register_case_039)
   )
 endfunction()
 
+function(nitr_register_case_040)
+  nitr_case_source_dir(CASE_DIR 040.pricing-ocp-python)
+  nitr_case_evaluator_dir(EVAL_DIR 040.pricing-ocp-python)
+
+  nitr_add_python_test(
+    case040_pricing_tests
+    ${EVAL_DIR}/tests/test_pricing.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case040_pricing_cli_tests
+    ${EVAL_DIR}/tests/test_cli.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case040_extension_structure_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -662,6 +683,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_038()
   elseif(case_dir STREQUAL "039.reuse-existing-code-python")
     nitr_register_case_039()
+  elseif(case_dir STREQUAL "040.pricing-ocp-python")
+    nitr_register_case_040()
   endif()
 endfunction()
 
@@ -705,6 +728,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(037.report-export-ocp-python)
   nitr_add_evaluator(038.handover-packet-ownership-boundary-python)
   nitr_add_evaluator(039.reuse-existing-code-python)
+  nitr_add_evaluator(040.pricing-ocp-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

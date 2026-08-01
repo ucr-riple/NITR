@@ -53,6 +53,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(037.report-export-ocp-python)
   nitr_add_case(038.handover-packet-ownership-boundary-python)
   nitr_add_case(039.reuse-existing-code-python)
+  nitr_add_case(040.pricing-ocp-python)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR

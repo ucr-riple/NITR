@@ -1,0 +1,37 @@
+{
+  "case_root": "../../.submit-output/chatgpt-api/cases/040.pricing-ocp-python",
+  "baseline_case_root": "../../cases/040.pricing-ocp-python",
+  "build_dir": "../../build",
+  "modules": [
+    {
+      "module_name": "required_paths",
+      "name": "case040_required_layout",
+      "paths": ["src/pricing.py", "app/main.py"]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case040_pricing_tests",
+      "command": [
+        "ctest", "--test-dir", "{build_dir}", "--output-on-failure",
+        "-R", "^case040_pricing_tests$"
+      ]
+    },
+    {
+      "module_name": "unit_test",
+      "name": "case040_pricing_cli_tests",
+      "command": [
+        "ctest", "--test-dir", "{build_dir}", "--output-on-failure",
+        "-R", "^case040_pricing_cli_tests$"
+      ]
+    },
+    {
+      "module_name": "customized_check",
+      "name": "case040_ocp_check",
+      "command": [
+        "python3", "{evaluator_root}/checks/run_evaluator.py",
+        "--case_root", "{case_root}"
+      ],
+      "env": {"PYTHONPATH": "{repo_root}"}
+    }
+  ]
+}
