@@ -60,14 +60,10 @@ class PricingTests(unittest.TestCase):
             order(100, coupons=("SAVE5", "SAVE5", "SAVE10P")), 2
         )
         self.assertEqual(result.final_price_cents, 8500)
-        self.assertEqual(
-            result.applied_rules, ["COUPON_SAVE10P", "COUPON_SAVE5"]
-        )
+        self.assertEqual(result.applied_rules, ["COUPON_SAVE10P", "COUPON_SAVE5"])
 
     def test_m3_coupon_group_exclusivity(self) -> None:
-        result = compute_final_price(
-            order(120, True, 10, ("SAVE5", "SAVE10P")), 3
-        )
+        result = compute_final_price(order(120, True, 10, ("SAVE5", "SAVE10P")), 3)
         self.assertEqual(result.final_price_cents, 7600)
         self.assertEqual(
             result.applied_rules,
@@ -75,9 +71,7 @@ class PricingTests(unittest.TestCase):
         )
 
     def test_runtime_rule_disables_member(self) -> None:
-        data_path = (
-            Path(__file__).resolve().parents[1] / "data" / "runtime_rules.json"
-        )
+        data_path = Path(__file__).resolve().parents[1] / "data" / "runtime_rules.json"
         previous = os.environ.get("NITR_RULES")
         os.environ["NITR_RULES"] = str(data_path)
         try:

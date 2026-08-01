@@ -46,7 +46,9 @@ def main() -> int:
             if isinstance(node, ast.Attribute) and node.attr in CONCRETE_NAMES:
                 findings.append(f"generic path leaked concrete type in {relative}")
             if isinstance(node, ast.Constant) and node.value in CONCRETE_NAMES:
-                findings.append(f"generic path dispatched on concrete type in {relative}")
+                findings.append(
+                    f"generic path dispatched on concrete type in {relative}"
+                )
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
                 if node.func.id in {"isinstance", "issubclass", "type"}:
                     findings.append(
@@ -58,8 +60,12 @@ def main() -> int:
                     names = [alias.name for alias in node.names]
                 else:
                     names = [node.module or ""] + [alias.name for alias in node.names]
-                if any(part in CONCRETE_NAMES for name in names for part in name.split(".")):
-                    findings.append(f"generic path imported concrete transform in {relative}")
+                if any(
+                    part in CONCRETE_NAMES for name in names for part in name.split(".")
+                ):
+                    findings.append(
+                        f"generic path imported concrete transform in {relative}"
+                    )
 
     batch_tree = trees.get("src/transform_batch.py")
     if batch_tree is not None and not any(
@@ -88,7 +94,9 @@ def main() -> int:
             and node.func.attr == "transform"
             for node in ast.walk(chain_tree)
         ):
-            findings.append("TransformChain must compose the shared transform() contract")
+            findings.append(
+                "TransformChain must compose the shared transform() contract"
+            )
 
     if findings:
         for finding in dict.fromkeys(findings):

@@ -50,9 +50,7 @@ def main() -> int:
         return 1
 
     try:
-        tree = ast.parse(
-            core_path.read_text(encoding="utf-8"), filename=str(core_path)
-        )
+        tree = ast.parse(core_path.read_text(encoding="utf-8"), filename=str(core_path))
     except (OSError, SyntaxError) as exc:
         print(f"FAIL: could not analyze src/pricing.py: {exc}")
         return 1
@@ -64,9 +62,7 @@ def main() -> int:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
     }
     functions = [
-        node
-        for name, node in module_functions.items()
-        if name == "compute_final_price"
+        node for name, node in module_functions.items() if name == "compute_final_price"
     ]
     if len(functions) != 1:
         findings.append("pricing core must define compute_final_price() exactly once")
@@ -85,9 +81,8 @@ def main() -> int:
 
         for function_name, function in reachable.items():
             for node in ast.walk(function):
-                if (
-                    isinstance(node, (ast.If, ast.IfExp))
-                    and references_coupon(node.test)
+                if isinstance(node, (ast.If, ast.IfExp)) and references_coupon(
+                    node.test
                 ):
                     findings.append(
                         f"{function_name}() must not branch on coupon or promo values"

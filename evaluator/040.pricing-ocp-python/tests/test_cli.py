@@ -112,9 +112,7 @@ class PricingCliTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            completed = self.run_cli(
-                directory, input_path, output_path, "m1"
-            )
+            completed = self.run_cli(directory, input_path, output_path, "m1")
 
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(completed.stderr, "")
@@ -136,18 +134,14 @@ class PricingCliTests(unittest.TestCase):
             argument_rules = directory / "argument.json"
             cwd_rules.write_text(runtime_rules("CWD_10P", 0.10), encoding="utf-8")
             env_rules.write_text(runtime_rules("ENV_20P", 0.20), encoding="utf-8")
-            argument_rules.write_text(
-                runtime_rules("ARG_30P", 0.30), encoding="utf-8"
-            )
+            argument_rules.write_text(runtime_rules("ARG_30P", 0.30), encoding="utf-8")
 
             scenarios = [
                 (argument_rules, env_rules, "ARG_30P", 70.0),
                 (None, env_rules, "ENV_20P", 80.0),
                 (None, None, "CWD_10P", 90.0),
             ]
-            for index, (argument, environment, rule_id, price) in enumerate(
-                scenarios
-            ):
+            for index, (argument, environment, rule_id, price) in enumerate(scenarios):
                 with self.subTest(rule_id=rule_id):
                     output_path = directory / f"result-{index}.json"
                     completed = self.run_cli(
