@@ -50,6 +50,7 @@ including:
 - `037.report-export-ocp-python`
 - `038.handover-packet-ownership-boundary-python`
 - `039.reuse-existing-code-python`
+- `040.pricing-ocp-python`
 
 This repository includes local submission helpers under `submit/` for
 benchmark automation, but it does not include a hosted submission service.

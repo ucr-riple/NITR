@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "id": "BLACKFRIDAY_30P",
+      "type": "percent",
+      "value": 0.30,
+      "priority": 100,
+      "group": "COUPON",
+      "disables_member": true,
+      "when": {
+        "coupon": "BLACKFRIDAY",
+        "is_member": true,
+        "min_items": 5
+      }
+    }
+  ]
+}
