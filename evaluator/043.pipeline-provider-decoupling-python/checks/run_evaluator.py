@@ -48,13 +48,9 @@ def main() -> int:
     for node in ast.walk(runner_tree):
         name = referenced_name(node)
         if name in CONCRETE_PROVIDERS:
-            findings.append(
-                f"PipelineRunner depends on concrete provider {name}"
-            )
+            findings.append(f"PipelineRunner depends on concrete provider {name}")
         if name in SELECTION_DETAILS:
-            findings.append(
-                f"PipelineRunner leaks provider selection detail: {name}"
-            )
+            findings.append(f"PipelineRunner leaks provider selection detail: {name}")
         if (
             isinstance(node, ast.Call)
             and isinstance(node.func, ast.Name)
@@ -74,9 +70,7 @@ def main() -> int:
     }
     for provider_name in CONCRETE_PROVIDERS:
         if provider_name not in boundary_names:
-            findings.append(
-                f"composition boundary must wire {provider_name}"
-            )
+            findings.append(f"composition boundary must wire {provider_name}")
 
     for path in source_root.glob("*.py"):
         if path.name in WIRING_EXEMPT_FILES:
@@ -85,8 +79,7 @@ def main() -> int:
         for provider_name in CONCRETE_PROVIDERS:
             if provider_name in source:
                 findings.append(
-                    "concrete provider wiring escaped boundary into "
-                    f"src/{path.name}"
+                    f"concrete provider wiring escaped boundary into src/{path.name}"
                 )
 
     if findings:

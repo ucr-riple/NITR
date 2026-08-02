@@ -57,9 +57,7 @@ class PipelineTests(unittest.TestCase):
         )
 
     def test_file_and_switching(self) -> None:
-        policy_path = (
-            Path(__file__).resolve().parents[1] / "data" / "policies.json"
-        )
+        policy_path = Path(__file__).resolve().parents[1] / "data" / "policies.json"
         config = PipelineConfig("file", str(policy_path), True)
         output = build_pipeline(config).runner.run(EVENTS)
 
