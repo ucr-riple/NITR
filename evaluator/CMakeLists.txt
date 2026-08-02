@@ -620,6 +620,22 @@ function(nitr_register_case_041)
   )
 endfunction()
 
+function(nitr_register_case_042)
+  nitr_case_source_dir(CASE_DIR 042.map-dip-python)
+  nitr_case_evaluator_dir(EVAL_DIR 042.map-dip-python)
+
+  nitr_add_python_test(
+    case042_map_snapshot_tests
+    ${EVAL_DIR}/tests/test_map_snapshot.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case042_dependency_inversion_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
+
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
     nitr_register_case_001()
@@ -703,6 +719,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_040()
   elseif(case_dir STREQUAL "041.ml-lsp-multistep-python")
     nitr_register_case_041()
+  elseif(case_dir STREQUAL "042.map-dip-python")
+    nitr_register_case_042()
   endif()
 endfunction()
 
@@ -748,6 +766,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(039.reuse-existing-code-python)
   nitr_add_evaluator(040.pricing-ocp-python)
   nitr_add_evaluator(041.ml-lsp-multistep-python)
+  nitr_add_evaluator(042.map-dip-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()
