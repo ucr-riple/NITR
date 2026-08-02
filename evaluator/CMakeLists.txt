@@ -649,6 +649,20 @@ function(nitr_register_case_043)
     --case_root ${CASE_DIR}
   )
 endfunction()
+function(nitr_register_case_044)
+  nitr_case_source_dir(CASE_DIR 044.ranking-explainability-boundary-python)
+  nitr_case_evaluator_dir(EVAL_DIR 044.ranking-explainability-boundary-python)
+  nitr_add_python_test(
+    case044_ranking_tests
+    ${EVAL_DIR}/tests/test_ranking.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case044_explainability_boundary_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
 
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
@@ -737,6 +751,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_042()
   elseif(case_dir STREQUAL "043.pipeline-provider-decoupling-python")
     nitr_register_case_043()
+  elseif(case_dir STREQUAL "044.ranking-explainability-boundary-python")
+    nitr_register_case_044()
   endif()
 endfunction()
 
@@ -784,6 +800,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(041.ml-lsp-multistep-python)
   nitr_add_evaluator(042.map-dip-python)
   nitr_add_evaluator(043.pipeline-provider-decoupling-python)
+  nitr_add_evaluator(044.ranking-explainability-boundary-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

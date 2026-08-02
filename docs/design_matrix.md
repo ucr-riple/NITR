@@ -214,8 +214,9 @@ Current cases:
 - `023 validator-global-mutation` (**micro**)
 - `028 validator-global-mutation-python` (**micro**)
 - `033 logging-side-effects-python` (**micro**)
+- `044 ranking-explainability-boundary-python` (**multi-step**)
 
-Current count: **5**
+Current count: **6**
 
 Notes:
 - `010` remains the micro side-effect probe.
@@ -271,6 +272,7 @@ Notes:
 | 041 ml-lsp-multistep-python | D5 Interface and Substitutability Discipline | multi-step |
 | 042 map-dip-python | D6 Dependency Control | micro |
 | 043 pipeline-provider-decoupling-python | D6 Dependency Control | multi-step |
+| 044 ranking-explainability-boundary-python | D9 Side-Effect Isolation | multi-step |
 
 
 ---
@@ -287,11 +289,11 @@ Notes:
 | D6 Dependency Control | 6 |
 | D7 Testability and Determinism | 4 |
 | D8 State Ownership and Lifecycle | 4 |
-| D9 Side-Effect Isolation | 5 |
+| D9 Side-Effect Isolation | 6 |
 
-Total cases recorded: **43**
+Total cases recorded: **44**
 
 Notes:
-- Current matrix contents cover cases `001`-`043`.
-- With cases through `043` included, D6 has six cases; D1, D2, D3, D5, and D9
-  have five cases; D4, D7, and D8 have four cases.
+- Current matrix contents cover cases `001`-`044`.
+- With cases through `044` included, D6 and D9 have six cases; D1, D2, D3, and
+  D5 have five cases; D4, D7, and D8 have four cases.

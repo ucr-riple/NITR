@@ -1,0 +1,2 @@
+cmake_minimum_required(VERSION 3.16)
+project(case044_ranking_explainability_boundary_python LANGUAGES NONE)
