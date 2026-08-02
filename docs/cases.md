@@ -46,6 +46,7 @@ This file lists the cases currently included in the public repository.
 - `040.pricing-ocp-python`
 - `041.ml-lsp-multistep-python`
 - `042.map-dip-python`
+- `043.pipeline-provider-decoupling-python`
 
 ## Notes
 

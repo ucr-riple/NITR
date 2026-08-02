@@ -635,6 +635,20 @@ function(nitr_register_case_042)
     --case_root ${CASE_DIR}
   )
 endfunction()
+function(nitr_register_case_043)
+  nitr_case_source_dir(CASE_DIR 043.pipeline-provider-decoupling-python)
+  nitr_case_evaluator_dir(EVAL_DIR 043.pipeline-provider-decoupling-python)
+  nitr_add_python_test(
+    case043_pipeline_tests
+    ${EVAL_DIR}/tests/test_pipeline.py
+    --case_root ${CASE_DIR}
+  )
+  nitr_add_python_test(
+    case043_provider_boundary_check
+    ${EVAL_DIR}/checks/run_evaluator.py
+    --case_root ${CASE_DIR}
+  )
+endfunction()
 
 function(nitr_add_evaluator case_dir)
   if(case_dir STREQUAL "001.add-no-callsite-spread")
@@ -721,6 +735,8 @@ function(nitr_add_evaluator case_dir)
     nitr_register_case_041()
   elseif(case_dir STREQUAL "042.map-dip-python")
     nitr_register_case_042()
+  elseif(case_dir STREQUAL "043.pipeline-provider-decoupling-python")
+    nitr_register_case_043()
   endif()
 endfunction()
 
@@ -767,6 +783,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_evaluator(040.pricing-ocp-python)
   nitr_add_evaluator(041.ml-lsp-multistep-python)
   nitr_add_evaluator(042.map-dip-python)
+  nitr_add_evaluator(043.pipeline-provider-decoupling-python)
 elseif(NOT NITR_CASE STREQUAL "")
   nitr_add_evaluator(${NITR_CASE})
 endif()

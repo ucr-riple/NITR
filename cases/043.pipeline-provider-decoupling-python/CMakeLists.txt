@@ -1,0 +1,2 @@
+cmake_minimum_required(VERSION 3.16)
+project(case043_pipeline_provider_decoupling_python LANGUAGES NONE)
