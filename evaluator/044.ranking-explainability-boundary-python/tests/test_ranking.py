@@ -37,7 +37,9 @@ class RankingTests(unittest.TestCase):
     def test_baseline_order_and_scores(self) -> None:
         ranked = Ranker().rank(ITEMS)
         self.assertEqual([result.item.id for result in ranked], [10, 14, 15, 12, 11])
-        self.assertEqual([result.final_score for result in ranked], [98, 94, 94, 86, 80])
+        self.assertEqual(
+            [result.final_score for result in ranked], [98, 94, 94, 86, 80]
+        )
 
     def test_reason_summaries(self) -> None:
         ranked = Ranker().rank(ITEMS)

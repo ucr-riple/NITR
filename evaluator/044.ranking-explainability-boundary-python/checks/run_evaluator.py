@@ -108,11 +108,12 @@ def main() -> int:
         fields = [
             node.target.id
             for node in ranked_classes[0].body
-            if isinstance(node, ast.AnnAssign)
-            and isinstance(node.target, ast.Name)
+            if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name)
         ]
         if len(fields) > 3:
-            findings.append("RankedItem should remain compact with at most three fields")
+            findings.append(
+                "RankedItem should remain compact with at most three fields"
+            )
         leaked = FORBIDDEN_RESULT_FIELDS.intersection(fields)
         if leaked:
             findings.append(
