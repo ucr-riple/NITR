@@ -51,6 +51,7 @@ including:
 - `038.handover-packet-ownership-boundary-python`
 - `039.reuse-existing-code-python`
 - `040.pricing-ocp-python`
+- `041.ml-lsp-multistep-python`
 
 This repository includes local submission helpers under `submit/` for
 benchmark automation, but it does not include a hosted submission service.

@@ -121,8 +121,9 @@ Current cases:
 - `007 ml-lsp` (**upgraded to multi-step**)
 - `024 metric-recorder-buffered-flush` (**micro**)
 - `032 metric-recorder-buffered-flush-python` (**micro**)
+- `041 ml-lsp-multistep-python` (**multi-step**)
 
-Current count: **4**
+Current count: **5**
 
 Notes:
 - `006` remains a micro probe.
@@ -265,6 +266,7 @@ Notes:
 | 038 handover-packet-ownership-boundary-python | D3 Responsibility Decomposition | micro |
 | 039 reuse-existing-code-python | D2 Reuse and Repo Awareness | multi-step |
 | 040 pricing-ocp-python | D4 Extension Structure | multi-step |
+| 041 ml-lsp-multistep-python | D5 Interface and Substitutability Discipline | multi-step |
 
 
 ---
@@ -277,15 +279,15 @@ Notes:
 | D2 Reuse and Repo Awareness | 5 |
 | D3 Responsibility Decomposition | 5 |
 | D4 Extension Structure | 4 |
-| D5 Interface and Substitutability Discipline | 4 |
+| D5 Interface and Substitutability Discipline | 5 |
 | D6 Dependency Control | 4 |
 | D7 Testability and Determinism | 4 |
 | D8 State Ownership and Lifecycle | 4 |
 | D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **40**
+Total cases recorded: **41**
 
 Notes:
-- Current matrix contents cover cases `001`-`040`.
-- With cases through `040` included, D1, D2, D3, and D9 have five cases; D4,
-  D5, D6, D7, and D8 have four cases.
+- Current matrix contents cover cases `001`-`041`.
+- With cases through `041` included, D1, D2, D3, D5, and D9 have five cases;
+  D4, D6, D7, and D8 have four cases.
