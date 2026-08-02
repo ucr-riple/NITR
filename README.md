@@ -53,6 +53,7 @@ including:
 - `040.pricing-ocp-python`
 - `041.ml-lsp-multistep-python`
 - `042.map-dip-python`
+- `043.pipeline-provider-decoupling-python`
 
 This repository includes local submission helpers under `submit/` for
 benchmark automation, but it does not include a hosted submission service.

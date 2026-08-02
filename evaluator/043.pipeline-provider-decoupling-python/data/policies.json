@@ -1,0 +1,1 @@
+{"web":{"policy_tier":"gold","retention_days":120},"mobile":{"policy_tier":"silver","retention_days":60},"partner":{"policy_tier":"archive","retention_days":365}}
