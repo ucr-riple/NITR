@@ -149,8 +149,9 @@ Current cases:
 - `015 pipeline-provider-decoupling`
 - `022 thermostat-sensor-decoupling`
 - `029 thermostat-sensor-decoupling-python`
+- `042 map-dip-python` (**micro**)
 
-Current count: **4**
+Current count: **5**
 
 ---
 
@@ -267,6 +268,7 @@ Notes:
 | 039 reuse-existing-code-python | D2 Reuse and Repo Awareness | multi-step |
 | 040 pricing-ocp-python | D4 Extension Structure | multi-step |
 | 041 ml-lsp-multistep-python | D5 Interface and Substitutability Discipline | multi-step |
+| 042 map-dip-python | D6 Dependency Control | micro |
 
 
 ---
@@ -280,14 +282,14 @@ Notes:
 | D3 Responsibility Decomposition | 5 |
 | D4 Extension Structure | 4 |
 | D5 Interface and Substitutability Discipline | 5 |
-| D6 Dependency Control | 4 |
+| D6 Dependency Control | 5 |
 | D7 Testability and Determinism | 4 |
 | D8 State Ownership and Lifecycle | 4 |
 | D9 Side-Effect Isolation | 5 |
 
-Total cases recorded: **41**
+Total cases recorded: **42**
 
 Notes:
-- Current matrix contents cover cases `001`-`041`.
-- With cases through `041` included, D1, D2, D3, D5, and D9 have five cases;
-  D4, D6, D7, and D8 have four cases.
+- Current matrix contents cover cases `001`-`042`.
+- With cases through `042` included, D1, D2, D3, D5, D6, and D9 have five
+  cases; D4, D7, and D8 have four cases.

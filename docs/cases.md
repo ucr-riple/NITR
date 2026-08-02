@@ -45,6 +45,7 @@ This file lists the cases currently included in the public repository.
 - `039.reuse-existing-code-python`
 - `040.pricing-ocp-python`
 - `041.ml-lsp-multistep-python`
+- `042.map-dip-python`
 
 ## Notes
 

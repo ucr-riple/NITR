@@ -55,6 +55,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(039.reuse-existing-code-python)
   nitr_add_case(040.pricing-ocp-python)
   nitr_add_case(041.ml-lsp-multistep-python)
+  nitr_add_case(042.map-dip-python)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR
