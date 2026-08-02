@@ -57,6 +57,7 @@ if(NITR_BUILD_ALL_CASES)
   nitr_add_case(041.ml-lsp-multistep-python)
   nitr_add_case(042.map-dip-python)
   nitr_add_case(043.pipeline-provider-decoupling-python)
+  nitr_add_case(044.ranking-explainability-boundary-python)
 else()
   if(NITR_CASE STREQUAL "")
     message(FATAL_ERROR
