@@ -20,6 +20,8 @@ set_property(TARGET gtest_main PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "")
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 find_program(BASH_PROGRAM bash)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PythonTestArgs.cmake)
+
 option(CASE015_ENABLE_VISIBLE_CHECKS "Run visible structural checks via CTest" ON)
 option(CASE015_ENABLE_HIDDEN_EVALUATOR "Enable hidden tests and hidden checks" OFF)
 
@@ -57,6 +59,15 @@ function(nitr_add_plain_test test_name case_target test_source)
 endfunction()
 
 function(nitr_add_python_test test_name script_path)
+  nitr_check_python_test_args(
+    argument_error
+    "${CMAKE_SOURCE_DIR}/cases"
+    ${ARGN}
+  )
+  if(argument_error)
+    message(FATAL_ERROR "Invalid arguments for ${test_name}: ${argument_error}")
+  endif()
+
   add_test(
     NAME ${test_name}
     COMMAND ${CMAKE_COMMAND} -E env
@@ -163,7 +174,7 @@ function(nitr_register_case_008)
   nitr_add_python_test(
     case008_structural_check
     ${EVAL_DIR}/checks/check.py
-    ${CASE_DIR}
+    --case_root ${CASE_DIR}
   )
 endfunction()
 
