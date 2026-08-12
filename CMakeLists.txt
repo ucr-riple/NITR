@@ -16,6 +16,20 @@ if(BUILD_TESTING)
     NAME nitr_python_format_check
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_python_format.sh
   )
+  add_test(
+    NAME nitr_python_test_arg_consistency_test
+    COMMAND ${CMAKE_COMMAND} -P
+            ${CMAKE_CURRENT_SOURCE_DIR}/evaluator/cmake/tests/test_python_test_args.cmake
+  )
+  add_test(
+    NAME nitr_all_python_test_registrations_consistency_test
+    COMMAND
+      ${CMAKE_COMMAND}
+      -S ${CMAKE_CURRENT_SOURCE_DIR}
+      -B ${CMAKE_CURRENT_BINARY_DIR}/all-python-test-registrations
+      -DNITR_BUILD_ALL_CASES=ON
+      -DNITR_BUILD_EVALUATOR=ON
+  )
 endif()
 
 add_subdirectory(cases)
