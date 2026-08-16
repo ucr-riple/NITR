@@ -14,6 +14,7 @@ from claude_cli_backend import CLAUDE_CLI_DEFAULTS, run_claude_cli
 from claude_vertex_backend import CLAUDE_VERTEX_DEFAULTS, run_claude_vertex
 from codex_cli_backend import CODEX_CLI_DEFAULTS, run_chatgpt_codex
 from gemini_cli_backend import GEMINI_CLI_DEFAULTS, run_gemini_cli
+from gemini_vertex_backend import GEMINI_VERTEX_DEFAULTS, run_gemini_vertex
 from opencode_backend import OPENCODE_DEFAULTS, run_opencode_cli
 
 
@@ -38,6 +39,11 @@ class FunctionBackend(Backend):
 
 def _build_backends() -> tuple[Backend, ...]:
     registered: list[Backend] = [
+        FunctionBackend(
+            name="gemini-vertex",
+            runner=run_gemini_vertex,
+            defaults=GEMINI_VERTEX_DEFAULTS,
+        ),
         FunctionBackend(
             name="claude-vertex",
             runner=run_claude_vertex,

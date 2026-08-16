@@ -24,6 +24,7 @@ class BackendRegistryTests(unittest.TestCase):
             "claude-cli",
             "claude-vertex",
             "gemini-cli",
+            "gemini-vertex",
             "opencode-cli",
         }
         self.assertEqual(set(registry.BACKEND_BY_NAME), expected_names)

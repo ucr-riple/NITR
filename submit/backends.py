@@ -12,16 +12,6 @@ from submit_common import (
 )
 
 DEFAULTS = {
-    # Gemini via GCP Vertex SDK. Requires GCP project configuration.
-    "gemini-vertex": {
-        "project_id": os.environ.get("NITR_GCP_PROJECT"),
-        "region": os.environ.get("NITR_GCP_REGION", "global"),
-        "model_name": "gemini-3.1-pro-preview",
-        "response_delay_seconds": 60.0,
-        "request_timeout_ms": 1800000,
-        "request_retry_attempts": 3,
-        "request_retry_delay_seconds": 300.0,
-    },
     # Qwen through a user-provided GCP Vertex endpoint. Requires endpoint id/location.
     "qwen-vertex": {
         "project_id": os.environ.get("NITR_GCP_PROJECT"),
@@ -51,88 +41,6 @@ DEFAULTS = {
         "top_p": 0.95,
     },
 }
-
-
-def run_gemini_vertex(args):
-    """Run submissions through the Gemini Vertex SDK backend."""
-    from google import genai
-
-    config = DEFAULTS["gemini-vertex"].copy()
-    if args.project_id:
-        config["project_id"] = args.project_id
-    if args.region:
-        config["region"] = args.region
-    if args.model_name:
-        config["model_name"] = args.model_name
-    require_config_value(
-        config,
-        "project_id",
-        cli_flag="--project_id",
-        env_var="NITR_GCP_PROJECT",
-    )
-
-    client = genai.Client(
-        vertexai=True, project=config["project_id"], location=config["region"]
-    )
-
-    def call_gemini(prompt):
-        """Generate one Gemini response with retries around transient API failures."""
-        generate_config = genai.types.GenerateContentConfig(
-            temperature=0.7,
-            http_options={"timeout": config["request_timeout_ms"]},
-        )
-        response = None
-        last_error = None
-        for attempt in range(1, config["request_retry_attempts"] + 1):
-            try:
-                response = client.models.generate_content(
-                    model=config["model_name"],
-                    contents=prompt,
-                    config=generate_config,
-                )
-                break
-            except Exception as e:
-                last_error = e
-                print(
-                    f"[!] Request attempt {attempt}/{config['request_retry_attempts']} failed: {e}"
-                )
-                if attempt == config["request_retry_attempts"]:
-                    raise
-                print(
-                    f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry..."
-                )
-                time.sleep(config["request_retry_delay_seconds"])
-        if response is None:
-            raise RuntimeError(f"Request failed without a response: {last_error}")
-        return response.text
-
-    def run_single_task(
-        input_project_dir, output_project_dir, task_file, response_output_path
-    ):
-        """Execute one task through Gemini Vertex using the shared JSON workflow."""
-        return run_json_task(
-            input_project_dir,
-            output_project_dir,
-            task_file,
-            response_output_path,
-            fetch_response=lambda _project_dir, prompt, _response_output_path: (
-                call_gemini(prompt)
-            ),
-            request_label=config["model_name"],
-            error_label="API Error",
-            response_delay_seconds=config["response_delay_seconds"],
-            payload_error_message="No valid JSON payload found in the AI response.",
-        )
-
-    run_case_submission(
-        input_dir=args.input_dir,
-        output_dir=args.output_dir,
-        case_id=args.case_id,
-        run_single_task=run_single_task,
-        start_step=args.start_step or 1,
-        end_step=args.end_step,
-        run_label=getattr(args, "run_label", None),
-    )
 
 
 def run_qwen_vertex(args):
@@ -450,7 +358,6 @@ def run_qwen_openapi(args):
 
 
 BACKEND_RUNNERS = {
-    "gemini-vertex": run_gemini_vertex,
     "qwen-vertex": run_qwen_vertex,
     "qwen-openapi": run_qwen_openapi,
 }
