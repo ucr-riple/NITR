@@ -7,7 +7,6 @@ import urllib.request
 
 from submit_common import (
     apply_file_replacements,
-    collect_project_data,
     extract_json_payload,
     prepare_output_dir,
     run_case_submission,
@@ -67,11 +66,6 @@ DEFAULTS = {
         "request_timeout_ms": 1800000,
         "request_retry_attempts": 3,
         "request_retry_delay_seconds": 300.0,
-    },
-    # Gemini local CLI workflow. Requires the `gemini` CLI on PATH.
-    "gemini-cli": {
-        "model_name": "gemini-3.1-pro-preview",
-        "response_delay_seconds": 0.0,
     },
     # Qwen through a user-provided GCP Vertex endpoint. Requires endpoint id/location.
     "qwen-vertex": {
@@ -763,85 +757,6 @@ def run_gemini_vertex(args):
     )
 
 
-def run_gemini_cli(args):
-    """Run submissions through the local Gemini CLI."""
-    config = DEFAULTS["gemini-cli"].copy()
-    if args.model_name:
-        config["model_name"] = args.model_name
-
-    def build_cli_prompt(project_dir, task_file):
-        """Assemble the inline project context prompt required by the Gemini CLI."""
-        project_context = collect_project_data(project_dir, task_file)
-        if not project_context:
-            raise ValueError("No valid source files found in the copied project.")
-        return f"""
-    Context:
-    {project_context}
-
-    Task:
-    Follow instructions in {task_file}.
-
-    IMPORTANT CONSTRAINTS:
-    1. DO NOT use any tools to write or modify files directly.
-    2. Return only one JSON object with this exact shape:
-    {{
-      "files": [
-        {{
-          "filename": "relative/path/to/file",
-          "content": "full replacement file content"
-        }}
-      ]
-    }}
-    Include only the files you changed.
-    Use project-relative file paths.
-    Do not include explanations, markdown fences, or any text outside the JSON object.
-    Do not return partial patches or diffs.
-    """
-
-    def run_single_task(
-        input_project_dir, output_project_dir, task_file, response_output_path
-    ):
-        """Execute one task via Gemini CLI and apply the emitted JSON patch."""
-        prepare_output_dir(input_project_dir, output_project_dir)
-        try:
-            prompt = build_cli_prompt(output_project_dir, task_file)
-        except Exception as e:
-            print(f"[!] CLI Error: {e}")
-            return False
-        try:
-            result = subprocess.run(
-                ["gemini", "--model", config["model_name"]],
-                input=prompt,
-                text=True,
-                capture_output=True,
-                check=True,
-            )
-            response_text = result.stdout
-            save_response_text(response_text, response_output_path)
-            payload = extract_json_payload(response_text)
-            if not payload:
-                print("[-] No valid JSON payload found in the AI response.")
-                print(f"[-] Raw snippet: {response_text[:300]}...")
-                return False
-            apply_file_replacements(payload, output_project_dir)
-            if config["response_delay_seconds"] > 0:
-                time.sleep(config["response_delay_seconds"])
-            return True
-        except subprocess.CalledProcessError as e:
-            print(f"[!] CLI Execution Error:\n{e.stderr}")
-            return False
-
-    run_case_submission(
-        input_dir=args.input_dir,
-        output_dir=args.output_dir,
-        case_id=args.case_id,
-        run_single_task=run_single_task,
-        start_step=args.start_step or 1,
-        end_step=args.end_step,
-        run_label=getattr(args, "run_label", None),
-    )
-
-
 def run_qwen_vertex(args):
     """Run submissions against a user-managed Vertex endpoint that serves Qwen."""
     from google.cloud import aiplatform
@@ -1162,7 +1077,6 @@ BACKEND_RUNNERS = {
     "claude-vertex": run_claude_vertex,
     "claude-cli": run_claude_cli,
     "gemini-vertex": run_gemini_vertex,
-    "gemini-cli": run_gemini_cli,
     "qwen-vertex": run_qwen_vertex,
     "qwen-openapi": run_qwen_openapi,
 }

@@ -17,7 +17,10 @@ from backend_interface import Backend  # noqa: E402
 
 class BackendRegistryTests(unittest.TestCase):
     def test_registry_preserves_backend_names_and_defaults(self) -> None:
-        expected_names = set(legacy_backends.BACKEND_RUNNERS) | {"opencode-cli"}
+        expected_names = set(legacy_backends.BACKEND_RUNNERS) | {
+            "gemini-cli",
+            "opencode-cli",
+        }
         self.assertEqual(set(registry.BACKEND_BY_NAME), expected_names)
         self.assertEqual(set(registry.BACKEND_DEFAULTS), expected_names)
         for name, defaults in legacy_backends.DEFAULTS.items():
@@ -42,6 +45,17 @@ class BackendRegistryTests(unittest.TestCase):
     def test_opencode_uses_function_adapter(self) -> None:
         backend = registry.BACKEND_BY_NAME["opencode-cli"]
         self.assertIsInstance(backend, registry.FunctionBackend)
+
+    def test_gemini_cli_is_owned_by_registry_module(self) -> None:
+        backend = registry.BACKEND_BY_NAME["gemini-cli"]
+        self.assertIsInstance(backend, registry.FunctionBackend)
+        self.assertEqual(
+            dict(backend.defaults),
+            {
+                "model_name": "gemini-3.1-pro-preview",
+                "response_delay_seconds": 0.0,
+            },
+        )
 
     def test_legacy_backends_use_behavior_preserving_adapters(self) -> None:
         for name, runner in legacy_backends.BACKEND_RUNNERS.items():

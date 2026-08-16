@@ -9,6 +9,7 @@ from types import MappingProxyType
 
 import backends as legacy_backends
 from backend_interface import Backend
+from gemini_cli_backend import GEMINI_CLI_DEFAULTS, run_gemini_cli
 from opencode_backend import OPENCODE_DEFAULTS, run_opencode_cli
 
 
@@ -37,7 +38,12 @@ def _build_backends() -> tuple[Backend, ...]:
             name="opencode-cli",
             runner=run_opencode_cli,
             defaults=OPENCODE_DEFAULTS,
-        )
+        ),
+        FunctionBackend(
+            name="gemini-cli",
+            runner=run_gemini_cli,
+            defaults=GEMINI_CLI_DEFAULTS,
+        ),
     ]
     for name, runner in legacy_backends.BACKEND_RUNNERS.items():
         registered.append(
