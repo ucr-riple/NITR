@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(CTest)
 
 if(BUILD_TESTING)
+  find_package(Python3 COMPONENTS Interpreter REQUIRED)
   add_test(
     NAME nitr_format_check
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_format.sh
@@ -29,6 +30,12 @@ if(BUILD_TESTING)
       -B ${CMAKE_CURRENT_BINARY_DIR}/all-python-test-registrations
       -DNITR_BUILD_ALL_CASES=ON
       -DNITR_BUILD_EVALUATOR=ON
+  )
+  add_test(
+    NAME nitr_opencode_backend_tests
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+            -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
+            -p test_opencode_backend.py
   )
 endif()
 

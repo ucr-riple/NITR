@@ -26,7 +26,7 @@ The repository ships one default benchmark runtime image definition at
 It is meant to be generic, not provider-specific.
 
 If you want to run a CLI-backed backend such as `chatgpt-codex`,
-`claude-cli`, or `gemini-cli` inside Docker, point `--docker-image` at an
+`claude-cli`, `gemini-cli`, or `opencode-cli` inside Docker, point `--docker-image` at an
 image that satisfies this contract:
 
 - `python3` is available on `PATH`
@@ -62,6 +62,7 @@ Some backends require external CLI tools in addition to Python packages:
 - `chatgpt-codex` requires `codex`
 - `claude-cli` requires `claude`
 - `gemini-cli` requires `gemini`
+- `opencode-cli` requires `opencode`
 
 Verify availability with:
 
@@ -69,7 +70,13 @@ Verify availability with:
 codex --help
 claude --help
 gemini --help
+opencode --help
 ```
+
+Install and authenticate OpenCode separately. Its model IDs use
+`provider/model`; `opencode models` lists the models available through the
+configured providers. Specify `--model_name provider/model` for reproducible
+benchmark runs, or omit it to use the configured OpenCode default.
 
 ## Output layout
 
@@ -149,7 +156,40 @@ python3 submit/submit_case.py \
 
 This applies to backends such as `chatgpt-codex`, `chatgpt-api`,
 `claude-vertex`, `claude-cli`, `gemini-vertex`, `gemini-cli`, and
-`qwen-openapi`.
+`opencode-cli`, and `qwen-openapi`.
+
+Run OpenCode with the standard JSON replacement contract:
+
+```bash
+python3 submit/submit_case.py \
+  --backend opencode-cli \
+  --model_name provider/model \
+  -i . \
+  -o .submit-output/opencode-cli \
+  -c 024
+```
+
+NITR executes OpenCode in an isolated temporary Git workspace and permits only
+repository read/search tools. Direct edits, shell commands, web access,
+plugins, skills, MCP, and subagents are disabled. The final assistant JSON is
+validated and applied by NITR, preserving the same submission contract used by
+the other CLI backends. Use `--submit-count` normally for Pass@N runs.
+
+The backend fails closed if a case contains `opencode.json`, `opencode.jsonc`,
+`.opencode/`, `AGENTS.md`, `CLAUDE.md`, or `CONTEXT.md`. These are OpenCode
+configuration or instruction-discovery surfaces and would otherwise make the
+benchmark behavior case-specific.
+
+Live compatibility was verified on 2026-08-15 with OpenCode `1.18.18` and
+`opencode/deepseek-v4-flash-free`. The permission smoke exposed only the
+allowed `glob` and `read` tools and left the input workspace unchanged. A full
+case 024 submission also produced valid replacement JSON and passed its build,
+lifecycle, and substitutability evaluator checks. Credential-free CI validates
+the adapter contract but does not substitute for this real-version check.
+
+For Docker, supply an image containing `opencode` and pass provider credentials
+with the existing `--pass-env`, `--docker-env-file`, and `--docker-mount`
+options.
 
 For usage accounting:
 

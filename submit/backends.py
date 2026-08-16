@@ -15,6 +15,7 @@ from submit_common import (
     save_json_payload,
     save_response_text,
 )
+from opencode_backend import OPENCODE_DEFAULTS, run_opencode_cli
 
 
 DEFAULTS = {
@@ -74,6 +75,8 @@ DEFAULTS = {
         "model_name": "gemini-3.1-pro-preview",
         "response_delay_seconds": 0.0,
     },
+    # Provider-agnostic local OpenCode CLI. Uses the user's configured model by default.
+    "opencode-cli": OPENCODE_DEFAULTS,
     # Qwen through a user-provided GCP Vertex endpoint. Requires endpoint id/location.
     "qwen-vertex": {
         "project_id": os.environ.get("NITR_GCP_PROJECT"),
@@ -1164,6 +1167,7 @@ BACKEND_RUNNERS = {
     "claude-cli": run_claude_cli,
     "gemini-vertex": run_gemini_vertex,
     "gemini-cli": run_gemini_cli,
+    "opencode-cli": run_opencode_cli,
     "qwen-vertex": run_qwen_vertex,
     "qwen-openapi": run_qwen_openapi,
 }
