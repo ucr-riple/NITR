@@ -2,7 +2,7 @@ import argparse
 import json
 from pathlib import Path
 
-from backends import BACKEND_RUNNERS
+from backend_registry import BACKEND_RUNNERS
 from docker_runtime import (
     add_common_runtime_args,
     current_default_dockerfile,

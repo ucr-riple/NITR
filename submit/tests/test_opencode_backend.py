@@ -16,7 +16,7 @@ SUBMIT_DIR = Path(__file__).resolve().parents[1]
 if str(SUBMIT_DIR) not in sys.path:
     sys.path.insert(0, str(SUBMIT_DIR))
 
-import backends  # noqa: E402
+import backend_registry  # noqa: E402
 import opencode_backend as backend  # noqa: E402
 
 
@@ -91,8 +91,9 @@ class OpenCodeDecoderTests(unittest.TestCase):
 
 class OpenCodeIsolationTests(unittest.TestCase):
     def test_backend_is_registered(self) -> None:
-        self.assertIs(
-            backends.BACKEND_RUNNERS["opencode-cli"], backend.run_opencode_cli
+        self.assertIsInstance(
+            backend_registry.BACKEND_BY_NAME["opencode-cli"],
+            backend.OpenCodeBackend,
         )
 
     def test_command_model_override_is_optional(self) -> None:

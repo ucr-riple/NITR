@@ -37,6 +37,12 @@ if(BUILD_TESTING)
             -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
             -p test_opencode_backend.py
   )
+  add_test(
+    NAME nitr_backend_registry_tests
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+            -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
+            -p test_backend_registry.py
+  )
 endif()
 
 add_subdirectory(cases)
