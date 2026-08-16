@@ -9,13 +9,13 @@ from types import MappingProxyType
 
 import backends as legacy_backends
 from backend_interface import Backend
-from opencode_backend import OpenCodeBackend
+from opencode_backend import OPENCODE_DEFAULTS, run_opencode_cli
 
 
 BackendRunner = Callable[[argparse.Namespace], None]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class FunctionBackend(Backend):
     """Adapt an existing function-based backend to the common interface."""
 
@@ -32,7 +32,13 @@ class FunctionBackend(Backend):
 
 
 def _build_backends() -> tuple[Backend, ...]:
-    registered: list[Backend] = [OpenCodeBackend()]
+    registered: list[Backend] = [
+        FunctionBackend(
+            name="opencode-cli",
+            runner=run_opencode_cli,
+            defaults=OPENCODE_DEFAULTS,
+        )
+    ]
     for name, runner in legacy_backends.BACKEND_RUNNERS.items():
         registered.append(
             FunctionBackend(

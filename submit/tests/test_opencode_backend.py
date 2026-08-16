@@ -91,9 +91,9 @@ class OpenCodeDecoderTests(unittest.TestCase):
 
 class OpenCodeIsolationTests(unittest.TestCase):
     def test_backend_is_registered(self) -> None:
-        self.assertIsInstance(
-            backend_registry.BACKEND_BY_NAME["opencode-cli"],
-            backend.OpenCodeBackend,
+        self.assertIs(
+            backend_registry.BACKEND_BY_NAME["opencode-cli"].runner,
+            backend.run_opencode_cli,
         )
 
     def test_command_model_override_is_optional(self) -> None:

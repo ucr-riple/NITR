@@ -13,7 +13,6 @@ import backend_registry as registry  # noqa: E402
 import backends as legacy_backends  # noqa: E402
 import submit_case  # noqa: E402
 from backend_interface import Backend  # noqa: E402
-from opencode_backend import OpenCodeBackend  # noqa: E402
 
 
 class BackendRegistryTests(unittest.TestCase):
@@ -40,9 +39,9 @@ class BackendRegistryTests(unittest.TestCase):
             registered["model_name"] = "changed"  # type: ignore[index]
         self.assertIsNot(registered, legacy_backends.DEFAULTS["chatgpt-api"])
 
-    def test_opencode_uses_concrete_backend_implementation(self) -> None:
+    def test_opencode_uses_function_adapter(self) -> None:
         backend = registry.BACKEND_BY_NAME["opencode-cli"]
-        self.assertIsInstance(backend, OpenCodeBackend)
+        self.assertIsInstance(backend, registry.FunctionBackend)
 
     def test_legacy_backends_use_behavior_preserving_adapters(self) -> None:
         for name, runner in legacy_backends.BACKEND_RUNNERS.items():
@@ -61,6 +60,10 @@ class BackendRegistryTests(unittest.TestCase):
         for runner in registry.BACKEND_RUNNERS.values():
             self.assertTrue(callable(runner))
         self.assertIsInstance(argparse.Namespace(), argparse.Namespace)
+
+    def test_function_backends_use_identity_hashing(self) -> None:
+        backend = registry.BACKEND_BY_NAME["opencode-cli"]
+        self.assertEqual(hash(backend), object.__hash__(backend))
 
 
 if __name__ == "__main__":

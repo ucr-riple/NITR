@@ -105,6 +105,13 @@ in place.
 
 ## Target Layout
 
+The package layout below is the final state. During Phase 1, use the flat
+transitional modules `submit/backend_interface.py` and
+`submit/backend_registry.py` while the legacy `submit/backends.py` module still
+exists. Python cannot safely host that module and a `submit/backends/` package
+under the same import name. Move the transitional modules into the package only
+after the compatibility module has been removed or renamed in Phase 5.
+
 ```text
 submit/
 ├── backends/
@@ -179,13 +186,13 @@ Exit condition: the tests pass against the current monolithic module.
 Add:
 
 ```text
-submit/backends/base.py
-submit/backends/registry.py
-submit/backends/__init__.py
+submit/backend_interface.py
+submit/backend_registry.py
 ```
 
 Initially register the existing functions from the compatibility module. Do not
-move provider implementations yet.
+move provider implementations yet. Use one generic function adapter for all
+function-based implementations; do not add provider-specific wrapper classes.
 
 Update `submit_case.py` to import the registry from the package while preserving
 the existing `BACKEND_RUNNERS` shape.
@@ -201,6 +208,9 @@ submit/backends/opencode_cli.py
 ```
 
 Keep its NDJSON, workspace-integrity, isolation, and retry tests unchanged.
+Introduce a provider-specific class only if moving the implementation creates
+real behavior or state for that class to own; otherwise continue using the
+generic function adapter.
 
 This proves the package/registry structure with a backend that has few
 dependencies on the monolith.

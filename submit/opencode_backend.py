@@ -11,9 +11,7 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
-from types import MappingProxyType
 
-from backend_interface import Backend
 from submit_common import (
     apply_file_replacements,
     extract_json_payload,
@@ -35,7 +33,6 @@ OPENCODE_DEFAULTS = {
     "request_retry_attempts": 3,
     "request_retry_delay_seconds": 300.0,
 }
-OPENCODE_BACKEND_DEFAULTS = MappingProxyType(OPENCODE_DEFAULTS.copy())
 FORBIDDEN_PROJECT_NAMES = {
     ".opencode",
     "AGENTS.md",
@@ -528,14 +525,3 @@ def run_opencode_cli(args) -> None:
             else "(OpenCode CLI agent)"
         ),
     )
-
-
-class OpenCodeBackend(Backend):
-    """OpenCode CLI implementation of the common backend interface."""
-
-    name = "opencode-cli"
-    defaults = OPENCODE_BACKEND_DEFAULTS
-
-    def run(self, args) -> None:
-        """Run an OpenCode CLI submission."""
-        run_opencode_cli(args)
