@@ -44,7 +44,7 @@ Note:
 
 - `qwen-vertex` is the main exception; it is driven by `endpoint_id` and `endpoint_location` rather than `model_name`
 - default model values live with each backend implementation and are exposed
-  through [`submit/backend_registry.py`](submit/backend_registry.py)
+  through [`submit/backends/registry.py`](submit/backends/registry.py)
 
 ## 2. Required environment
 

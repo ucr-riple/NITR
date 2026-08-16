@@ -13,7 +13,7 @@ SUBMIT_DIR = Path(__file__).resolve().parents[1]
 if str(SUBMIT_DIR) not in sys.path:
     sys.path.insert(0, str(SUBMIT_DIR))
 
-import codex_cli_backend as backend  # noqa: E402
+from backends import codex_cli as backend  # noqa: E402
 
 
 class CodexCliBackendTests(unittest.TestCase):

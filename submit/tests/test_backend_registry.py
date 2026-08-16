@@ -9,10 +9,10 @@ SUBMIT_DIR = Path(__file__).resolve().parents[1]
 if str(SUBMIT_DIR) not in sys.path:
     sys.path.insert(0, str(SUBMIT_DIR))
 
-import backend_registry as registry  # noqa: E402
 import submit_case  # noqa: E402
-from backend_interface import Backend  # noqa: E402
-from chatgpt_api_backend import CHATGPT_API_DEFAULTS  # noqa: E402
+from backends import registry  # noqa: E402
+from backends.base import Backend  # noqa: E402
+from backends.chatgpt_api import CHATGPT_API_DEFAULTS  # noqa: E402
 
 
 class BackendRegistryTests(unittest.TestCase):

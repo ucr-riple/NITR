@@ -14,7 +14,7 @@ SUBMIT_DIR = Path(__file__).resolve().parents[1]
 if str(SUBMIT_DIR) not in sys.path:
     sys.path.insert(0, str(SUBMIT_DIR))
 
-import qwen_openapi_backend as backend  # noqa: E402
+from backends import qwen_openapi as backend  # noqa: E402
 
 
 class QwenOpenApiBackendTests(unittest.TestCase):

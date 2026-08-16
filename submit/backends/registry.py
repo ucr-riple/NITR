@@ -7,16 +7,16 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
-from backend_interface import Backend
-from chatgpt_api_backend import CHATGPT_API_DEFAULTS, run_chatgpt_api
-from claude_cli_backend import CLAUDE_CLI_DEFAULTS, run_claude_cli
-from claude_vertex_backend import CLAUDE_VERTEX_DEFAULTS, run_claude_vertex
-from codex_cli_backend import CODEX_CLI_DEFAULTS, run_chatgpt_codex
-from gemini_cli_backend import GEMINI_CLI_DEFAULTS, run_gemini_cli
-from gemini_vertex_backend import GEMINI_VERTEX_DEFAULTS, run_gemini_vertex
-from opencode_backend import OPENCODE_DEFAULTS, run_opencode_cli
-from qwen_openapi_backend import QWEN_OPENAPI_DEFAULTS, run_qwen_openapi
-from qwen_vertex_backend import QWEN_VERTEX_DEFAULTS, run_qwen_vertex
+from .base import Backend
+from .chatgpt_api import CHATGPT_API_DEFAULTS, run_chatgpt_api
+from .claude_cli import CLAUDE_CLI_DEFAULTS, run_claude_cli
+from .claude_vertex import CLAUDE_VERTEX_DEFAULTS, run_claude_vertex
+from .codex_cli import CODEX_CLI_DEFAULTS, run_chatgpt_codex
+from .gemini_cli import GEMINI_CLI_DEFAULTS, run_gemini_cli
+from .gemini_vertex import GEMINI_VERTEX_DEFAULTS, run_gemini_vertex
+from .opencode_cli import OPENCODE_DEFAULTS, run_opencode_cli
+from .qwen_openapi import QWEN_OPENAPI_DEFAULTS, run_qwen_openapi
+from .qwen_vertex import QWEN_VERTEX_DEFAULTS, run_qwen_vertex
 
 
 BackendRunner = Callable[[argparse.Namespace], None]
