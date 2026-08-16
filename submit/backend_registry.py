@@ -9,6 +9,7 @@ from types import MappingProxyType
 
 import backends as legacy_backends
 from backend_interface import Backend
+from claude_cli_backend import CLAUDE_CLI_DEFAULTS, run_claude_cli
 from gemini_cli_backend import GEMINI_CLI_DEFAULTS, run_gemini_cli
 from opencode_backend import OPENCODE_DEFAULTS, run_opencode_cli
 
@@ -34,6 +35,11 @@ class FunctionBackend(Backend):
 
 def _build_backends() -> tuple[Backend, ...]:
     registered: list[Backend] = [
+        FunctionBackend(
+            name="claude-cli",
+            runner=run_claude_cli,
+            defaults=CLAUDE_CLI_DEFAULTS,
+        ),
         FunctionBackend(
             name="opencode-cli",
             runner=run_opencode_cli,

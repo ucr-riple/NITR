@@ -49,6 +49,12 @@ if(BUILD_TESTING)
             -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
             -p test_gemini_cli_backend.py
   )
+  add_test(
+    NAME nitr_claude_cli_backend_tests
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+            -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
+            -p test_claude_cli_backend.py
+  )
 endif()
 
 add_subdirectory(cases)
