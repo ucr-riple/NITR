@@ -138,6 +138,26 @@ def extract_json_payload(response_text):
         return None
 
 
+def usage_output_path(response_output_path):
+    """Derive the sidecar usage filename for a saved backend response."""
+    if response_output_path.endswith(".txt"):
+        return response_output_path[:-4] + ".usage.json"
+    return response_output_path + ".usage.json"
+
+
+def require_config_value(config, key, cli_flag=None, env_var=None):
+    """Require a backend config value and explain how to provide it."""
+    value = config.get(key)
+    if value:
+        return value
+    parts = [f"Missing required configuration: {key}"]
+    if cli_flag:
+        parts.append(f"pass {cli_flag}")
+    if env_var:
+        parts.append(f"or set {env_var}")
+    raise ValueError(", ".join(parts))
+
+
 def apply_file_replacements(payload, output_dir, allow_empty=False):
     """Validate the returned file list and write full-file replacements into the copy."""
     if not isinstance(payload, dict):

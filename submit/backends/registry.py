@@ -1,0 +1,111 @@
+"""Canonical registry for NITR submission backends."""
+
+from __future__ import annotations
+
+import argparse
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
+from types import MappingProxyType
+
+from .base import Backend
+from .chatgpt_api import CHATGPT_API_DEFAULTS, run_chatgpt_api
+from .claude_cli import CLAUDE_CLI_DEFAULTS, run_claude_cli
+from .claude_vertex import CLAUDE_VERTEX_DEFAULTS, run_claude_vertex
+from .codex_cli import CODEX_CLI_DEFAULTS, run_chatgpt_codex
+from .gemini_cli import GEMINI_CLI_DEFAULTS, run_gemini_cli
+from .gemini_vertex import GEMINI_VERTEX_DEFAULTS, run_gemini_vertex
+from .opencode_cli import OPENCODE_DEFAULTS, run_opencode_cli
+from .qwen_openapi import QWEN_OPENAPI_DEFAULTS, run_qwen_openapi
+from .qwen_vertex import QWEN_VERTEX_DEFAULTS, run_qwen_vertex
+
+
+BackendRunner = Callable[[argparse.Namespace], None]
+
+
+@dataclass(frozen=True, eq=False)
+class FunctionBackend(Backend):
+    """Adapt an existing function-based backend to the common interface."""
+
+    name: str
+    runner: BackendRunner
+    defaults: Mapping[str, object] = field(repr=False)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "defaults", MappingProxyType(dict(self.defaults)))
+
+    def run(self, args: argparse.Namespace) -> None:
+        """Delegate to the behavior-preserving legacy runner."""
+        self.runner(args)
+
+
+def _build_backends() -> tuple[Backend, ...]:
+    registered: list[Backend] = [
+        FunctionBackend(
+            name="qwen-vertex",
+            runner=run_qwen_vertex,
+            defaults=QWEN_VERTEX_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="qwen-openapi",
+            runner=run_qwen_openapi,
+            defaults=QWEN_OPENAPI_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="gemini-vertex",
+            runner=run_gemini_vertex,
+            defaults=GEMINI_VERTEX_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="claude-vertex",
+            runner=run_claude_vertex,
+            defaults=CLAUDE_VERTEX_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="chatgpt-api",
+            runner=run_chatgpt_api,
+            defaults=CHATGPT_API_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="chatgpt-codex",
+            runner=run_chatgpt_codex,
+            defaults=CODEX_CLI_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="claude-cli",
+            runner=run_claude_cli,
+            defaults=CLAUDE_CLI_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="opencode-cli",
+            runner=run_opencode_cli,
+            defaults=OPENCODE_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="gemini-cli",
+            runner=run_gemini_cli,
+            defaults=GEMINI_CLI_DEFAULTS,
+        ),
+    ]
+    return tuple(registered)
+
+
+def _validate_backends(registered: tuple[Backend, ...]) -> None:
+    names = [backend.name for backend in registered]
+    if any(not name for name in names):
+        raise ValueError("Backend names must not be empty")
+    duplicates = sorted({name for name in names if names.count(name) > 1})
+    if duplicates:
+        raise ValueError(f"Duplicate backend names: {', '.join(duplicates)}")
+    for backend in registered:
+        if not callable(backend.run):
+            raise TypeError(f"Backend runner is not callable: {backend.name}")
+        if not isinstance(backend.defaults, Mapping):
+            raise TypeError(f"Backend defaults are not a mapping: {backend.name}")
+
+
+BACKENDS = _build_backends()
+_validate_backends(BACKENDS)
+
+BACKEND_BY_NAME = {backend.name: backend for backend in BACKENDS}
+BACKEND_RUNNERS = {backend.name: backend.run for backend in BACKENDS}
+BACKEND_DEFAULTS = {backend.name: backend.defaults for backend in BACKENDS}

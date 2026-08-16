@@ -43,7 +43,8 @@ python3 submit/submit_case.py \
 Note:
 
 - `qwen-vertex` is the main exception; it is driven by `endpoint_id` and `endpoint_location` rather than `model_name`
-- the default model values live in [`submit/backends.py`](submit/backends.py)
+- default model values live with each backend implementation and are exposed
+  through [`submit/backends/registry.py`](submit/backends/registry.py)
 
 ## 2. Required environment
 
