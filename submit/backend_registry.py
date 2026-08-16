@@ -9,6 +9,7 @@ from types import MappingProxyType
 
 import backends as legacy_backends
 from backend_interface import Backend
+from chatgpt_api_backend import CHATGPT_API_DEFAULTS, run_chatgpt_api
 from claude_cli_backend import CLAUDE_CLI_DEFAULTS, run_claude_cli
 from codex_cli_backend import CODEX_CLI_DEFAULTS, run_chatgpt_codex
 from gemini_cli_backend import GEMINI_CLI_DEFAULTS, run_gemini_cli
@@ -36,6 +37,11 @@ class FunctionBackend(Backend):
 
 def _build_backends() -> tuple[Backend, ...]:
     registered: list[Backend] = [
+        FunctionBackend(
+            name="chatgpt-api",
+            runner=run_chatgpt_api,
+            defaults=CHATGPT_API_DEFAULTS,
+        ),
         FunctionBackend(
             name="chatgpt-codex",
             runner=run_chatgpt_codex,

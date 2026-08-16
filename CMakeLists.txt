@@ -61,6 +61,12 @@ if(BUILD_TESTING)
             -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
             -p test_codex_cli_backend.py
   )
+  add_test(
+    NAME nitr_chatgpt_api_backend_tests
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+            -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
+            -p test_chatgpt_api_backend.py
+  )
 endif()
 
 add_subdirectory(cases)

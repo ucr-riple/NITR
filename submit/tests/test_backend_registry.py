@@ -13,11 +13,13 @@ import backend_registry as registry  # noqa: E402
 import backends as legacy_backends  # noqa: E402
 import submit_case  # noqa: E402
 from backend_interface import Backend  # noqa: E402
+from chatgpt_api_backend import CHATGPT_API_DEFAULTS  # noqa: E402
 
 
 class BackendRegistryTests(unittest.TestCase):
     def test_registry_preserves_backend_names_and_defaults(self) -> None:
         expected_names = set(legacy_backends.BACKEND_RUNNERS) | {
+            "chatgpt-api",
             "chatgpt-codex",
             "claude-cli",
             "gemini-cli",
@@ -42,7 +44,8 @@ class BackendRegistryTests(unittest.TestCase):
         registered = registry.BACKEND_DEFAULTS["chatgpt-api"]
         with self.assertRaises(TypeError):
             registered["model_name"] = "changed"  # type: ignore[index]
-        self.assertIsNot(registered, legacy_backends.DEFAULTS["chatgpt-api"])
+        self.assertEqual(dict(registered), CHATGPT_API_DEFAULTS)
+        self.assertIsNot(registered, CHATGPT_API_DEFAULTS)
 
     def test_opencode_uses_function_adapter(self) -> None:
         backend = registry.BACKEND_BY_NAME["opencode-cli"]
