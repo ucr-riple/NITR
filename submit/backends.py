@@ -6,22 +6,12 @@ import urllib.error
 import urllib.request
 
 from submit_common import (
+    require_config_value,
     run_case_submission,
     run_json_task,
 )
 
 DEFAULTS = {
-    # Anthropic via GCP Vertex integration. Requires GCP project configuration.
-    "claude-vertex": {
-        "project_id": os.environ.get("NITR_GCP_PROJECT"),
-        "region": os.environ.get("NITR_GCP_REGION", "global"),
-        "model_name": "claude-opus-4-5@20251101",
-        "response_delay_seconds": 60.0,
-        "request_timeout_seconds": 1800.0,
-        "request_retry_attempts": 3,
-        "request_retry_delay_seconds": 300.0,
-        "max_tokens": 32768,
-    },
     # Gemini via GCP Vertex SDK. Requires GCP project configuration.
     "gemini-vertex": {
         "project_id": os.environ.get("NITR_GCP_PROJECT"),
@@ -61,115 +51,6 @@ DEFAULTS = {
         "top_p": 0.95,
     },
 }
-
-
-def require_config_value(config, key, cli_flag=None, env_var=None):
-    """Require a backend config value and explain how the caller can provide it."""
-    value = config.get(key)
-    if value:
-        return value
-
-    parts = [f"Missing required configuration: {key}"]
-    if cli_flag:
-        parts.append(f"pass {cli_flag}")
-    if env_var:
-        parts.append(f"or set {env_var}")
-    raise ValueError(", ".join(parts))
-
-
-def run_claude_vertex(args):
-    """Run submissions through Anthropic's Vertex-hosted Claude API."""
-    from anthropic import AnthropicVertex
-
-    config = DEFAULTS["claude-vertex"].copy()
-    if args.project_id:
-        config["project_id"] = args.project_id
-    if args.region:
-        config["region"] = args.region
-    if args.model_name:
-        config["model_name"] = args.model_name
-    require_config_value(
-        config,
-        "project_id",
-        cli_flag="--project_id",
-        env_var="NITR_GCP_PROJECT",
-    )
-
-    client = AnthropicVertex(region=config["region"], project_id=config["project_id"])
-
-    def extract_message_text(message):
-        """Flatten Claude content blocks into one plain-text response string."""
-        parts = []
-        for block in getattr(message, "content", []):
-            text = getattr(block, "text", None)
-            if isinstance(text, str) and text:
-                parts.append(text)
-        if not parts:
-            raise ValueError("Claude response did not contain any text blocks")
-        return "".join(parts)
-
-    def call_claude(prompt):
-        """Issue one Claude request with retry handling around Vertex failures."""
-        last_error = None
-        for attempt in range(1, config["request_retry_attempts"] + 1):
-            started = time.time()
-            print(
-                f"[*] Request attempt {attempt}/{config['request_retry_attempts']} started at "
-                f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(started))}"
-            )
-            try:
-                message = client.messages.create(
-                    model=config["model_name"],
-                    max_tokens=config["max_tokens"],
-                    messages=[{"role": "user", "content": prompt}],
-                    timeout=config["request_timeout_seconds"],
-                )
-                print(
-                    f"[*] Request attempt {attempt}/{config['request_retry_attempts']} "
-                    f"succeeded in {time.time() - started:.1f}s"
-                )
-                return extract_message_text(message)
-            except Exception as e:
-                last_error = e
-                print(
-                    f"[!] Request attempt {attempt}/{config['request_retry_attempts']} failed after "
-                    f"{time.time() - started:.1f}s: {e}"
-                )
-                if attempt == config["request_retry_attempts"]:
-                    raise
-                print(
-                    f"[*] Sleeping {config['request_retry_delay_seconds']:.1f}s before retry..."
-                )
-                time.sleep(config["request_retry_delay_seconds"])
-        raise RuntimeError(f"Request failed without a response: {last_error}")
-
-    def run_single_task(
-        input_project_dir, output_project_dir, task_file, response_output_path
-    ):
-        """Execute one task through Claude Vertex using the shared JSON workflow."""
-        return run_json_task(
-            input_project_dir,
-            output_project_dir,
-            task_file,
-            response_output_path,
-            fetch_response=lambda _project_dir, prompt, _response_output_path: (
-                call_claude(prompt)
-            ),
-            request_label="Claude",
-            error_label="Claude Error",
-            response_delay_seconds=config["response_delay_seconds"],
-            payload_error_message="No valid JSON payload found in the Claude response.",
-        )
-
-    run_case_submission(
-        input_dir=args.input_dir,
-        output_dir=args.output_dir,
-        case_id=args.case_id,
-        run_single_task=run_single_task,
-        start_step=args.start_step or 1,
-        end_step=args.end_step,
-        run_label=getattr(args, "run_label", None),
-    )
 
 
 def run_gemini_vertex(args):
@@ -569,7 +450,6 @@ def run_qwen_openapi(args):
 
 
 BACKEND_RUNNERS = {
-    "claude-vertex": run_claude_vertex,
     "gemini-vertex": run_gemini_vertex,
     "qwen-vertex": run_qwen_vertex,
     "qwen-openapi": run_qwen_openapi,

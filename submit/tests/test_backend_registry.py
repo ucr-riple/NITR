@@ -22,6 +22,7 @@ class BackendRegistryTests(unittest.TestCase):
             "chatgpt-api",
             "chatgpt-codex",
             "claude-cli",
+            "claude-vertex",
             "gemini-cli",
             "opencode-cli",
         }
