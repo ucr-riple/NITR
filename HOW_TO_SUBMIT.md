@@ -20,6 +20,7 @@ Single-case and batch submission both use the same backend names accepted by [`s
 - `claude-cli`
 - `gemini-vertex`
 - `gemini-cli`
+- `opencode-cli`
 - `qwen-vertex`
 - `qwen-openapi`
 
@@ -87,6 +88,7 @@ Some submit backends require a locally installed CLI tool:
 - `chatgpt-codex` requires the `codex` CLI
 - `claude-cli` requires the `claude` CLI
 - `gemini-cli` requires the `gemini` CLI
+- `opencode-cli` requires the `opencode` CLI
 
 Before using those backends, make sure the corresponding command is available on `PATH`.
 
@@ -96,9 +98,15 @@ Quick checks:
 codex --help
 claude --help
 gemini --help
+opencode --help
 ```
 
 If one of these commands is missing, install and authenticate that CLI first according to its official setup instructions before running `submit_case.py` or `run_batch.sh`.
+
+OpenCode model IDs use the `provider/model` form. Run `opencode models` to see
+the models available through your configured providers. For reproducible runs,
+pass an explicit `--model_name provider/model`; otherwise OpenCode uses its
+configured default.
 
 Examples:
 
@@ -203,7 +211,37 @@ The same `run01/` structure is used when `--submit-count 1`.
 
 You can use the same override pattern with other model-driven backends such as
 `chatgpt-codex`, `claude-vertex`, `claude-cli`, `gemini-vertex`, `gemini-cli`,
-and `qwen-openapi`.
+`opencode-cli`, and `qwen-openapi`.
+
+Example OpenCode run:
+
+```bash
+python3 submit/submit_case.py \
+  --backend opencode-cli \
+  --model_name provider/model \
+  -i . \
+  -o .submit-output/opencode-cli \
+  -c 024
+```
+
+To keep comparisons with the other CLI backends meaningful, NITR runs
+OpenCode in an isolated temporary workspace with only read/search permissions.
+OpenCode returns the normal full-file replacement JSON, and NITR applies the
+changes. Direct edits, shell commands, web access, plugins, skills, MCP, and
+subagents are disabled. `--submit-count` works normally for OpenCode Pass@N
+runs.
+
+For isolation, `opencode-cli` fails closed when a case contains OpenCode config
+or instruction-discovery surfaces: `opencode.json`, `opencode.jsonc`,
+`.opencode/`, `AGENTS.md`, `CLAUDE.md`, or `CONTEXT.md`. These files are not
+passed to OpenCode silently.
+
+Live compatibility was verified on 2026-08-15 with OpenCode `1.18.18` and
+`opencode/deepseek-v4-flash-free`. The permission smoke exposed only `glob`
+and `read`, left the workspace unchanged, and a full case 024 run passed the
+build, lifecycle, and substitutability evaluator checks. The adapter's
+credential-free tests do not claim compatibility with an unrecorded CLI
+version.
 
 For Docker-backed submit runs:
 
