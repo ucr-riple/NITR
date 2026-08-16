@@ -79,6 +79,18 @@ if(BUILD_TESTING)
             -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
             -p test_gemini_vertex_backend.py
   )
+  add_test(
+    NAME nitr_qwen_openapi_backend_tests
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+            -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
+            -p test_qwen_openapi_backend.py
+  )
+  add_test(
+    NAME nitr_qwen_vertex_backend_tests
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+            -s ${CMAKE_CURRENT_SOURCE_DIR}/submit/tests
+            -p test_qwen_vertex_backend.py
+  )
 endif()
 
 add_subdirectory(cases)

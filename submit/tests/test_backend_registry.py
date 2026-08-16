@@ -10,7 +10,6 @@ if str(SUBMIT_DIR) not in sys.path:
     sys.path.insert(0, str(SUBMIT_DIR))
 
 import backend_registry as registry  # noqa: E402
-import backends as legacy_backends  # noqa: E402
 import submit_case  # noqa: E402
 from backend_interface import Backend  # noqa: E402
 from chatgpt_api_backend import CHATGPT_API_DEFAULTS  # noqa: E402
@@ -18,7 +17,7 @@ from chatgpt_api_backend import CHATGPT_API_DEFAULTS  # noqa: E402
 
 class BackendRegistryTests(unittest.TestCase):
     def test_registry_preserves_backend_names_and_defaults(self) -> None:
-        expected_names = set(legacy_backends.BACKEND_RUNNERS) | {
+        expected_names = {
             "chatgpt-api",
             "chatgpt-codex",
             "claude-cli",
@@ -26,11 +25,11 @@ class BackendRegistryTests(unittest.TestCase):
             "gemini-cli",
             "gemini-vertex",
             "opencode-cli",
+            "qwen-openapi",
+            "qwen-vertex",
         }
         self.assertEqual(set(registry.BACKEND_BY_NAME), expected_names)
         self.assertEqual(set(registry.BACKEND_DEFAULTS), expected_names)
-        for name, defaults in legacy_backends.DEFAULTS.items():
-            self.assertEqual(dict(registry.BACKEND_DEFAULTS[name]), defaults)
 
     def test_every_registered_backend_implements_interface(self) -> None:
         self.assertTrue(registry.BACKENDS)
@@ -64,11 +63,9 @@ class BackendRegistryTests(unittest.TestCase):
             },
         )
 
-    def test_legacy_backends_use_behavior_preserving_adapters(self) -> None:
-        for name, runner in legacy_backends.BACKEND_RUNNERS.items():
-            backend = registry.BACKEND_BY_NAME[name]
+    def test_all_backends_use_function_adapters(self) -> None:
+        for backend in registry.BACKENDS:
             self.assertIsInstance(backend, registry.FunctionBackend)
-            self.assertIs(backend.runner, runner)
 
     def test_parser_choices_come_from_registry(self) -> None:
         parser = submit_case.build_parser()

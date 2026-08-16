@@ -6,9 +6,14 @@ Follow-up work after the `opencode-cli` backend integration. This refactor must
 be delivered separately from issue #95 so the OpenCode feature remains easy to
 review and validate.
 
+Implementation progress: all provider implementations have been extracted and
+the legacy `submit/backends.py` module has been removed. The flat transitional
+modules remain in place; moving them into the final `submit/backends/` package
+is the next behavior-preserving phase.
+
 ## Motivation
 
-`submit/backends.py` currently owns several unrelated responsibilities:
+Before extraction, `submit/backends.py` owned several unrelated responsibilities:
 
 - backend defaults and registration
 - API and CLI invocation

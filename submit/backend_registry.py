@@ -7,7 +7,6 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
-import backends as legacy_backends
 from backend_interface import Backend
 from chatgpt_api_backend import CHATGPT_API_DEFAULTS, run_chatgpt_api
 from claude_cli_backend import CLAUDE_CLI_DEFAULTS, run_claude_cli
@@ -16,6 +15,8 @@ from codex_cli_backend import CODEX_CLI_DEFAULTS, run_chatgpt_codex
 from gemini_cli_backend import GEMINI_CLI_DEFAULTS, run_gemini_cli
 from gemini_vertex_backend import GEMINI_VERTEX_DEFAULTS, run_gemini_vertex
 from opencode_backend import OPENCODE_DEFAULTS, run_opencode_cli
+from qwen_openapi_backend import QWEN_OPENAPI_DEFAULTS, run_qwen_openapi
+from qwen_vertex_backend import QWEN_VERTEX_DEFAULTS, run_qwen_vertex
 
 
 BackendRunner = Callable[[argparse.Namespace], None]
@@ -39,6 +40,16 @@ class FunctionBackend(Backend):
 
 def _build_backends() -> tuple[Backend, ...]:
     registered: list[Backend] = [
+        FunctionBackend(
+            name="qwen-vertex",
+            runner=run_qwen_vertex,
+            defaults=QWEN_VERTEX_DEFAULTS,
+        ),
+        FunctionBackend(
+            name="qwen-openapi",
+            runner=run_qwen_openapi,
+            defaults=QWEN_OPENAPI_DEFAULTS,
+        ),
         FunctionBackend(
             name="gemini-vertex",
             runner=run_gemini_vertex,
@@ -75,14 +86,6 @@ def _build_backends() -> tuple[Backend, ...]:
             defaults=GEMINI_CLI_DEFAULTS,
         ),
     ]
-    for name, runner in legacy_backends.BACKEND_RUNNERS.items():
-        registered.append(
-            FunctionBackend(
-                name=name,
-                runner=runner,
-                defaults=legacy_backends.DEFAULTS[name],
-            )
-        )
     return tuple(registered)
 
 
