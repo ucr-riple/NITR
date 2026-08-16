@@ -18,6 +18,7 @@ from backend_interface import Backend  # noqa: E402
 class BackendRegistryTests(unittest.TestCase):
     def test_registry_preserves_backend_names_and_defaults(self) -> None:
         expected_names = set(legacy_backends.BACKEND_RUNNERS) | {
+            "chatgpt-codex",
             "claude-cli",
             "gemini-cli",
             "opencode-cli",

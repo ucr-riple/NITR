@@ -138,6 +138,13 @@ def extract_json_payload(response_text):
         return None
 
 
+def usage_output_path(response_output_path):
+    """Derive the sidecar usage filename for a saved backend response."""
+    if response_output_path.endswith(".txt"):
+        return response_output_path[:-4] + ".usage.json"
+    return response_output_path + ".usage.json"
+
+
 def apply_file_replacements(payload, output_dir, allow_empty=False):
     """Validate the returned file list and write full-file replacements into the copy."""
     if not isinstance(payload, dict):
