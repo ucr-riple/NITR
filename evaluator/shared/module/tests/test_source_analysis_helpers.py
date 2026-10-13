@@ -178,11 +178,11 @@ class SourceAnalysisHelpersTest(ModuleTestCase):
     def test_strip_comments_and_strings_ignores_comment_markers_in_strings(
         self,
     ) -> None:
-        text = '''
+        text = """
         const char* url = "https://example.com/path";
         const char* marker = "/* not a comment */";
         void Preserved() {}
-        '''
+        """
 
         stripped = strip_comments_and_strings(text)
 
