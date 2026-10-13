@@ -1,6 +1,8 @@
 # Needle in the Repo: A Benchmark for Maintainability in AI-Generated Repository Edits
 Haichao Zhu*, Qian Zhang*, Jiyuan Wang, Zhaorui Yang, and Yuxin Qiu (* indicates equal contribution)
 <br>
+Accepted at the 41st IEEE/ACM International Conference on Automated Software Engineering (ASE 2026).
+<br>
 | [arXiv](https://arxiv.org/abs/2603.27745) | [Project Page](https://www.cs.ucr.edu/~qzhang/nitr.html) |
 
 TL;DR: Needle in the Repo (NITR) is a repository-level benchmark for evaluating whether
@@ -244,14 +246,14 @@ It includes the current public suite through `028.validator-global-mutation-pyth
 If you use NITR in your research, please cite the following paper:
 
 ```bibtex
-@misc{zhu2026nitr,
-  title         = {Needle in the Repo: A Benchmark for Maintainability in AI-Generated Repository Edits},
-  author        = {Haichao Zhu and Qian Zhang and Jiyuan Wang and Zhaorui Yang and Yuxin Qiu},
-  year          = {2026},
-  eprint        = {2603.27745},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.SE},
-  url           = {https://arxiv.org/abs/2603.27745}
+@inproceedings{zhu2026nitr,
+  author    = {Haichao Zhu and Qian Zhang and Jiyuan Wang
+               and Zhaorui Yang and Yuxin Qiu},
+  title     = {Needle in the Repo: Diagnosing Maintainability
+               Failures in {AI}-Generated Repository Edits},
+  booktitle = {Proceedings of the 41st IEEE/ACM International
+               Conference on Automated Software Engineering (ASE)},
+  year      = {2026}
 }
 ```
 
