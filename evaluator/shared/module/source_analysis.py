@@ -150,11 +150,89 @@ def strip_comments(text: str) -> str:
     return text
 
 
+def _raw_string_end(text: str, quote_index: int) -> int | None:
+    """Return the index after a C++ raw string opening at ``quote_index``.
+
+    ``quote_index`` points at the opening quote of ``R"delim(...)delim"``.
+    Returns None when the text does not form a valid raw string opener.
+    """
+    # The R must be a standalone token or follow an encoding prefix.
+    prefix_start = quote_index - 1
+    while prefix_start > 0 and (
+        text[prefix_start - 1].isalnum() or text[prefix_start - 1] == "_"
+    ):
+        prefix_start -= 1
+    if text[prefix_start:quote_index] not in {"R", "LR", "uR", "UR", "u8R"}:
+        return None
+
+    paren = text.find("(", quote_index + 1)
+    if paren == -1 or paren - quote_index - 1 > 16:
+        return None
+    delimiter = text[quote_index + 1 : paren]
+    if any(ch in delimiter for ch in ' ()\\\t\n"'):
+        return None
+
+    closing = ")" + delimiter + '"'
+    end = text.find(closing, paren + 1)
+    return len(text) if end == -1 else end + len(closing)
+
+
 def strip_comments_and_strings(text: str) -> str:
-    """Remove string literals and comments to reduce false-positive matches."""
-    text = re.sub(r'"(?:\\.|[^"\\])*"', '""', text)
-    text = re.sub(r"'(?:\\.|[^'\\])+'", "''", text)
-    return strip_comments(text)
+    """Remove C/C++ comments and quoted literals without mixing their contexts."""
+    cleaned: list[str] = []
+    i = 0
+
+    while i < len(text):
+        if text.startswith("//", i):
+            newline = text.find("\n", i + 2)
+            i = len(text) if newline == -1 else newline
+            continue
+
+        if text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            i = len(text) if end == -1 else end + 2
+            continue
+
+        quote = text[i]
+        if quote in {'"', "'"}:
+            # A quote between two alphanumeric characters can be a C++ digit
+            # separator (for example, 1'000), rather than a character literal.
+            if (
+                quote == "'"
+                and i > 0
+                and i + 1 < len(text)
+                and text[i - 1].isalnum()
+                and text[i + 1].isalnum()
+            ):
+                cleaned.append(quote)
+                i += 1
+                continue
+
+            if quote == '"' and i > 0 and text[i - 1] == "R":
+                raw_end = _raw_string_end(text, i)
+                if raw_end is not None:
+                    cleaned.append('""')
+                    i = raw_end
+                    continue
+
+            end = i + 1
+            while end < len(text):
+                if text[end] == "\\":
+                    end += 2
+                    continue
+                if text[end] == quote:
+                    end += 1
+                    break
+                end += 1
+
+            cleaned.append(quote * 2)
+            i = end
+            continue
+
+        cleaned.append(text[i])
+        i += 1
+
+    return "".join(cleaned)
 
 
 def include_paths(text: str) -> list[str]:

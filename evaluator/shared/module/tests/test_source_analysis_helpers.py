@@ -158,6 +158,56 @@ class SourceAnalysisHelpersTest(ModuleTestCase):
         self.assertIn("''", stripped_all)
         self.assertNotIn("ForbiddenCall()", stripped_all)
 
+    def test_strip_comments_and_strings_ignores_apostrophes_in_comments(
+        self,
+    ) -> None:
+        text = """
+        // F = T2^T * F' * T1.
+        void foo() {}
+        Mat3 EstimateEssential8Point() { return {}; }
+        // E = T2^T * E' * T1.
+        """
+
+        stripped = strip_comments_and_strings(text)
+
+        self.assertIn("EstimateEssential8Point", stripped)
+        self.assertEqual(
+            extract_function_body(stripped, "EstimateEssential8Point"), " return {}; "
+        )
+
+    def test_strip_comments_and_strings_ignores_comment_markers_in_strings(
+        self,
+    ) -> None:
+        text = '''
+        const char* url = "https://example.com/path";
+        const char* marker = "/* not a comment */";
+        void Preserved() {}
+        '''
+
+        stripped = strip_comments_and_strings(text)
+
+        self.assertEqual(stripped.count('""'), 2)
+        self.assertIn("void Preserved() {}", stripped)
+
+    def test_strip_comments_and_strings_handles_raw_strings(self) -> None:
+        text = (
+            'const char* a = R"(say "hi" // not a comment)";\n'
+            'const char* b = u8R"x(a)" /* still raw )x";\n'
+            "void Preserved() {}\n"
+        )
+
+        stripped = strip_comments_and_strings(text)
+
+        self.assertEqual(stripped.count('""'), 2)
+        self.assertNotIn("hi", stripped)
+        self.assertNotIn("still raw", stripped)
+        self.assertIn("void Preserved() {}", stripped)
+
+    def test_strip_comments_and_strings_preserves_digit_separators(self) -> None:
+        text = "constexpr int timeout = 10'000;"
+
+        self.assertIn("10'000", strip_comments_and_strings(text))
+
     def test_include_paths_extracts_cxx_includes(self) -> None:
         text = """
         #include "src/foo.h"
