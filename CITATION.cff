@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use Needle in the Repo (NITR), please cite it using the metadata in this file."
-title: "Needle in the Repo: A Benchmark for Maintainability in AI-Generated Repository Edits"
+title: "Needle in the Repo: Diagnosing Maintainability Failures in AI-Generated Repository Edits"
 type: software
 authors:
   - family-names: Zhu
@@ -18,8 +18,8 @@ repository-code: "https://github.com/UCR-SEAL/NeedleInTheRepo"
 url: "https://github.com/UCR-SEAL/NeedleInTheRepo"
 license: "Apache-2.0"
 preferred-citation:
-  type: article
-  title: "Needle in the Repo: A Benchmark for Maintainability in AI-Generated Repository Edits"
+  type: conference-paper
+  title: "Needle in the Repo: Diagnosing Maintainability Failures in AI-Generated Repository Edits"
   authors:
     - family-names: Zhu
       given-names: Haichao
@@ -32,6 +32,4 @@ preferred-citation:
     - family-names: Qiu
       given-names: Yuxin
   year: 2026
-  journal: "arXiv"
-  article-number: "arXiv:2603.27745"
-  url: "https://arxiv.org/abs/2603.27745"
+  collection-title: "Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering (ASE)"
